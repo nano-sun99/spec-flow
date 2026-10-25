@@ -11,7 +11,7 @@ The workflow has no runtime or service. It is markdown the agent reads, plus a p
 
 This revision limits the body to **4,700 characters**, frontmatter to **500**, and the whole skill to **5,200**, including newlines. [`scripts/check-docs.sh`](scripts/check-docs.sh) checks all three and rejects extra metadata fields or multiline descriptions. These are character budgets, not a cross-client token or compaction guarantee. Action-specific details are mandatory when needed; after compaction hides them, the agent reads them again.
 
-Every rule has a recorded origin. The dossier is [`references/rationale.md`](references/rationale.md): 29 entries with dates, measurements, decisions, costs and verification limits.
+Every rule has a recorded origin. The dossier is [`references/rationale.md`](references/rationale.md): 30 entries with dates, measurements, decisions, costs and verification limits.
 
 **English** · [中文](README.zh-CN.md)
 
@@ -24,7 +24,7 @@ You type the same request either way: *"add image upload to the profile page."*
 
 **Without it**, the agent starts writing. Forty minutes later there is a diff across eleven files, a database table you didn't ask for, and a resize limit it picked itself. Reading the code is how you find out what it decided.
 
-**With it**, it comes back in two minutes with the three questions it cannot answer for you — where do the files live, does this need to work on mobile, what should happen to a 40MB upload — and nothing else. Then it writes a spec: what changes, what it will deliberately leave alone, how each part will be verified. That spec goes to a pull request of its own, before any code, and you get a card asking how much review it should get — **none / light / heavy / heavy + mutation testing**. You point at one. It merges the spec and opens an execution issue with a `SPEC_READY` handoff, then stops. When you explicitly delegate — “start implementation” in the same window right after a single handoff, or the issue number from anywhere else — it implements in a git worktree of its own and hands you a second card before merging.
+**With it**, it comes back in two minutes with the three questions it cannot answer for you — where do the files live, does this need to work on mobile, what should happen to a 40MB upload — and nothing else. Then it writes a spec: what changes, what it will deliberately leave alone, how each part will be verified. That spec goes to a pull request of its own, before any code, and you get a card asking how much review it should get — **none / light / heavy / heavy + mutation testing**. You point at one. After review and any revision, it asks separately whether to merge; every PR — spec, docs, config or code — gets that confirmation. It merges the spec and opens an execution issue with a `SPEC_READY` handoff, then stops. When you explicitly delegate — “start implementation” in the same window right after a single handoff, or the issue number from anywhere else — it implements in a git worktree of its own and hands you a second card before merging.
 
 The misunderstanding that used to surface at minute forty now surfaces at minute two.
 
@@ -57,8 +57,8 @@ Not from theory. Each rule is the residue of a specific failure, recorded with i
 
 **Two phases, one shared gate.** Each step owns one of the seams above.
 
-- **Phase 1 · design** — describe the need → agree on it → draft a spec → assess size and implementation milestones → you choose split or keep → finalize the spec structure → PR → gate → merge → execution issue with a `SPEC_READY` handoff → stop. No code yet.
-- **Phase 2 · implementation** — after you explicitly delegate implementation, claim the issue → implement → gate → merge → backfill the issue and release the lock.
+- **Phase 1 · design** — describe the need → agree on it → draft a spec → assess size and implementation milestones → you choose split or keep → finalize the spec structure → PR → gate → confirm merge → merge → execution issue with a `SPEC_READY` handoff → stop. No code yet.
+- **Phase 2 · implementation** — after you explicitly delegate implementation, claim the issue → implement → gate → confirm merge → merge → backfill the issue and release the lock.
 
 | The step | The seam it owns |
 |---|---|
@@ -88,6 +88,8 @@ It isn't restraint bolted onto the agent. It's rework moved to where rework is c
 | The judgement is taken away from the agent | It may not decide "this one counts as core". That removes the argument, not just the risk. |
 | Every rule cites the incident that produced it | Disagree with a rule and its origin is one hop away. You never re-litigate it from scratch. |
 
+Review, revision and merge are three separate answers. An unanswered review card defaults to no review, but no card's silence approves a merge; zero findings, green checks and “agree to fix” don't either.
+
 <!-- s:longrun -->
 ## Why it survives long work
 
@@ -106,7 +108,7 @@ Tools that keep this in their own private index drift without telling you. This 
 
 - **It doesn't remember the process.** What was tried and abandoned, which dead end cost an hour, which step you were mid-way through — if it wasn't written down, it's gone. One part does get written down: the review trail, every finding and how it was disposed of, appended to the spec. So a new session reads *what to do*, *how far along*, and *what was caught last time* — but not *why the road not taken didn't work*.
 - **It isn't a runtime.** Nothing here schedules an agent, checkpoints a run, or resumes one that died at 3am. It assumes you are there for the gate.
-- **Most of it isn't enforced.** These are rules the agent is asked to follow, not mechanisms that force it. The parts that *are* enforced are enforced by git (the worktree lock) and by this repo's own check script.
+- **Most of it isn't enforced.** These are rules the agent is asked to follow, not mechanisms that force it — including the independent merge confirmation. The parts that *are* enforced are enforced by git (the worktree lock) and by this repo's own check script.
 - **It assumes GitHub.** Issues and pull requests are load-bearing, not decoration.
 
 <!-- s:install -->
@@ -134,7 +136,7 @@ Trigger it by describing work that deserves designing — "this touches the API,
 
 Splitting produces smaller execution specs, each with its own execution issue, plus an overview and one tracking-only parent issue. A stable group ID and child number connect filenames, specs and issue titles; parent-child links show membership, while blocking links show real dependencies. Maximize parallel work where practical, without requiring it: explicit sequential dependencies and coordinated releases are allowed. Choosing not to split preserves one spec and one execution issue, rather than silently creating a set of phase-only issues.
 
-You can also enter from the middle: "do #12" starts phase 2 for an existing issue, and still passes the gate before merging. In the same window right after a single `SPEC_READY` handoff, "start implementation" continues that issue; a new window, another agent, or multiple un-authorized handoffs requires the issue number.
+You can also enter from the middle: "do #12" starts phase 2 for an existing issue, and still passes the gate and gets a separate merge confirmation before merging. In the same window right after a single `SPEC_READY` handoff, "start implementation" continues that issue; a new window, another agent, or multiple un-authorized handoffs requires the issue number.
 
 To adopt it, say **"apply spec-flow to this project"**. It writes a pointer in `AGENTS.md`, adding `@AGENTS.md` to `CLAUDE.md` only if that file exists. **"Update this project's spec-flow integration"** explicitly checks and upgrades an old entry, including already adopted ADR actions and document reading order; repeat runs are idempotent and do not enable unadopted options. Ordinary work does not repair project rules as a side effect.
 
@@ -157,7 +159,7 @@ The rules are cited by `R` number, like `（依据：rationale R12）`, and ever
 | `SKILL.md` | The workflow itself — the file the agent loads |
 | `AGENTS.md` | This repo's maintenance rules for the agent |
 | `CLAUDE.md` | One line: `@AGENTS.md` |
-| `references/rationale.md` | Why each rule exists: cases, measurements, decisions (R1–R29) |
+| `references/rationale.md` | Why each rule exists: cases, measurements, decisions (R1–R30) |
 | `references/gate-details.md` | How the gate runs: reviews, doc checks, batching |
 | `references/worktree-lock.md` | Claiming an issue; the worktree lock, and how it breaks |
 | `references/phase-handoff.md` | Handoff state, authorization, takeover and the issue handoff block |
