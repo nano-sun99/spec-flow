@@ -5,7 +5,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 # 复杂活的两段流程
 
-**主线**：需求 → spec → issue → 实施。每份交付物合并前过同一道闸，由用户点审核档位。按顺序走，不跳步、不合并步骤。
+**主线**：需求 → spec → `SPEC_READY`（交接）→ 用户委托 → 实施。每份交付物合并前过同一道闸，由用户点审核档位。按顺序走，不跳步、不合并步骤。
 
 开工读适用项目与域入口：新需求进段一、已有 issue 进段二、显式接入走〈应用到项目〉。已采用规则在相关动作执行；ADR 项目开工或压缩恢复时先读 `references/adr-decision-records.md`；需求调查、旧 issue 或免方案期首次实施前搜现行决定，拍板命中长期影响条件就记录，收尾核本次处理；未采用不加动作（依据：rationale R25）。
 
@@ -89,20 +89,21 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 **完成标准与长尾验收**（第 3、6、9 步）
 
-- **完成 = 有限承诺**：约定功能实现，相关正常 / 异常 / 边界 / 回归测试通过，无未处理已知阻断缺陷、证据齐全。
-- **观察式收尾默认不进单**；例外须方案期批准，限真实时间 / 合规 / 必要持续负载测试三类，模拟时间或数据回放替代不了、用户点头才纳入。判据、例外卡、挡关单与通过标准读 `references/done-criteria.md`（依据：rationale R18）。
+- **完成 = 有限承诺**：约定功能、相关测试通过、无未处理阻断、证据齐全；观察式收尾默认不进单，例外见 `references/done-criteria.md`（依据：rationale R18）。
 
-**spec 体量与拆分**：草案后必读拆分细则，评估体量、多阶段，用户选拆 / 不拆再定稿。单交付子 spec 各配 issue，尽可能并行、不强制。地图、台账及开始、合入、发布就绪判定保留；遇环、归属 / 前提不清先修拆法，不自行只拆 issue。编号、父子单照细则，核对并入规格符合性、不增档位（依据：rationale R15、R28）。
+**spec 体量与拆分**：草案后按 `references/split-large-spec.md` 评估体量、多阶段，用户选拆 / 不拆再定稿；编号、父子单照细则（依据：rationale R15、R28）。
 
-**第 5 步·修订**：⛔ 改判据 / 定义 / 常量 / 术语必须全文搜所有落点逐一同步（机制、实现、步骤、验收、跨文档引用、历史记录），否则照 spec 施工等于白改；动笔前读 `references/spec-revision-sync.md`（依据：rationale R1）。
+**第 5 步·修订**：⛔ 改判据 / 定义 / 常量 / 术语必须全文搜落点同步；动笔前读 `references/spec-revision-sync.md`（依据：rationale R1）。
 
-**第 6 步·开 issue**：结构确认、spec 合并后开；正文仅 spec 永久链接、关系、改动面、未勾验收（依据：rationale R2、R28）。
+**第 6 步·开 issue**：结构确认、spec 合并后开；正文含 spec 永久链接、关系、改动面、未勾验收及交接区（父单除外）（依据：rationale R2、R28）。
 
-**第 9 步·回填**：spec 头部 Issue、状态随实施 PR 改，不另开 PR；正文写「关联 issue：#N」，不用 `Closes` / `Fixes` / `Resolves` 绕过回填（依据：rationale R22）。合并后勾已满足项、评论「代码已合」、按完成标准关单、放锁；已采用标签则按其阶段收尾，不机械合并即关。
+**方案交接**：spec 合并后开执行 issue 写 `SPEC_READY` 交接区（细则见 `references/phase-handoff.md`）；方案 agent 报告后停止，实施须用户明确委托（定向 issue `#N` 或同窗口唯一未授权交接）；审核档位不继承（依据：rationale R29）。
+
+**第 9 步·回填**：spec 头部 Issue、状态随实施 PR 改，不另开 PR；正文写「关联 issue：#N」，不用 `Closes` / `Fixes` / `Resolves`（依据：rationale R22）。合并后勾已满足项、评论「代码已合」、按完成标准关单、放锁。
 
 ## 应用到项目
 
-应用、更新接入及语义变体都读 `references/apply-to-project.md`。只指向、不放副本；未知描述问清，旧副本只报告、不删改。显式升级共用接入检查，普通任务不补制度或未授权配置；项目写入核具体授权、机器安装单独同意，可执行资产走 §十 升级闸（依据：rationale R21、R25）。
+应用 / 更新 / 语义变体读 `references/apply-to-project.md`。只指向不放副本；未知描述问清，旧副本只报告不删改。显式升级共用接入检查；普通任务不补制度；项目写入核具体授权、机器安装单独同意，可执行资产走 §十 升级闸（依据：rationale R21、R25）。
 
 ## 项目体例与参考
 
@@ -118,6 +119,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 | `references/done-criteria.md` | 写 / 核完成标准、观察收尾、例外时 |
 | `references/code-map.md` | 停用；用户明确试用/恢复时读 |
 | `references/split-large-spec.md` | 草案成形、定稿、开单前读细则 |
+| `references/phase-handoff.md` | 方案交接、实施委托时 |
 | `references/adr-decision-records.md` | 选修 `adr`——调查、实施前、拍板、收尾 |
 | `references/documentation-lifecycle.md` | 选修 `doc-lifecycle`——读序与文档分工 |
 | `references/issue-status-labels.md` | 选修 `issue-status`——阶段 / 卡点及收尾 |
