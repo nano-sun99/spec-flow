@@ -91,19 +91,19 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 - **完成 = 有限承诺**：约定功能、相关测试通过、无未处理阻断、证据齐全；观察式收尾默认不进单，例外见 `references/done-criteria.md`（依据：rationale R18）。
 
-**spec 体量与拆分**：草案后按 `references/split-large-spec.md` 评估体量、多阶段，用户选拆 / 不拆再定稿；编号、父子单照细则，核对并入规格符合性、不增档位（依据：rationale R15、R28）。
+**spec 体量与拆分**：草案后按 `references/split-large-spec.md` 评估体量、多阶段，用户选拆 / 不拆再定稿；编号、父子单照细则（依据：rationale R15、R28）。
 
-**第 5 步·修订**：⛔ 改判据 / 定义 / 常量 / 术语必须全文搜所有落点同步；动笔前读 `references/spec-revision-sync.md`（依据：rationale R1）。
+**第 5 步·修订**：⛔ 改判据 / 定义 / 常量 / 术语必须全文搜落点同步；动笔前读 `references/spec-revision-sync.md`（依据：rationale R1）。
 
-**第 6 步·开 issue**：结构确认、spec 合并后开；正文含 spec 永久链接、关系、改动面、未勾验收及交接区（依据：rationale R2、R28）。
+**第 6 步·开 issue**：结构确认、spec 合并后开；正文含 spec 永久链接、关系、改动面、未勾验收及交接区（父单除外）（依据：rationale R2、R28）。
 
-**方案交接**：spec PR 合并后开执行 issue 并写 `SPEC_READY` 交接区（细则见 `references/phase-handoff.md`）；方案 agent 报告后停止，实施须用户明确委托（定向 `#N` 或同窗口唯一交接）；审核档位不继承（依据：rationale R29）。
+**方案交接**：spec 合并后开执行 issue 写 `SPEC_READY` 交接区（细则见 `references/phase-handoff.md`）；方案 agent 报告后停止，实施须用户明确委托（定向 issue `#N` 或同窗口唯一未授权交接）；审核档位不继承（依据：rationale R29）。
 
-**第 9 步·回填**：spec 头部 Issue、状态随实施 PR 改；正文写「关联 issue：#N」，不用 `Closes` / `Fixes` / `Resolves`（依据：rationale R22）。合并后勾已满足项、评论「代码已合」、按完成标准关单、放锁；已采用标签按阶段收尾。
+**第 9 步·回填**：spec 头部 Issue、状态随实施 PR 改，不另开 PR；正文写「关联 issue：#N」，不用 `Closes` / `Fixes` / `Resolves`（依据：rationale R22）。合并后勾已满足项、评论「代码已合」、按完成标准关单、放锁。
 
 ## 应用到项目
 
-应用 / 更新 / 语义变体读 `references/apply-to-project.md`。只指向、不放副本；未知描述问清，旧副本只报告、不删改。显式升级共用接入检查；项目写入核具体授权、机器安装单独同意，可执行资产走 §十 升级闸（依据：rationale R21、R25）。
+应用 / 更新 / 语义变体读 `references/apply-to-project.md`。只指向不放副本；未知描述问清，旧副本只报告不删改。显式升级共用接入检查；普通任务不补制度；项目写入核具体授权、机器安装单独同意，可执行资产走 §十 升级闸（依据：rationale R21、R25）。
 
 ## 项目体例与参考
 
