@@ -1,17 +1,17 @@
 # 方案交接与实施委托（交接、授权、接手时读）
 
-> 本文件展开 `SKILL.md`〈方案交接〉与第 6 / 9 步。状态语义、交接区、授权记录和接手协议以本文件为准；交接与授权不是新的审核档位，方案期与实施期的审核档位互不继承。依据：rationale R29。
+> 本文件展开 `SKILL.md`〈方案交接〉与第 6 / 9 步。状态语义、交接区、授权记录和接手协议以本文件为准；交接与授权不是新的审核档位，方案期与实施期的审核档位互不继承。依据：rationale R29、R30。
 
 ## 一、状态模型
 
 | 状态 | 谁负责 | 可做什么 | 不可做什么 | 离开条件 |
 |---|---|---|---|---|
 | `DESIGNING` | 方案 agent | 调研、确认需求、用户点头后写 spec、摆方案期卡 | 写代码、认领实施 worktree | 用户点头且草案成形 → `SPEC_REVIEW` |
-| `SPEC_REVIEW` | 方案 agent + 用户 | 选审核档位、审核、贴结论、按用户选择修订；spec PR 已合并但创建执行 issue 失败时重试创建 | 把审核选择当实施授权 | spec PR 合并 → `SPEC_READY`；用户关闭 → `CANCELLED` |
+| `SPEC_REVIEW` | 方案 agent + 用户 | 选审核档位、审核、贴结论、按用户选择修订、摆合并卡；spec PR 已合并但创建执行 issue 失败时重试创建 | 把审核选择当实施授权 | 合并卡取得同意且 spec PR 合并 → `SPEC_READY`；用户关闭 → `CANCELLED` |
 | `SPEC_READY` | 方案 agent 已交付 | 创建执行 issue、写交接区、报告结果、按用户指令关闭 issue | 创建实施 worktree、改代码、派实施 agent、跑实施任务；未经用户指令改 issue 生命周期状态或实施阶段标签 | 用户明确委托 → `IMPLEMENTATION_AUTHORIZED`；返修 / 重审 → `SPEC_REVIEW`；关闭 → `CANCELLED` |
 | `IMPLEMENTATION_AUTHORIZED` | 实施 agent 接收 | 读交接材料、核当前基线、写授权记录、准备认领 | 在授权对象不明时扩大范围；已有授权记录时再追加一份 | 认领成功 → `IMPLEMENTING`；认领失败 / 撤销 → `SPEC_READY` |
 | `IMPLEMENTING` | 实施 agent | 认领锁、读写代码、测试、开实施 PR；把流程状态更新为 `IMPLEMENTING` | 越过授权范围或擅自改长期决定 | 实施 PR 形成 → `DELIVERY_REVIEW`；暂停 / 范围变化 → `PAUSED` |
-| `DELIVERY_REVIEW` | 实施 agent + 用户 | 摆当次实施审核卡、处理发现、合并确认；把流程状态更新为 `DELIVERY_REVIEW` | 沿用方案期审核档或自动合并 | 合并并回填 → `COMPLETED`；暂停 → `PAUSED` |
+| `DELIVERY_REVIEW` | 实施 agent + 用户 | 摆当次实施审核卡、处理发现、取得用户单独的合并确认；把流程状态更新为 `DELIVERY_REVIEW` | 沿用方案期审核档或自动合并 | 合并并回填 → `COMPLETED`；暂停 → `PAUSED` |
 | `PAUSED` | 用户 + 当前 agent | 报告暂停、保留或释放锁、记录恢复条件 | 未经用户恢复就继续实施、悄悄关单 | 用户恢复 → 暂停前状态；取消 → `CANCELLED` |
 | `CANCELLED` | 用户 + 当前 agent | 记录原因、按既有规则放锁 | 继续实施或把取消伪装成完成 | 用户重新打开 → `SPEC_REVIEW` / `SPEC_READY` |
 | `COMPLETED` | 实施 agent | 回填验收、issue、ADR、状态并放锁 | 把未完成观察或已知阻断伪装成完成 | 收尾完成 |
@@ -25,7 +25,7 @@
 
 ```text
 DESIGNING -> SPEC_REVIEW
-SPEC_REVIEW -> SPEC_READY [spec PR 合并] / CANCELLED [用户关闭] / SPEC_REVIEW [继续修订或重试创建]
+SPEC_REVIEW -> SPEC_READY [合并卡同意且 spec PR 合并] / CANCELLED [用户关闭] / SPEC_REVIEW [继续修订或重试创建]
 SPEC_READY -> IMPLEMENTATION_AUTHORIZED [用户明确委托] / SPEC_REVIEW [返修/重审] / CANCELLED [用户关闭]
 IMPLEMENTATION_AUTHORIZED -> IMPLEMENTING [认领成功] / SPEC_READY [认领失败/撤销]
 IMPLEMENTING -> DELIVERY_REVIEW [实施 PR 形成] / PAUSED [暂停/范围变化]
@@ -35,6 +35,7 @@ CANCELLED -> SPEC_REVIEW / SPEC_READY [用户重新打开]
 ```
 
 - 结构决定（拆分卡）未答或结构实质变化时，不自动创建执行 issue / 交接区，先让用户选结构。
+- `SPEC_REVIEW` 离开前必须单独摆合并卡；审核完成、零发现或修订完成都不代替合并同意（依据：rationale R30）。
 - spec PR 已合并但创建执行 issue 失败：报告失败，在 `SPEC_REVIEW` 下重试创建；失败报告不是 `SPEC_READY` 报告，同窗口入口不成立。
 - 认领失败或用户撤销、回到 `SPEC_READY` 时，把 `实施授权` 改为「待用户明确委托（上次认领失败）」，旧授权记录保留并标注「未生效」；下一次委托追加新记录，不覆盖历史。
 - 已合并 spec 需要返修，先走「改旧 spec 卡」；旧执行 issue 按用户指令关闭或标记失效，返修合并后重新交接。
@@ -102,7 +103,8 @@ CANCELLED -> SPEC_REVIEW / SPEC_READY [用户重新打开]
 - **多执行 issue**：报告列出多张执行 issue 时，裸“开始实施”不授权，必须点名 `#N` 或让用户选择。
 - 新窗口、其他 agent、上下文不完整或存在多张未授权执行单时，不得用全局候选推断对象。
 - **既有 issue 入口**：没有交接区的既有 issue，用户明确说“做 #N”“开始实施 #N”即构成委托；不要求 `SPEC_READY`，授权记录写 issue 评论（项目允许改正文时也可写正文）。没有交接区的 issue 不适用同窗口入口。
-- **免方案期路径**：用户说“直接干 / 别走流程”，或改动属于改一行、纯查事实时，不产生 spec / 执行 issue / 交接区；当场指令即授权，作用域是被点名的任务，不需要 `#N`。若开 worktree，按 `references/worktree-lock.md` 的「没有 issue 号的活」执行，无锁可领；交付前仍照摆闸卡，交付与回填规则不变。显式“直接干”优先于同窗口入口；若用户点名了交接报告里的 issue，一律走 `issue-direct` 并写授权记录，不按免方案期跳过记录。
+- 实施授权只覆盖实施阶段，不包含任何 PR 的合并同意；每份 PR 仍须单独摆合并卡（依据：rationale R30）。
+- **免方案期路径**：用户说“直接干 / 别走流程”，或改动属于改一行、纯查事实时，不产生 spec / 执行 issue / 交接区；当场指令即授权实施，不授权合并，作用域是被点名的任务，不需要 `#N`。若开 worktree，按 `references/worktree-lock.md` 的「没有 issue 号的活」执行，无锁可领；交付前仍照摆闸卡与合并卡，交付与回填规则不变。显式“直接干”优先于同窗口入口；若用户点名了交接报告里的 issue，一律走 `issue-direct` 并写授权记录，不按免方案期跳过记录。
 
 ## 五、授权记录
 
