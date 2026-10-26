@@ -112,13 +112,13 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 | 文件 | 何时读 |
 |---|---|
-| `references/gate-details.md` | 派审核、跑文档检查、确认及执行合并前 |
+| `references/gate-details.md` | 派审核、文档检查、确认及合并前 |
 | `references/worktree-lock.md` | 认领、撞锁、放锁时 |
 | `references/spec-revision-sync.md` | 第 5 步修订 spec 前 |
 | `references/done-criteria.md` | 写 / 核完成标准、观察收尾、例外时 |
 | `references/code-map.md` | 停用；用户明确试用/恢复时读 |
 | `references/split-large-spec.md` | 草案成形、定稿、开单前读细则 |
-| `references/phase-handoff.md` | 方案交接、实施委托时 |
+| `references/phase-handoff.md` | 方案交接、实施委托、合并时 |
 | `references/adr-decision-records.md` | 选修 `adr`——调查、实施前、拍板、收尾 |
 | `references/documentation-lifecycle.md` | 选修 `doc-lifecycle`——读序与文档分工 |
 | `references/issue-status-labels.md` | 选修 `issue-status`——阶段 / 卡点及收尾 |

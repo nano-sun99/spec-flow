@@ -160,7 +160,7 @@ spec-flow 是用 spec-flow 开发的。2026-10-16 这个时点的账面：66 个
 | `AGENTS.md` | 本仓的维护规矩（给 agent 看的） |
 | `CLAUDE.md` | 一行 `@AGENTS.md` |
 | `references/rationale.md` | 每条规矩的依据：案例、实测、决定（R1–R30） |
-| `references/gate-details.md` | 闸怎么执行：审核、文档检查、一卡盖批 |
+| `references/gate-details.md` | 闸怎么执行：审核、文档检查、一卡盖批、合并确认 |
 | `references/worktree-lock.md` | 认领 issue；worktree 那把锁，以及它怎么坏 |
 | `references/phase-handoff.md` | 方案交接、实施授权、接手与交接区模板 |
 | `references/spec-revision-sync.md` | 改一条判据要同步所有落点 |

@@ -160,7 +160,7 @@ The rules are cited by `R` number, like `（依据：rationale R12）`, and ever
 | `AGENTS.md` | This repo's maintenance rules for the agent |
 | `CLAUDE.md` | One line: `@AGENTS.md` |
 | `references/rationale.md` | Why each rule exists: cases, measurements, decisions (R1–R30) |
-| `references/gate-details.md` | How the gate runs: reviews, doc checks, batching |
+| `references/gate-details.md` | How the gate runs: reviews, doc checks, batching, merge confirmation |
 | `references/worktree-lock.md` | Claiming an issue; the worktree lock, and how it breaks |
 | `references/phase-handoff.md` | Handoff state, authorization, takeover and the issue handoff block |
 | `references/spec-revision-sync.md` | Changing one clause means syncing every place it lands |
