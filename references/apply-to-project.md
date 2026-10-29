@@ -179,9 +179,10 @@ spec-flow 的 `references/adoption-model.md` 记了四种采纳动作：**只指
 | `adr` / 「同时启用 ADR」「加上 adr」等变体 | 按语义执行 §四 + §五，先复用既有制度 |
 | `doc-lifecycle` / 「同时采用文档生命周期备忘录」等变体 | 按语义执行 §八 |
 | `issue-status` / 「同时启用 issue 状态标签」等变体 | 按语义执行 §九 |
+| `issue-type` / 「同时启用 issue 类型标签」等变体 | 按语义执行 §九之二 |
 | 真正未知的意图或附加描述 | 当场摆卡问用户，不猜成已注册修饰词 |
 
-**已注册选修修饰词**仍只有 `adr`、`doc-lifecycle`、`issue-status`，见 §十；新增选修须同时改 §十 和 `SKILL.md` 参考表。代码地图已退出默认调查动作，保留下面的显式请求入口，不新增修饰词。
+**已注册选修修饰词**仍只有 `adr`、`doc-lifecycle`、`issue-status`、`issue-type`，见 §十；新增选修须同时改 §十 和 `SKILL.md` 参考表。代码地图已退出默认调查动作，保留下面的显式请求入口，不新增修饰词。
 
 ### 地图试用 / 恢复（仅用户另行明确要求）
 
@@ -310,6 +311,64 @@ gh label create "受阻"   --color B60205 --description "卡点：等外部条�
 
 ---
 
+## 九之二、issue 类型标签（附加描述含 `issue-type` 时）
+
+[issue 类型标签备忘录](issue-type-labels.md) 默认不启用；本节是它的采纳动作。**没被要求就别做**。用户说「应用 `issue-type`」即授权开始本节流程；改、删已有标签，或给已有 issue 挂标签，先按第 1 步报告、用户点头后再动。
+
+**1. 先查后报告**：`gh label list --limit 200`，并统计：
+
+- `enhancement` / `documentation` / `type:*` 各自是否存在、挂了多少单（open / closed）。
+- open 单里没有任何类型标签的有多少。
+- 拟改名 / 合并 / 新建的清单，以及要删的旧标签。
+- 用户点头前不改远端。
+
+**2. 迁移旧类型标签**（机械迁移，open + closed 都迁）：
+
+- `enhancement` 在、`feat` 不在 → `gh label edit enhancement --name feat --color 1D76DB --description "类型：新功能或能力变更"`。
+- `documentation` 在、`docs` 不在 → `gh label edit documentation --name docs --color 0075CA --description "类型：文档、spec、README"`。
+- `type:feat` / `type:docs` / `type:chore` / `type:refactor`：目标名不存在就改名；存在就先把目标标签加到所有挂旧标签的单，再删旧标签。
+- `type:fix` → `bug`，不新建 `fix`。
+- 同名已存在不覆盖颜色和描述，只报告差异；删旧标签前把清单给用户过目。
+
+**3. 建 8 个标签**（同名已存在的跳过，不覆盖颜色描述）：
+
+```bash
+gh label create feat --color 1D76DB --description "类型：新功能或能力变更"
+gh label create bug --color D73A4A --description "类型：行为不符合预期（含线上故障、回归）"
+gh label create docs --color 0075CA --description "类型：文档、spec、README"
+gh label create refactor --color 6F42C1 --description "类型：不改外部行为的代码重构"
+gh label create perf --color FBCA04 --description "类型：性能优化，需有可对比指标"
+gh label create test --color 0E8A16 --description "类型：测试、用例、测试基建"
+gh label create chore --color BFD4F2 --description "类型：依赖、构建、CI、配置、杂务"
+gh label create security --color B60205 --description "类型：安全整改或漏洞，可叠加在 bug/feat 上"
+```
+
+**4. 回填 open 单**（只动 open；closed 不补）：
+
+- `gh issue list --state open --limit 1000 --json number,title,labels`。
+- 逐单提议一个类型，汇总清单给用户抽检；判不准的列“待定”，不猜。
+- 用户点头后 `gh issue edit <N> --add-label <type>`。
+- `security` 只在明确是安全问题时叠加。
+
+**5. 往 `AGENTS.md` 写指针节**（符号链接、末行换行等前置检测与写入位置，同 §一）：
+
+```markdown
+## 已采用：issue 类型标签
+
+本仓**已采用** spec-flow 的[issue 类型标签备忘录](https://github.com/Strelizialeomon/spec-flow/blob/main/references/issue-type-labels.md)（【应用日期】用户拍板）。**规则正文不在本文件复述**——8 类定义、迁移映射、开单挂标、回填口径都去读那一份。
+
+- 新建 issue 时挂一个类型标签：`feat` / `bug` / `docs` / `refactor` / `perf` / `test` / `chore` / `security`；`security` 可与其他类型叠加。
+- 历史单只回填 open，closed 不动；旧类型标签已机械迁移。
+```
+
+只写这几行，别把备忘录正文抄进来。
+
+**6. 幂等**：8 个标签全在（含改名后的等价名）→ 跳过第 3 步；指针节已存在 → 只校验形制；重复采用不重复建、不重复回填。
+
+结尾照惯例报告：改名 / 合并 / 新建了哪些、跳过哪些、回填多少、待定多少、closed 跳过多少。
+
+---
+
 ## 十、采用契约（所有修饰词共用）
 
 **中央登记在 `SKILL.md`〈项目体例与参考〉参考表；采用动作、登记表在这里。** 改任何修饰词前先读本节——两份合起来才是完整注册契约，只改一处就是注册漂移。
@@ -334,7 +393,7 @@ gh label create "受阻"   --color B60205 --description "卡点：等外部条�
 5. 本仓差异或验收命令；
 6. 「不复制正文、不建第二份真相源」的边界。
 
-§四／§八／§九 的三份入口模板就是这三个修饰词各自的那一份，按项目实际情况替换方括号；别另造形状。
+§四／§八／§九／§九之二 的四份入口模板就是这四个修饰词各自的那一份，按项目实际情况替换方括号；别另造形状。
 
 ### 通用处理顺序（所有修饰词同序）
 
@@ -408,7 +467,7 @@ Markdown-only 替代方案：<能否接受；代价是什么>
 
 ### 修饰词登记表
 
-三个现有修饰词各一张，字段齐全才算法册。`scripts/check-docs.sh` 核对本节与 `SKILL.md` 参考表一一对应、且每张表八项字段齐全。
+四个现有修饰词各一张，字段齐全才算法册。`scripts/check-docs.sh` 核对本节与 `SKILL.md` 参考表一一对应、且每张表八项字段齐全。
 
 #### `adr`
 
@@ -449,6 +508,19 @@ Markdown-only 替代方案：<能否接受；代价是什么>
 | 幂等规则 | 7 个标签已全在 → 跳过创建；入口节已存在 → 只校验形制 |
 | 旧物处置 | 语义重叠的旧状态标签只报告、不删不改；迁老单另开 issue，清单先给 owner 过目 |
 
+#### `issue-type`
+
+| 字段 | 内容 |
+|---|---|
+| 修饰词 | `issue-type` |
+| 语义变体 | 「同时启用 issue 类型标签」「挂类型标签」 |
+| 项目入口 | `AGENTS.md` 的「已采用：issue 类型标签」节（§九之二） |
+| 项目资产 | 8 个标签（feat / bug / docs / refactor / perf / test / chore / security）；旧类型标签改名 / 合并；不新增可执行资产 |
+| 执行时点 | 新建 issue 时挂类型；项目首次采用时迁移旧标签、回填 open 单 |
+| 验收方式 | 机械检查不适用；dogfood 验证默认不建标签、采用后同名不覆盖、改名保留已挂单、重复采用不重复建 |
+| 幂等规则 | 8 个标签全在（含等价名）→ 跳过创建；入口节已存在 → 只校验形制；重复采用不重复回填 |
+| 旧物处置 | `enhancement` / `documentation` / `type:*` 按 §九之二 第 2 步迁移；同名已存在不覆盖颜色描述；删旧标签、回填 open 前给用户过目 |
+
 ### 新备忘录怎么进来
 
 新备忘录只写进 `references/` 不算可用机制。要生效，按它是否有项目级采用动作二选一：
@@ -456,4 +528,4 @@ Markdown-only 替代方案：<能否接受；代价是什么>
 - **有项目级采用**：给它一个稳定修饰词，写进本节登记表（八项字段齐全）+ `SKILL.md` 参考表对应行；采用动作照 §十 通用顺序实现。
 - **只支持本次按需**：在 `SKILL.md` 参考表那行写明「仅本次按需」，不要求修饰词；agent 不得据此自动启用。
 
-三种既有备忘录的「采用口径」区块与本节登记表是同一份契约的两面：区块给 agent 读（这个备忘录什么时候读），登记表给采用动作读（这个修饰词落地时要写什么）。
+四种既有备忘录的「采用口径」区块与本节登记表是同一份契约的两面：区块给 agent 读（这个备忘录什么时候读），登记表给采用动作读（这个修饰词落地时要写什么）。
