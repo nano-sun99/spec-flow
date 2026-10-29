@@ -45,7 +45,7 @@
 | `documentation` 在、`docs` 不在 | 改名 `documentation` → `docs` | open + closed |
 | `documentation` 与 `docs` 都在 | 同上报号、合并、删旧 | open + closed |
 | `type:feat` / `type:docs` / `type:chore` / `type:refactor` | 目标名不存在就改名；存在就合并后删旧 | open + closed |
-| `type:fix` | 迁到 `bug`，不新建 `fix` | open + closed |
+| `type:fix` | 合并到 `bug`（`bug` 默认存在，逐单加 `bug` 后删 `type:fix`），不新建 `fix` | open + closed |
 | 缺的 `perf` / `test` / `security`（以及改名后仍缺的 `feat` / `docs` / `chore` / `refactor`） | 新建 | — |
 | GitHub 默认 `bug` | 保留，不改名 | — |
 
@@ -65,7 +65,7 @@
 ## 五、开单挂标
 
 - 新建 issue 必须带一个类型标签：`gh issue create ... --label <type>`；手工在网页建单也一样。
-- 类型默认单选；`security` 可与其他类型叠加。
+- 类型默认单选；`security` 可叠加在 `bug` / `feat` 上。
 - 类型不清先问用户，不猜；一个单只挂一个主类型，避免 `feat` + `bug` 同时挂。
 - 采用本备忘录的项目，按项目指令指针节执行；未采用的项目不加这条动作。
 
@@ -79,8 +79,8 @@
 
 dogfood 在临时假仓（不碰真实采用项目）跑以下场景，产物写进实施 PR：
 
-1. 默认不建标签：未采用时 `gh label list` 没有这 8 个类型。
-2. 应用后 8 个标签齐全，颜色 / 描述与 §九之二 一致。
+1. 默认不建标签：未采用时，除 GitHub 默认 `bug` 外，其余 7 个类型不在。
+2. 应用后 8 个标签齐全；新名的 7 个颜色 / 描述与 §九之二 一致，`bug` 同名已存在则保留原颜色 / 描述并报告差异。
 3. `enhancement` → `feat` 改名后，原先挂 `enhancement` 的单仍挂着 `feat`。
 4. 重复采用幂等：标签已全在时跳过创建，指针节不重复追加。
 5. 回填只动 open：open 单补类型，closed 单不动；机械迁移的旧标签 open + closed 都迁。

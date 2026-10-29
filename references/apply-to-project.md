@@ -317,20 +317,24 @@ gh label create "受阻"   --color B60205 --description "卡点：等外部条�
 
 **1. 先查后报告**：`gh label list --limit 200`，并统计：
 
-- `enhancement` / `documentation` / `type:*` 各自是否存在、挂了多少单（open / closed）。
+- `enhancement` / `documentation` / `type:*` 各自是否存在、挂了多少单（open / closed）；挂单数用 `gh issue list --state all --label <label> --limit 1000 --json number --jq length` 逐标签统计。
 - open 单里没有任何类型标签的有多少。
+- 中文旧类型词（如 `需求` / `缺陷` / `开发中`）只报告，不自动映射。
 - 拟改名 / 合并 / 新建的清单，以及要删的旧标签。
 - 用户点头前不改远端。
 
-**2. 迁移旧类型标签**（机械迁移，open + closed 都迁）：
+**2. 迁移旧类型标签**（按备忘录〈迁移映射〉表执行；机械迁移，open + closed 都迁）：
 
+- 任一 `gh` 写操作失败即停，报告已完成 / 未完成 / 未动；不跳过失败继续跑。
 - `enhancement` 在、`feat` 不在 → `gh label edit enhancement --name feat --color 1D76DB --description "类型：新功能或能力变更"`。
+- `enhancement` 与 `feat` 都在 → 先报告；用户点头后逐单 `gh issue edit <N> --add-label feat`（含 closed），再 `gh label delete enhancement --yes`。
 - `documentation` 在、`docs` 不在 → `gh label edit documentation --name docs --color 0075CA --description "类型：文档、spec、README"`。
-- `type:feat` / `type:docs` / `type:chore` / `type:refactor`：目标名不存在就改名；存在就先把目标标签加到所有挂旧标签的单，再删旧标签。
-- `type:fix` → `bug`，不新建 `fix`。
+- `documentation` 与 `docs` 都在 → 先报告；用户点头后逐单 `gh issue edit <N> --add-label docs`（含 closed），再 `gh label delete documentation --yes`。
+- `type:feat` / `type:docs` / `type:chore` / `type:refactor`：目标名不存在就改名；存在就逐单加目标标签（含 closed），再删旧。
+- `type:fix`：`bug` 默认存在，只能合并——逐单 `gh issue edit <N> --add-label bug`（含 closed），再 `gh label delete type:fix --yes`；不新建 `fix`。
 - 同名已存在不覆盖颜色和描述，只报告差异；删旧标签前把清单给用户过目。
 
-**3. 建 8 个标签**（同名已存在的跳过，不覆盖颜色描述）：
+**3. 建 8 个标签**（`bug` 是 GitHub 默认标签，通常已存在；同名已存在的跳过，不覆盖颜色描述）：
 
 ```bash
 gh label create feat --color 1D76DB --description "类型：新功能或能力变更"
@@ -357,13 +361,14 @@ gh label create security --color B60205 --description "类型：安全整改或�
 
 本仓**已采用** spec-flow 的[issue 类型标签备忘录](https://github.com/Strelizialeomon/spec-flow/blob/main/references/issue-type-labels.md)（【应用日期】用户拍板）。**规则正文不在本文件复述**——8 类定义、迁移映射、开单挂标、回填口径都去读那一份。
 
-- 新建 issue 时挂一个类型标签：`feat` / `bug` / `docs` / `refactor` / `perf` / `test` / `chore` / `security`；`security` 可与其他类型叠加。
-- 历史单只回填 open，closed 不动；旧类型标签已机械迁移。
+- 新建 issue 时挂一个类型标签：`feat` / `bug` / `docs` / `refactor` / `perf` / `test` / `chore` / `security`；`security` 可叠加在 `bug` / `feat` 上。
+- 本仓差异 / 验收：`gh label list` 应含这 8 个类型；无差异写“无”。
+- 历史单只回填 open，closed 不动；旧类型标签按报告迁移，未点头的旧标签保持原样。
 ```
 
 只写这几行，别把备忘录正文抄进来。
 
-**6. 幂等**：8 个标签全在（含改名后的等价名）→ 跳过第 3 步；指针节已存在 → 只校验形制；重复采用不重复建、不重复回填。
+**6. 幂等**：八个目标名全在才跳过第 3 步，未迁移的旧名不算；指针节已存在 → 只校验形制；重复采用不重复建、不重复回填。
 
 结尾照惯例报告：改名 / 合并 / 新建了哪些、跳过哪些、回填多少、待定多少、closed 跳过多少。
 

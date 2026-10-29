@@ -9,7 +9,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 开工读适用项目与域入口：新需求进段一、已有 issue 进段二、显式接入走〈应用到项目〉。已采用规则在相关动作执行；ADR 项目开工或压缩恢复时先读 `references/adr-decision-records.md`；调查、旧 issue 或免方案期首次实施前搜现行决定，拍板命中长期影响就记录，收尾核本次处理；未采用不加动作（依据：rationale R25）。
 
-改动前核工作区、范围、目标及 diff，以源码和测试核影响，不扩范围。**代码地图默认停用**，仅明确试用/恢复时读细则（依据：rationale R27）。
+改动前核工作区、范围、目标及 diff，以源码和测试核影响，不扩范围。**代码地图默认停用**，仅用户明确试用/恢复时读细则（依据：rationale R27）。
 
 **段一·方案期**（新需求）
 
@@ -98,7 +98,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 **方案交接**：spec 合并后开执行 issue 写 `SPEC_READY` 交接区（细则见 `references/phase-handoff.md`）；方案 agent 报告后停止，实施须用户明确委托（定向 issue `#N` 或同窗口唯一未授权交接）；审核档位不继承（依据：rationale R29）。
 
-**第 9 步·回填**：spec 头部 Issue、状态随实施 PR 改，不另开 PR；正文写「关联 issue：#N」，不用 `Closes` / `Fixes` / `Resolves`（依据：rationale R22）。合并后勾已满足项、评论「已合」、按完成标准关单、放锁。
+**第 9 步·回填**：spec 头部 Issue、状态随实施 PR 改，不另开 PR；正文写「关联 issue：#N」，不用 `Closes` / `Fixes` / `Resolves`（依据：rationale R22）。合并后勾已满足项、评论「代码已合」、按完成标准关单、放锁。
 
 ## 应用到项目
 
@@ -108,7 +108,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 目录、标题、标签、正文节序依项目 `AGENTS.md` / `CLAUDE.md` 或 agent 记忆。
 
-命中动作的细则必须读、执行；压缩后不可见或版本变了，动作前重读，不全量常驻。历史说明不增义务。表内「选修」默认关闭，不因复杂自动引入；本次明确要求或项目规则声明已采用时才读，采用走行内修饰词。
+命中动作的细则必须读、执行；压缩后不可见或版本变了，动作前重读，不全量常驻。历史说明不增义务。表内「选修」默认关闭，不因复杂自动引入或主动推销；本次明确要求或项目规则声明已采用时才读，采用走行内修饰词。
 
 | 文件 | 何时读 |
 |---|---|
@@ -123,6 +123,6 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 | `references/documentation-lifecycle.md` | 选修 `doc-lifecycle`——读序与文档分工 |
 | `references/issue-status-labels.md` | 选修 `issue-status`——阶段/卡点及收尾 |
 | `references/issue-type-labels.md` | 选修 `issue-type`——开单挂类型与回填 |
-| `references/apply-to-project.md` | 应用、接入时 |
-| `references/adoption-model.md` | 按需了解采纳史 |
-| `references/rationale.md` | 按需查依据（R 编号） |
+| `references/apply-to-project.md` | 应用、接入 |
+| `references/adoption-model.md` | 按需了解采纳 |
+| `references/rationale.md` | 按需查依据（R 号） |
