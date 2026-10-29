@@ -11,7 +11,7 @@
 
 本次正文预算为 **4,700 字符**、frontmatter **500**、整份 **5,200**，均含换行。[`scripts/check-docs.sh`](scripts/check-docs.sh) 同时核三笔账，并拦额外元信息和多行 description。字符预算不是跨客户端的 token 或压缩保留保证；动作细则使用当刻必须读，压缩丢失后重新读。
 
-**每条规矩都有可回溯来源。** [`references/rationale.md`](references/rationale.md) 有 **30 条记录**，包括日期、实测、决定、代价和验证边界。
+**每条规矩都有可回溯来源。** [`references/rationale.md`](references/rationale.md) 有 **31 条记录**，包括日期、实测、决定、代价和验证边界。
 
 [English](README.md) · **中文**
 
@@ -159,7 +159,7 @@ spec-flow 是用 spec-flow 开发的。2026-10-16 这个时点的账面：66 个
 | `SKILL.md` | 流程正文——agent 加载的就是它 |
 | `AGENTS.md` | 本仓的维护规矩（给 agent 看的） |
 | `CLAUDE.md` | 一行 `@AGENTS.md` |
-| `references/rationale.md` | 每条规矩的依据：案例、实测、决定（R1–R30） |
+| `references/rationale.md` | 每条规矩的依据：案例、实测、决定（R1–R31） |
 | `references/gate-details.md` | 闸怎么执行：审核、文档检查、一卡盖批、合并确认 |
 | `references/worktree-lock.md` | 认领 issue；worktree 那把锁，以及它怎么坏 |
 | `references/phase-handoff.md` | 方案交接、实施授权、接手与交接区模板 |
@@ -170,6 +170,7 @@ spec-flow 是用 spec-flow 开发的。2026-10-16 这个时点的账面：66 个
 | `references/adr-decision-records.md` | 可选：架构决策记录（ADR） |
 | `references/documentation-lifecycle.md` | 可选：spec / ADR / issue 分工 |
 | `references/issue-status-labels.md` | 可选：issue 状态标签 |
+| `references/issue-type-labels.md` | 可选：issue 类型标签 |
 | `references/apply-to-project.md` | 应用、显式升级、指针模板与资产边界；地图恢复须明确请求 |
 | `references/adoption-model.md` | 采纳模型的历史解释，不增加流程义务 |
 | `docs/maintainer-notes.md` | 本仓自己的说明：这份检出怎么接的线、最早的提交为什么是重建的 |

@@ -557,3 +557,23 @@ TS 两个导入方结果的**数量相同、文件集合不同**；这也是只�
 **取舍与代价**：每次合并多一次明确点击，换来任何内容类型都不能自动进入目标分支；不新增卡型、审核档位、授权数据库或批量合并卡。审核与合并在用户看来是两次动作，但边界清晰：审核成本的选择、已知问题的处置、最终合并分别是三个问题。
 
 **验证边界**：本次只落 Markdown 规则与文档同步；不新增 Hook、CI、脚本、运行时拦截或 GitHub 保护规则，也不把文字规则说成程序强制保证。`scripts/check-docs.sh` 绿只证明预算、路径、双语文档与采用契约同步，不证明客户端加载或遵守。规格 §7 的 V01–V16 场景须在实施 PR / issue 留输入、期望、实际行为与证据；未跑的交互演练只能标为未验收。
+
+## R31 issue 类型标签（主文件·项目体例与参考；`references/issue-type-labels.md`；`references/apply-to-project.md` §九之二）
+
+来源：[获批规格](https://github.com/nano-sun99/spec-flow/blob/9da9ac8e86b3ad91bbf25a644de792b5409b3a68/docs/specs/2026-10-29-issue-type-labels.md)（PR #119），执行 issue #120。2026-10-29 用户要求补 issue 类型标签；机制卡选「全要」，落地分工选「各项目全包」，回填默认 open-only，不做优先级 / 卡点。
+
+**现状（2026-10-29 实测，本机 `~/code` 下 29 个有 issue 的自有仓）**：869 单，334 单（38%）没有任何标签；181 open，128 open 没有任何类型标签。6 个最活跃仓（spec-flow、go_wechat_robot、taoxi-system、xhs-analysis、mobile-os、dsh-tui-nano）711 条标题里，测试 27、文档 17、重构 12、安全 12、依赖 5、性能 3。本机 29 仓里自定义类型标签只在 2 个仓（go_wechat_robot、llm_auto_report）；同账号全量可访问仓另做过量级核对（首查 39 仓 / 1,164 单 / 375 裸单 / 226 open；该口径含外部协作者仓，随权限与当日改动漂移，复核有 ±1 仓 / 十余单差异，只作量级参考，不写死）；本机 29 仓数字截至 #120 创建前，含 #120 后为 870/335/182/129。另有 `go_dispatch`（39/40）和 `taoxi-geo`（86/88）在用 `type:*`。仓清单与复跑命令见规格〈实测口径〉。
+
+**调研**：[Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) 只强制 `feat` / `fix`，`docs` / `refactor` / `perf` / `test` / `chore` 是推荐扩展；[GitHub 默认标签](https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/managing-labels) 有 `bug` / `enhancement` / `documentation`，但不规定分类法；[Kubernetes `kind/*`](https://github.com/kubernetes/test-infra/blob/master/label_sync/labels.md) 现列 20 个，证明 8 类够用；[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 把 Security 单列；[GitHub 原生 Issue Types](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/managing-issue-types-in-an-organization) 是组织级、上限 25 个，但 `gh issue list` 不暴露 `issueType`，nano-sun99 是个人号；[GitLab 默认标签](https://docs.gitlab.com/ee/user/project/labels.html) 同样用 `bug` / `documentation` / `enhancement`。
+
+**决定**：
+- 8 类裸名小写：`feat` / `bug` / `docs` / `refactor` / `perf` / `test` / `chore` / `security`；类型单选，`security` 可叠加。
+- 迁移：`enhancement`→`feat`、`documentation`→`docs`、`type:*`→裸名（`type:fix`→`bug`）；机械迁移覆盖 open + closed；语义回填只做 open，closed 不补。
+- 采用开关 `issue-type`：项目指令写指针；各项目 agent 自己在本仓改名 / 补标签 / 回填 open，不做中央批量脚本。
+- 新建 issue 必须带一个类型；类型不清先问，不猜。
+- 不做优先级、不做卡点；`design` 用 `scope:design`，`research` 归 `docs` / `feat`；不依赖原生 Issue Types。
+- `SKILL.md` 正文预算不调；新增参考行 66 字，靠同批压缩参考行描述与冗词腾出。
+
+**取舍与代价**：8 类是上限不是起点；`style` / `build` / `ci` / `deps` / `revert` 并入 `refactor` / `chore`，少几个标签换更低的选标成本。机械迁移保留历史分类，但历史单的语义回填仍可能错，所以 closed 不补。各项目全包把落地成本分散，但每个项目要开一次会话；本仓不维护采用名单（同 R9）。
+
+**验证边界**：dogfood 在临时假仓跑，不碰真实采用项目；`scripts/check-docs.sh` 绿只证明预算、路径、双语和采用契约同步，不证明任何客户端会执行开单挂标。`gh issue list` 不支持 `issueType` 是 2026-10-29 本机实测；GitHub 后续版本若变化，重新核。规格〈实测口径〉的 29 仓是本机子集，不冒充全量。

@@ -11,7 +11,7 @@ The workflow has no runtime or service. It is markdown the agent reads, plus a p
 
 This revision limits the body to **4,700 characters**, frontmatter to **500**, and the whole skill to **5,200**, including newlines. [`scripts/check-docs.sh`](scripts/check-docs.sh) checks all three and rejects extra metadata fields or multiline descriptions. These are character budgets, not a cross-client token or compaction guarantee. Action-specific details are mandatory when needed; after compaction hides them, the agent reads them again.
 
-Every rule has a recorded origin. The dossier is [`references/rationale.md`](references/rationale.md): 30 entries with dates, measurements, decisions, costs and verification limits.
+Every rule has a recorded origin. The dossier is [`references/rationale.md`](references/rationale.md): 31 entries with dates, measurements, decisions, costs and verification limits.
 
 **English** · [中文](README.zh-CN.md)
 
@@ -159,7 +159,7 @@ The rules are cited by `R` number, like `（依据：rationale R12）`, and ever
 | `SKILL.md` | The workflow itself — the file the agent loads |
 | `AGENTS.md` | This repo's maintenance rules for the agent |
 | `CLAUDE.md` | One line: `@AGENTS.md` |
-| `references/rationale.md` | Why each rule exists: cases, measurements, decisions (R1–R30) |
+| `references/rationale.md` | Why each rule exists: cases, measurements, decisions (R1–R31) |
 | `references/gate-details.md` | How the gate runs: reviews, doc checks, batching, merge confirmation |
 | `references/worktree-lock.md` | Claiming an issue; the worktree lock, and how it breaks |
 | `references/phase-handoff.md` | Handoff state, authorization, takeover and the issue handoff block |
@@ -170,6 +170,7 @@ The rules are cited by `R` number, like `（依据：rationale R12）`, and ever
 | `references/adr-decision-records.md` | Optional: architecture decision records |
 | `references/documentation-lifecycle.md` | Optional: spec / ADR / issue division of labour |
 | `references/issue-status-labels.md` | Optional: issue status labels |
+| `references/issue-type-labels.md` | Optional: issue type labels |
 | `references/apply-to-project.md` | Applying and explicitly upgrading; pointer templates, asset boundaries and explicit map-restoration requests |
 | `references/adoption-model.md` | Historical explanation of the adoption model; no additional workflow obligations |
 | `docs/maintainer-notes.md` | Repo-local notes: how this checkout is wired, why the first commits are reconstructed |

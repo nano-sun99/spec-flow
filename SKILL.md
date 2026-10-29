@@ -7,7 +7,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 **主线**：需求 → spec → `SPEC_READY`（交接）→ 用户委托 → 实施。每份交付物合并前过同一道闸，由用户点审核档位。按顺序走，不跳步、不合并步骤。
 
-开工读适用项目与域入口：新需求进段一、已有 issue 进段二、显式接入走〈应用到项目〉。已采用规则在相关动作执行；ADR 项目开工或压缩恢复时先读 `references/adr-decision-records.md`；需求调查、旧 issue 或免方案期首次实施前搜现行决定，拍板命中长期影响条件就记录，收尾核本次处理；未采用不加动作（依据：rationale R25）。
+开工读适用项目与域入口：新需求进段一、已有 issue 进段二、显式接入走〈应用到项目〉。已采用规则在相关动作执行；ADR 项目开工或压缩恢复时先读 `references/adr-decision-records.md`；调查、旧 issue 或免方案期首次实施前搜现行决定，拍板命中长期影响就记录，收尾核本次处理；未采用不加动作（依据：rationale R25）。
 
 改动前核工作区、范围、目标及 diff，以源码和测试核影响，不扩范围。**代码地图默认停用**，仅用户明确试用/恢复时读细则（依据：rationale R27）。
 
@@ -28,7 +28,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 ## 卡片总表
 
-凡要用户拍板都摆选择卡，不打字问是非题。
+要用户拍板就摆选择卡，不打字问。
 
 | 卡 | 何时摆 | 选项 | 没点 / 点了别的 |
 |---|---|---|---|
@@ -62,37 +62,37 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 ## 豁免总表
 
-拿不准不自判：照摆对应卡，附问归属。
+拿不准不自判：照摆卡，附问归属。
 
 | 免什么 | 条件 | 照样不免 |
 |---|---|---|
 | 方案期（不出 spec、不开 issue） | 改一行、纯查事实、用户说「直接干 / 别走流程」 | 闸、合并卡 |
 | 开 worktree | 用户当场说「直接改 / 不开 wt」；agent 不自判、不建议 | 声明真并行的仓认领仍开锁；其他环节 |
-| 闸 | 无新内容的机械变更（回填号、状态、索引、勾验收）；不进仓的草稿 / PR 底稿 | 无 PR 的实施成果交付前照摆卡，diff 随卡；免审核不免合并卡 |
+| 闸 | 无新内容机械变更（回填号、状态、索引、勾验收）；不进仓的草稿 / PR 底稿 | 无 PR 的实施成果交付前照摆卡，diff 随卡；免审核不免合并卡 |
 | 改旧 spec 卡 | 同上机械变更；末尾「审核修订记录」追加 | — |
 
 ## 工作区与锁
 
-- 凡文件变更先 `git fetch`，从 `origin/main`（或 `origin/master`）开 worktree，别改主仓：工作区、暂存区、HEAD 共享会互踩。
+- 凡文件变更先 `git fetch`，从 `origin/main`（或 `origin/master`）开 worktree，别改主仓：工作区/暂存区/HEAD 会互踩。
 - 进 worktree 第一件事 `pwd` 重取基准：编辑工具绝对路径不跟 cwd 走。
-- 认领 = 开同名分支与 worktree `issue-<N>`：成功 = 没人做；被拒 = 有人在做，停（依据：rationale R6）。⚠️ 不拿 issue `open` 当无人领，只信锁（依据：rationale R7）。
+- 认领 = 开同名分支与 worktree `issue-<N>`：成功=没人做；被拒=有人做，停（依据：rationale R6）。⚠️ 不拿 issue `open` 当无人领，只信锁（依据：rationale R7）。
 - 合并后删 worktree 与分支放锁；认领、撞锁、放锁前读 `references/worktree-lock.md`，含接手、squash 删分支及锁边界。
 
 ## 各步要点
 
 **第 2/3 步·两张清单**（两步都管）
 
-- **机制清单**：每新增机制 / 概念 / 抽象（用户可能问「这是什么 / 哪来的」的均算）单列「解决什么 / 没有会怎样」；没有写「无新增机制」。新增机制先单摆机制卡，不混正文批量点头，获准后才写 spec；需求确认不代替机制卡，不因机制来自需求而免卡。清单随方案、spec 期入文件。
+- **机制清单**：每新增机制 / 概念 / 抽象（可能被问「这是什么/哪来的」）单列「解决什么 / 没有会怎样」；没有写「无新增机制」。新增机制先单摆机制卡，不混正文批量点头，获准后才写 spec；需求确认不代替机制卡，不因机制来自需求而免卡。清单随方案、spec 期入文件。
 - **自定细节**：spec 未写死、agent 定的默认值、判定、命名、落点逐条列 spec 末尾「自定细节」；用户扫、不逐项问；该列不列违规。
 - spec 期审核核两张清单都在、与正文对应；清单外机制 = 漏报。
 
 **完成标准与长尾验收**（第 3、6、9 步）
 
-- **完成 = 有限承诺**：约定功能、相关测试通过、无未处理阻断、证据齐全；观察式收尾默认不进单，例外见 `references/done-criteria.md`（依据：rationale R18）。
+- **完成 = 有限承诺**：约定功能、相关测试通过、无未处理阻断、证据齐全；观察式收尾默认不进单；例外见 `references/done-criteria.md`（依据：rationale R18）。
 
-**spec 体量与拆分**：草案后按 `references/split-large-spec.md` 评估体量、多阶段，用户选拆 / 不拆再定稿；编号、父子单照细则（依据：rationale R15、R28）。
+**spec 体量与拆分**：草案后按 `references/split-large-spec.md` 评估体量、多阶段，用户选拆/不拆再定稿；编号、父子单照细则（依据：rationale R15、R28）。
 
-**第 5 步·修订**：⛔ 改判据 / 定义 / 常量 / 术语必须全文搜落点同步；动笔前读 `references/spec-revision-sync.md`（依据：rationale R1）。
+**第 5 步·修订**：⛔ 改判据/定义/常量/术语必须全文搜落点同步；动笔前读 `references/spec-revision-sync.md`（依据：rationale R1）。
 
 **第 6 步·开 issue**：结构确认、spec 合并后开；正文含 spec 永久链接、关系、改动面、未勾验收及交接区（父单除外）（依据：rationale R2、R28）。
 
@@ -102,7 +102,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 ## 应用到项目
 
-应用 / 更新 / 语义变体读 `references/apply-to-project.md`。只指向不放副本；未知描述问清，旧副本只报告不删改。显式升级共用接入检查；普通任务不补制度；项目写入核具体授权、机器安装单独同意，可执行资产走 §十 升级闸（依据：rationale R21、R25）。
+应用/更新/语义变体读 `references/apply-to-project.md`。只指向不放副本；未知描述问清，旧副本只报告不删改。显式升级共用接入检查；普通任务不补制度；项目写入核授权、机器安装另同意，可执行资产走 §十 升级闸（依据：rationale R21、R25）。
 
 ## 项目体例与参考
 
@@ -112,16 +112,17 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 | 文件 | 何时读 |
 |---|---|
-| `references/gate-details.md` | 派审核、文档检查、确认及合并前 |
+| `references/gate-details.md` | 派审核、文档检查、合并前 |
 | `references/worktree-lock.md` | 认领、撞锁、放锁时 |
 | `references/spec-revision-sync.md` | 第 5 步修订 spec 前 |
-| `references/done-criteria.md` | 写 / 核完成标准、观察收尾、例外时 |
+| `references/done-criteria.md` | 完成标准、观察收尾、例外 |
 | `references/code-map.md` | 停用；用户明确试用/恢复时读 |
-| `references/split-large-spec.md` | 草案成形、定稿、开单前读细则 |
-| `references/phase-handoff.md` | 方案交接、实施委托、合并时 |
+| `references/split-large-spec.md` | 草案、定稿、开单前 |
+| `references/phase-handoff.md` | 交接、委托、合并时 |
 | `references/adr-decision-records.md` | 选修 `adr`——调查、实施前、拍板、收尾 |
 | `references/documentation-lifecycle.md` | 选修 `doc-lifecycle`——读序与文档分工 |
-| `references/issue-status-labels.md` | 选修 `issue-status`——阶段 / 卡点及收尾 |
-| `references/apply-to-project.md` | 应用、更新接入时 |
-| `references/adoption-model.md` | 按需了解采纳历史 |
-| `references/rationale.md` | 按需查规矩依据（R 编号） |
+| `references/issue-status-labels.md` | 选修 `issue-status`——阶段/卡点及收尾 |
+| `references/issue-type-labels.md` | 选修 `issue-type`——开单挂类型与回填 |
+| `references/apply-to-project.md` | 应用、接入 |
+| `references/adoption-model.md` | 按需了解采纳 |
+| `references/rationale.md` | 按需查依据（R 号） |
