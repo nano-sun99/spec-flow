@@ -83,7 +83,7 @@ It isn't restraint bolted onto the agent. It's rework moved to where rework is c
 | The design | Why it's smooth |
 |---|---|
 | The review level is chosen per deliverable and never inherited | Cost tracks risk: **none / light / heavy / heavy + mutation testing**. A one-line doc change costs nothing; a core change gets two reviewers. No blanket policy to argue about. |
-| An unanswered card never adds anything | All eight cards — grouped as plan / split / delivery, three confirmation classes — default away from acting: no review, no merge, no new spec, no exception, no edit, no execution issue — and an unanswered page card stops the run rather than picking a default. |
+| An unanswered card never adds anything | All eight cards — 2 groups (plan / delivery), 3 confirmation classes (plan page / split / delivery) — default away from acting: no review, no merge, no new spec, no exception, no edit, no execution issue — and an unanswered page card stops the run rather than picking a default. |
 | Interruptions are split by whether they need an answer | A new mechanism gets its own card — that's the thing you'd later ask "what is this, and where did it come from". Everything else the agent decided by itself (defaults, naming, where things land) is listed in one block at the end to skim, not answer one by one. |
 | The judgement is taken away from the agent | It may not decide "this one counts as core". That removes the argument, not just the risk. |
 | Every rule cites the incident that produced it | Disagree with a rule and its origin is one hop away. You never re-litigate it from scratch. |
