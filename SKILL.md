@@ -73,7 +73,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 ## 工作区与锁
 
-- 凡文件变更先 `git fetch`，从 `origin/main`（或 `origin/master`）开 worktree，别改主仓：三者会互踩。
+- 凡文件变更先 `git fetch`，从 `origin/main`（或 `origin/master`）开 worktree，别改主仓：三处状态会互踩。
 - 进 worktree 第一件事 `pwd` 重取基准：编辑工具绝对路径不跟 cwd 走。
 - 认领 = 开同名分支与 worktree `issue-<N>`：成功=没人做；被拒=有人做，停（依据：rationale R6）。⚠️ 不拿 issue `open` 当无人领，只信锁（依据：rationale R7）。
 - 合并后删 worktree 与分支放锁；认领、撞锁、放锁前读 `references/worktree-lock.md`，含接手、squash 删分支及锁边界。
@@ -88,27 +88,27 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 **完成标准与长尾验收**（第 3、6、9 步）
 
-- **完成 = 有限承诺**：约定功能、测试通过、无未处理阻断、证据齐全；观察式收尾默认不进单；例外见 `references/done-criteria.md`（依据：rationale R18）。
+- **完成 = 有限承诺**：约定功能、相关测试通过、无未处理阻断、证据齐全；观察式收尾默认不进单；例外见 `references/done-criteria.md`（依据：rationale R18）。
 
-**spec 体量与拆分**：草案后按 `references/split-large-spec.md` 评估体量、多阶段，用户选后再定稿；编号、父子单照细则（依据：rationale R15、R28）。
+**spec 体量与拆分**：草案后按 `references/split-large-spec.md` 评估体量、多阶段，用户选后定稿；编号、父子单照细则（依据：rationale R15、R28）。
 
 **第 5 步·修订**：⛔ 改判据/定义/常量/术语必须全文同步；动笔前读 `references/spec-revision-sync.md`（依据：rationale R1）。
 
 **第 6 步·开 issue**：结构确认、spec 合并后开；正文含 spec 永久链接、关系、改动面、未勾验收及交接区（父单除外）（依据：rationale R2、R28）。
 
-**方案交接**：spec 合并后开执行 issue 写 `SPEC_READY` 交接区（细则见 `references/phase-handoff.md`）；方案报告后停止，实施须用户明确委托（定向 `#N` 或同窗口唯一未授权）；审核档位不继承（依据：rationale R29）。
+**方案交接**：spec 合并后开执行 issue 写 `SPEC_READY` 交接区（细则见 `references/phase-handoff.md`）；方案报告后停，实施须用户明确委托（定向 `#N` 或同窗口唯一未授权交接）；审核档位不继承（依据：rationale R29）。
 
-**第 9 步·回填**：spec 头部 Issue、状态随实施 PR 改，不另开 PR；正文写「关联 issue：#N」，不用 `Closes` / `Fixes` / `Resolves`（依据：rationale R22）。合并后勾已满足项、评论「代码已合」、按完成标准关单、放锁。
+**第 9 步·回填**：spec 头部 Issue、状态随 PR 改，不另开 PR；正文写「关联 issue：#N」，不用 `Closes` / `Fixes` / `Resolves`（依据：rationale R22）。合并后勾已满足项、评论「代码已合」、按完成标准关单、放锁。
 
 ## 应用到项目
 
-应用/更新/语义变体读 `references/apply-to-project.md`。只指向不放副本；未知描述问清，旧副本只报告不删改。升级共用接入检查；普通任务不补制度；项目写入核授权、机器安装另同意，可执行资产走 §十 升级闸（依据：rationale R21、R25）。
+应用/更新/语义变体读 `references/apply-to-project.md`。只指向不放副本；未知描述问清，旧副本只报告不删改。显式升级共用接入检查；普通任务不补制度；项目写入核授权、机器安装另同意，可执行资产走 §十 升级闸（依据：rationale R21、R25）。
 
 ## 项目体例与参考
 
 目录、标题、标签、正文节序依项目 `AGENTS.md` / `CLAUDE.md` 或 agent 记忆。
 
-命中动作的细则必须读、执行；压缩丢失或版本变了，动作前重读，不全量常驻。历史说明不增义务。表内「选修」默认关闭，不因复杂自动引入或推销；本次要求或项目规则声明已采用时才读，采用走行内修饰词。
+命中动作的细则必须读、执行；压缩丢失或版本变了，动作前重读，不全量常驻。历史说明不增义务。表内「选修」默认关闭，不自动引入或推销；本次明确要求或项目规则声明已采用时才读，采用走行内修饰词。
 
 | 文件 | 何时读 |
 |---|---|
@@ -123,7 +123,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 | `references/documentation-lifecycle.md` | 选修 `doc-lifecycle`——读序与文档分工 |
 | `references/issue-status-labels.md` | 选修 `issue-status`——阶段/卡点及收尾 |
 | `references/issue-type-labels.md` | 选修 `issue-type`——开单挂类型与回填 |
-| `references/release-discipline.md` | 选修 `release`——发布时 |
+| `references/release-discipline.md` | 选修 `release`——发布纪律 |
 | `references/apply-to-project.md` | 应用、接入 |
 | `references/adoption-model.md` | 按需了解采纳 |
 | `references/rationale.md` | 按需查依据（R 号） |

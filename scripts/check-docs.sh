@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # spec-flow 文档检查入口：SKILL.md 正文字数、警示符个数、references 路径是否存在、
-# README 双语是否同步（节标记一一对应、references 文件两份都点到）、采用契约两侧是否对应。
+# references 内相对链接、发布纪律采纳节、README 双语是否同步（节标记一一对应、
+# references 文件两份都点到）、采用契约两侧是否对应。
 # 同时核 frontmatter / 整份预算，禁止把规则搬进元信息绕正文预算（依据 R25）。
 # 每项一行结果，末行「绿 / 红」；退出码 0 = 绿，1 = 红。依据见 references/rationale.md R10、R17、R19、R25。
 
@@ -202,6 +203,24 @@ try:
             out.append(line)
         return out
 
+    # ── R32 审核建议：references 内相对链接可达（围栏里的示例跳过）──
+    link_problems = []
+    for f in ref_files or []:
+        rel = "references/" + f
+        try:
+            text = "\n".join(unfenced(open(rel, encoding="utf-8", newline="").read()))
+        except OSError:
+            link_problems.append(rel + " 读不到")
+            continue
+        for m in re.finditer(r"\[[^\]]*\]\(([^)\s]+\.md(?:#[^)\s]*)?)\)", text):
+            target = m.group(1).split("#", 1)[0]
+            if target.startswith(("http://", "https://", "#")):
+                continue
+            if not os.path.exists(os.path.normpath(os.path.join("references", target))):
+                link_problems.append(f"{rel} → {target}")
+    report(not link_problems, "references 内相对链接都可达" if not link_problems
+           else "断链：" + "、".join(link_problems))
+
     ROW_RE = re.compile(r"\|\s*`(references/[^`]+\.md)`\s*\|(.*)\|\s*$")
     # 修饰词可写在行内（「采用走 `x`」），也可由行首的「选修 `x`」承载（R24 去重后的形态）；
     # 两串都认，保证 rows_to_mod ↔ §十 登记表的映射不断。
@@ -279,6 +298,7 @@ try:
     except OSError:
         ap_text = ""
         problems.append("references/apply-to-project.md 读不到")
+    report("## 九之三、发布纪律" in ap_text, "apply-to-project.md 有发布纪律采纳节")
     sec = ap_text[ap_text.index("## 十、采用契约"):] if "## 十、采用契约" in ap_text else ""
     if not sec:
         problems.append("apply-to-project.md 没有 §十 采用契约")

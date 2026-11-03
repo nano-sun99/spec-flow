@@ -175,7 +175,7 @@ The rules are cited by `R` number, like `（依据：rationale R12）`, and ever
 | `references/apply-to-project.md` | Applying and explicitly upgrading; pointer templates, asset boundaries and explicit map-restoration requests |
 | `references/adoption-model.md` | Historical explanation of the adoption model; no additional workflow obligations |
 | `docs/maintainer-notes.md` | Repo-local notes: how this checkout is wired, why the first commits are reconstructed |
-| `scripts/check-docs.sh` | Body / frontmatter / whole-skill budgets, reference paths, README sync, region-bound adoption contract |
+| `scripts/check-docs.sh` | Body / frontmatter / whole-skill budgets, reference paths, relative links, release adoption section, README sync, region-bound adoption contract |
 
 The workflow itself is `SKILL.md`; where this README and that file disagree, `SKILL.md` wins. Which reference to read when is listed at the bottom of `SKILL.md`.
 

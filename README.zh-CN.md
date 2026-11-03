@@ -175,7 +175,7 @@ spec-flow 是用 spec-flow 开发的。2026-10-16 这个时点的账面：66 个
 | `references/apply-to-project.md` | 应用、显式升级、指针模板与资产边界；地图恢复须明确请求 |
 | `references/adoption-model.md` | 采纳模型的历史解释，不增加流程义务 |
 | `docs/maintainer-notes.md` | 本仓自己的说明：这份检出怎么接的线、最早的提交为什么是重建的 |
-| `scripts/check-docs.sh` | 正文 / frontmatter / 整份预算、路径、双语同步、参考表区域采用护栏 |
+| `scripts/check-docs.sh` | 正文 / frontmatter / 整份预算、路径、相对链接、发布纪律采纳节、双语同步、参考表区域采用护栏 |
 
 流程正文是 `SKILL.md`——这份 README 与它说法不一致时，以 `SKILL.md` 为准。哪个参考什么时候读，见 `SKILL.md` 末尾那张表。
 
