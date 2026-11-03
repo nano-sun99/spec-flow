@@ -171,7 +171,7 @@ The rules are cited by `R` number, like `（依据：rationale R12）`, and ever
 | `references/documentation-lifecycle.md` | Optional: spec / ADR / issue division of labour |
 | `references/issue-status-labels.md` | Optional: issue status labels |
 | `references/issue-type-labels.md` | Optional: issue type labels |
-| `references/release-discipline.md` | Optional: release closed loop (release record, readiness evidence, mainline alignment, post-release backfill) |
+| `references/release-discipline.md` | Optional: release closed loop (release record, readiness gate, mainline alignment, post-release backfill) |
 | `references/apply-to-project.md` | Applying and explicitly upgrading; pointer templates, asset boundaries and explicit map-restoration requests |
 | `references/adoption-model.md` | Historical explanation of the adoption model; no additional workflow obligations |
 | `docs/maintainer-notes.md` | Repo-local notes: how this checkout is wired, why the first commits are reconstructed |

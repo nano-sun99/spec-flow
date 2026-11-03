@@ -303,9 +303,10 @@ try:
     try:
         rd_body = "\n".join(unfenced(open("references/release-discipline.md", encoding="utf-8", newline="").read()))
         release_sections = ("发布记录", "状态与就绪门槛", "发布前对齐", "发布后回路")
-        missing_sections = [name for name in release_sections
-                            if not any(re.fullmatch(r"##\s+.*" + re.escape(name) + r"\s*", line)
-                                       for line in rd_body.splitlines())]
+        # 允许 1-3 个前导空格、可选序号与可选括号后缀；只认名称本身，诱饵「## 附：发布记录」不算。
+        section_re = re.compile(r"^ {0,3}##\s+(?:[0-9一二三四五六七八九十百]+、\s*)?(.*?)\s*(?:（[^）]*）)?$")
+        headings = [m.group(1) for m in (section_re.match(line) for line in rd_body.splitlines()) if m]
+        missing_sections = [name for name in release_sections if name not in headings]
         report(not missing_sections, "release-discipline.md 有发布闭环四节" if not missing_sections
                else "release-discipline.md 缺章节：" + "、".join(missing_sections))
     except OSError:
