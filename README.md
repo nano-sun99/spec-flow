@@ -11,7 +11,7 @@ The workflow has no runtime or service. It is markdown the agent reads, plus a p
 
 This revision limits the body to **4,700 characters**, frontmatter to **500**, and the whole skill to **5,200**, including newlines. [`scripts/check-docs.sh`](scripts/check-docs.sh) checks all three and rejects extra metadata fields or multiline descriptions. These are character budgets, not a cross-client token or compaction guarantee. Action-specific details are mandatory when needed; after compaction hides them, the agent reads them again.
 
-Every rule has a recorded origin. The dossier is [`references/rationale.md`](references/rationale.md): 34 entries with dates, measurements, decisions, costs and verification limits.
+Every rule has a recorded origin. The dossier is [`references/rationale.md`](references/rationale.md): 35 entries with dates, measurements, decisions, costs and verification limits.
 
 **English** · [中文](README.zh-CN.md)
 
@@ -24,7 +24,7 @@ You type the same request either way: *"add image upload to the profile page."*
 
 **Without it**, the agent starts writing. Forty minutes later there is a diff across eleven files, a database table you didn't ask for, and a resize limit it picked itself. Reading the code is how you find out what it decided.
 
-**With it**, it comes back in two minutes with the three questions it cannot answer for you — where do the files live, does this need to work on mobile, what should happen to a 40MB upload — and nothing else. Then it writes a spec: what changes, what it will deliberately leave alone, how each part will be verified. That spec goes to a pull request of its own, before any code, and you get a card asking how much review it should get — **none / light / heavy / heavy + mutation testing**. You point at one. After review and any revision, it asks separately whether to merge; every PR — spec, docs, config or code — gets that confirmation. It merges the spec and opens an execution issue with a `SPEC_READY` handoff, then stops. When you explicitly delegate — “start implementation” in the same window right after a single handoff, or the issue number from anywhere else — it implements in a git worktree of its own and hands you a second card before merging.
+**With it**, it comes back in two minutes with the three questions it cannot answer for you — where do the files live, does this need to work on mobile, what should happen to a 40MB upload — and nothing else. Before any spec exists, the four independent choices — page / mechanism / exceptions / editing an old spec — sit on one page with three questions: where does the route start, which fork do you take, where does it end. Then it writes a spec as one route: a start, an end, and a table of steps with trigger → response, failure / empty state, and executable evidence. That spec goes to a pull request of its own, before any code, and you get a card asking how much review it should get — **none / light / heavy / heavy + mutation testing**. Review walks the route: R1 full, R2 only checks closures, R3 stops and you choose redraw / cut scope / stop. You point at a level. After review and any revision, it asks separately whether to merge; every PR — spec, docs, config or code — gets that confirmation. It merges the spec and opens an execution issue with a `SPEC_READY` handoff, then stops. When you explicitly delegate — “start implementation” in the same window right after a single handoff, or the issue number from anywhere else — it implements in a git worktree of its own and hands you a second card before merging.
 
 The misunderstanding that used to surface at minute forty now surfaces at minute two.
 
@@ -57,7 +57,7 @@ Not from theory. Each rule is the residue of a specific failure, recorded with i
 
 **Two phases, one shared gate.** Each step owns one of the seams above.
 
-- **Phase 1 · design** — describe the need → agree on it and decide whether it has an interactive page → skeleton spec (one page: roles, states, triggers, paths, open questions; or the technical equivalent) → if it has pages, a draft PR holds the spec from here on → assess size, you choose split or keep → counterpart: a design mock-up if it has pages, three real examples or one decision table if it does not → implementation-ready spec that passes the seven-point Definition of Ready → you confirm it is ready → the draft PR becomes ready for review (no draft PR: a normal PR opens here) → gate → confirm merge → merge → execution issue with a `SPEC_READY` handoff → stop. No code yet. It stays one file in one PR: skeleton and counterpart are stages of that spec, and only the implementation-ready version faces the gate.
+- **Phase 1 · design** — describe the need → agree on it and decide whether it has an interactive page → one plan page: four independent choices (page / mechanism / exceptions / editing an old spec) plus three questions (start / forks / end) → skeleton spec = the first screen of the route (start, end, step table) → if it has pages, a draft PR holds the spec from here on → assess size, you choose split or keep → counterpart: a design mock-up if it has pages, three real examples or one decision table if it does not → implementation-ready spec that passes the seven-point Definition of Ready → you confirm it is ready → the draft PR becomes ready for review (no draft PR: a normal PR opens here) → gate → confirm merge → merge → execution issue with a `SPEC_READY` handoff and a batch table → stop. No code yet. It stays one file in one PR: skeleton and counterpart are stages of that spec, and only the implementation-ready version faces the gate.
 - **Phase 2 · implementation** — after you explicitly delegate implementation, claim the issue → implement → gate → confirm merge → merge → backfill the issue and release the lock.
 
 | The step | The seam it owns |
@@ -83,7 +83,7 @@ It isn't restraint bolted onto the agent. It's rework moved to where rework is c
 | The design | Why it's smooth |
 |---|---|
 | The review level is chosen per deliverable and never inherited | Cost tracks risk: **none / light / heavy / heavy + mutation testing**. A one-line doc change costs nothing; a core change gets two reviewers. No blanket policy to argue about. |
-| An unanswered card never adds anything | All eight cards default away from acting: no review, no merge, no new spec, no exception, no edit, no execution issue — and an unanswered page card stops the run rather than picking a default. |
+| An unanswered card never adds anything | All eight cards — grouped as plan / split / delivery, three confirmation classes — default away from acting: no review, no merge, no new spec, no exception, no edit, no execution issue — and an unanswered page card stops the run rather than picking a default. |
 | Interruptions are split by whether they need an answer | A new mechanism gets its own card — that's the thing you'd later ask "what is this, and where did it come from". Everything else the agent decided by itself (defaults, naming, where things land) is listed in one block at the end to skim, not answer one by one. |
 | The judgement is taken away from the agent | It may not decide "this one counts as core". That removes the argument, not just the risk. |
 | Every rule cites the incident that produced it | Disagree with a rule and its origin is one hop away. You never re-litigate it from scratch. |
@@ -159,15 +159,16 @@ The rules are cited by `R` number, like `（依据：rationale R12）`, and ever
 | `SKILL.md` | The workflow itself — the file the agent loads |
 | `AGENTS.md` | This repo's maintenance rules for the agent |
 | `CLAUDE.md` | One line: `@AGENTS.md` |
-| `references/rationale.md` | Why each rule exists: cases, measurements, decisions (R1–R34) |
-| `references/gate-details.md` | How the gate runs: reviews, doc checks, batching, merge confirmation |
-| `references/worktree-lock.md` | Claiming an issue; the worktree lock, and how it breaks |
+| `references/rationale.md` | Why each rule exists: cases, measurements, decisions (R1–R35) |
+| `references/one-path.md` | The route template, plan page, walking review, batch table, and all eight card options / defaults |
+| `references/gate-details.md` | How the gate runs: walking review (R1–R3), severity, doc checks, batching, merge confirmation |
+| `references/worktree-lock.md` | File changes, claiming an issue; the worktree lock, and how it breaks |
 | `references/phase-handoff.md` | Handoff state, authorization, takeover and the issue handoff block |
-| `references/spec-maturity.md` | One spec in three stages: the page fork, the skeleton, the counterpart, the implementation-ready version and the DoR |
+| `references/spec-maturity.md` | One spec in three stages: the page fork, the skeleton as the route's first screen, the counterpart, the implementation-ready version and the DoR |
 | `references/spec-revision-sync.md` | Changing one clause means syncing every place it lands |
 | `references/code-map.md` | Disabled by default; explicit trials, coverage limits and fallback |
 | `references/done-criteria.md` | Done criteria, observational close-outs, the three exception types |
-| `references/split-large-spec.md` | Pre-issue sizing and choice, small delivery units, stable IDs and parent-child issues; maps and dependencies |
+| `references/split-large-spec.md` | Pre-issue sizing and choice, small delivery units, stable IDs and parent-child issues; maps, dependencies and the batch table |
 | `references/adr-decision-records.md` | Optional: architecture decision records |
 | `references/documentation-lifecycle.md` | Optional: spec / ADR / issue division of labour |
 | `references/issue-status-labels.md` | Optional: issue status labels |
