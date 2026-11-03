@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # spec-flow 文档检查入口：SKILL.md 正文字数、警示符个数、references 路径是否存在、
-# references 内相对链接、发布纪律采纳节、README 双语是否同步（节标记一一对应、
+# references 内相对链接、发布纪律采纳节与发布闭环四节、README 双语是否同步（节标记一一对应、
 # references 文件两份都点到）、采用契约两侧是否对应。
 # 同时核 frontmatter / 整份预算，禁止把规则搬进元信息绕正文预算（依据 R25）。
 # 每项一行结果，末行「绿 / 红」；退出码 0 = 绿，1 = 红。依据见 references/rationale.md R10、R17、R19、R25。
@@ -299,6 +299,18 @@ try:
         ap_text = ""
         problems.append("references/apply-to-project.md 读不到")
     report("## 九之三、发布纪律" in ap_text, "apply-to-project.md 有发布纪律采纳节")
+    # ── 发布闭环四节存在性（依据 R33）：模板与流转留在 release-discipline.md，apply 只放指针 ──
+    try:
+        rd_body = "\n".join(unfenced(open("references/release-discipline.md", encoding="utf-8", newline="").read()))
+        release_sections = ("发布记录", "状态与就绪门槛", "发布前对齐", "发布后回路")
+        # 允许 1-3 个前导空格、可选序号与可选括号后缀；只认名称本身，诱饵「## 附：发布记录」不算。
+        section_re = re.compile(r"^ {0,3}##\s+(?:[0-9一二三四五六七八九十百]+、\s*)?(.*?)\s*(?:（[^）]*）)?$")
+        headings = [m.group(1) for m in (section_re.match(line) for line in rd_body.splitlines()) if m]
+        missing_sections = [name for name in release_sections if name not in headings]
+        report(not missing_sections, "release-discipline.md 有发布闭环四节" if not missing_sections
+               else "release-discipline.md 缺章节：" + "、".join(missing_sections))
+    except OSError:
+        report(False, "references/release-discipline.md 读不到——发布闭环章节检查失效")
     sec = ap_text[ap_text.index("## 十、采用契约"):] if "## 十、采用契约" in ap_text else ""
     if not sec:
         problems.append("apply-to-project.md 没有 §十 采用契约")
