@@ -6,7 +6,7 @@
 
 | 状态 | 谁负责 | 可做什么 | 不可做什么 | 离开条件 |
 |---|---|---|---|---|
-| `DESIGNING` | 方案 agent | 调研、确认需求、用户点头后写 spec、摆方案期卡 | 写代码、认领实施 worktree | 用户点头且草案成形 → `SPEC_REVIEW` |
+| `DESIGNING` | 方案 agent | 调研、确认需求、判页面、用户点头后写骨架 / 对照 / 实施版 spec、摆方案期卡 | 写代码、认领实施 worktree | 实施版过 DoR 且用户点头 → `SPEC_REVIEW` |
 | `SPEC_REVIEW` | 方案 agent + 用户 | 选审核档位、审核、贴结论、按用户选择修订、摆合并卡；spec PR 已合并但创建执行 issue 失败时重试创建 | 把审核选择当实施授权 | 合并卡取得同意且 spec PR 合并 → `SPEC_READY`；用户关闭 → `CANCELLED` |
 | `SPEC_READY` | 方案 agent 已交付 | 创建执行 issue、写交接区、报告结果、按用户指令关闭 issue | 创建实施 worktree、改代码、派实施 agent、跑实施任务；未经用户指令改 issue 生命周期状态或实施阶段标签 | 用户明确委托 → `IMPLEMENTATION_AUTHORIZED`；返修 / 重审 → `SPEC_REVIEW`；关闭 → `CANCELLED` |
 | `IMPLEMENTATION_AUTHORIZED` | 实施 agent 接收 | 读交接材料、核当前基线、写授权记录、准备认领 | 在授权对象不明时扩大范围；已有授权记录时再追加一份 | 认领成功 → `IMPLEMENTING`；认领失败 / 撤销 → `SPEC_READY` |
