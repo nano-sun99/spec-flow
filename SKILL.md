@@ -65,7 +65,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 ## 工作区与锁
 
-凡文件变更先 `git fetch`，从 `origin/main` 或 `origin/master` 开 `issue-<N>` worktree，别改主仓；认领、撞锁、放锁、进 worktree 重取基准见 `references/worktree-lock.md`（依据：rationale R6、R7）。
+凡文件变更先 `git fetch`，从 `origin/main` 或 `origin/master` 开 worktree，别改主仓；issue 认领用 `issue-<N>`，没有 issue 号的活用 `<type>/<slug>`（如 `spec/<日期>-<主题>`）；认领、撞锁、放锁、进 worktree 重取基准见 `references/worktree-lock.md`（依据：rationale R6、R7）。
 
 ## 各步要点
 
