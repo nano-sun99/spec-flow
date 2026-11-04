@@ -1,118 +1,60 @@
 ---
 name: spec-flow
-description: "复杂活的两段流程：需求确认、spec、PR 过闸、合并后开 issue；认领 issue、实施、过闸合并回填。要设计、动多个端或值得留依据的需求，开工前调用；「请你做 #N」从实施期进，每份交付物合并前均由用户选审核档位，agent 不自派。也处理「把 spec-flow 应用到本项目」「更新本项目的 spec-flow 接入」及语义变体，可附带 ADR 等采用意图；未知描述问清。"
+description: "复杂活的两段流程：开工一页（目标 / 不做 / 验收），过 3 道闸（规格 / 范围 / 完成），审核四进三出；场景包触发才读。要设计、动多个端或值得留依据的需求，开工前调用；「请你做 #N」从实施期进；也处理「应用到本项目」「更新接入」，未知描述问清。"
 ---
 
 # 复杂活的两段流程
 
-**主线**：需求 → 方案页 → 骨架 → 拆分 → 对照 / 实施版 → DoR / 派审 / 合并 → 开单 / 批次表 → 实施 → 派审 / 修订 / 合并 → 回填。按顺序走，不跳步、不合并步骤；派审与合并每份单独点。
+**默认面 3 份**：开工读 `one-page.md`，过闸读 `gates.md`，PR / issue 读 `project-integration.md`。其余参考是场景包，触发才读。
 
-开工读入口：新需求进段一、已有 issue 进段二、接入走〈应用到项目〉。已采用规则在相关动作执行；ADR 项目开工或压缩恢复时读 `references/adr-decision-records.md`；调查、旧 issue、免方案期首次实施前搜现行决定；长期影响就记录、收尾核；未采用不加动作（依据：rationale R25）。
+## 段一·方案期（1–6）
 
-改动前核工作区、范围、目标及 diff，以源码和测试核影响，不扩范围。**代码地图默认停用**，仅明确试用/恢复时读（依据：rationale R27）。
+1. **需求** —— 用户描述；有岔路问清，不猜；能自己查判的先做。
+2. **确认** —— 方案页四格（页面 / 机制 / 例外 / 改旧 spec）各自独立点；判页面，判不了停。
+3. **骨架** —— 起点 / 终点 / 主路表；有页面开 Draft PR，无页面用样例。
+4. **拆分 / 对照 / 实施版** —— 骨架后评估拆分；同一 PR 补对照与实施版；机制清单 + 自定细节齐备，过 DoR 且用户点头才转 Ready。
+5. **修订 / 合并** —— 派审卡由用户点档，agent 不自派；最多 2 轮；修订后单独确认合并。
+6. **开 issue** —— spec PR 合并后开执行 issue（spec 链接 + 批次表 + 交接区）；报告后停，实施须用户明确委托。
 
-**段一·方案期**（新需求）
+## 段二·实施期（7–9）
 
-1. **用户描述需求**
-2. **一起确认需求** —— 有岔路问清，不猜；能自己查判的先做；判有没有页面，判不了摆页面卡；出方案页：页面 / 机制 / 例外 / 改旧 spec 四个选择各自独立点，再问 3 句（起点 / 岔路 / 终点）
-3. **点头后才动 spec** —— 先出骨架版，即路的第一屏（起点 / 终点 / 主路表）；有页面开 Draft PR 等设计稿，无页面用样例
-4. **拆分 → 对照 → 实施版 → DoR → 派审** —— 骨架成形后摆拆分卡；同一 PR 补主路对照与实施版；过 DoR 且点头才转 Ready（无 Draft PR 开普通 PR）、摆派审卡
-5. **按需修订 → 确认合并**
-6. **开 issue** —— spec PR 合并后、实施前开；锚 spec 永久链接，附批次表
+7. **认领** —— worktree `issue-<N>`；首次实施前读获批 spec。
+8. **实施** —— 一次授权覆盖整份 spec；每轮跑 `spec-check --base`；E5 越界 = 停 / 变更单；新东西先写「不做 / 待定」，用户点头才做。
+9. **过闸 / 合并 / 回填** —— 派审 / 修订 / 合并每份单独点；回填、关单、放锁。
 
-**段二·实施期**（spec 已合并，不重走段一）
+**开工一页**：三行锚（目标 / 不做 / 验收）+ 范围（改 / 不改）+ AC 表；跑 `scripts/spec-check.py`，E1–E4 绿才往下。三行写不出可验证句 = 停。
 
-7. **认领 issue** —— 锁 = worktree 分支 `issue-<N>`；首次实施前读获批 spec
-8. **在 worktree 里实施** —— 一次授权覆盖整份 spec，阶段之间不问；只在预声明停止点停；核当前影响及已采用约束
-9. **派审 → 修订 → 确认合并 → 回填** —— 按完成标准和已采用收尾规则回填、决定关单、放锁
+脚本在 skill 根下；安装后是 `~/.claude/skills/spec-flow/scripts/spec-check.py`，在目标仓里用 `python3` 跑。
 
-## 卡片总表
+**每轮第一行**：复杂活回复第一行写「目标 / 本轮推进 / 还差」；写不出「还差」= 这轮不该开工。
 
-要拍板就摆卡，不打字问。**2 组、3 类确认**：方案组（页面 / 机制 / 例外 / 改旧 spec，方案页同页逐项点；拆分卡在骨架后单独点）、交付组（派审 / 修订 / 合并，每份 PR 按需点）。选项、默认值与没点的后果见 `references/one-path.md`（依据：rationale R35）。
+**宪法**：只准加检查，不准加规矩。新翻车只能进 `spec-check`，或替换一条旧规矩；不准新增章节 / 卡片 / reference；默认面 3 份是白名单，新增需用户点头。预算：SKILL ≤ 60 行 / 正文 ≤ 2,800 字符；3 份常驻 ≤ 180 行。
 
-- 定稿 spec 反复改会乱，新开还是改旧由用户定（依据：rationale R12）。
+**豁免**：改一行、纯查事实、「直接干 / 别走流程」免方案期；当场说「直接改 / 不开 wt」免开 worktree；无新内容机械变更（回填号、状态、索引、勾验收）免闸；闸、合并卡不免。
 
-## 闸（两段共用）
+## 参考
 
-- 每份各过一道、当场点档、不沿用；摆卡即算过完（不审也算），没摆卡不算；过闸不授权合并（依据：rationale R30）。
-- **判断权全在用户**：agent 不自动派、不自行判核心。
-- 档位按每份算：
-
-  | 档 | 派什么 | 大致代价 |
-  |---|---|---|
-  | 不审 | 无；agent 拿 diff 对 spec 改动面及已采用约束（受影响者核源码），范围外停下报告 | 0 |
-  | 轻审 | 1 个：spec 期 = 规格符合性 + 两张清单；实施期 = 对抗找 bug + 范围外对账（依据：rationale R3） | 约 5 分钟 |
-  | 重审 | 2 个：规格符合性（含清单 / 对账）+ 对抗找 bug | 约 10 分钟 |
-  | 重审 + 变异 | 重审 + agent 自跑一次变异：判据换错、跑全量测试，全绿 = 没护栏 | 同重审 + 约 18 秒 |
-
-- 审核按路走：R1 全量、R2 只核上轮闭合、R3 停（重画 / 砍范围 / 停由用户拍），不派第 4 轮；复审 = 新摆派审卡（依据：rationale R35）。
-- 有发现摆修订卡：全改 / 只改阻断 + 高 / 不改；阻断、高不合并，中 / 低不挡合并、列进合并卡未处理项。
-- ⚠️ **多份叠加**：卡上算「N 份 × 该档 = 约 X 个 agent / Y 分钟」。
-- 项目禁的档不摆，也不派。
-- 摆卡前：含文档改动先在交付工作区跑文档检查，卡上固定一行「文档检查：绿 / 红+摘要 / 无入口」。
-- 派审核、跑检查前读 `references/gate-details.md`；结论原样贴 PR 评论，处置进 spec 末尾「审核修订记录」；不审不写免责声明。
-
-## 豁免总表
-
-拿不准不自判：照摆卡，附问归属。
-
-| 免什么 | 条件 | 照样不免 |
-|---|---|---|
-| 方案期（不出 spec、不开 issue） | 改一行、纯查事实、「直接干 / 别走流程」 | 闸、合并卡 |
-| 开 worktree | 当场说「直接改 / 不开 wt」；agent 不自判、不建议 | 声明真并行的仓认领仍开锁 |
-| 闸 | 无新内容机械变更（回填号、状态、索引、勾验收）；不进仓的草稿 / PR 底稿 | 无 PR 的交付前照摆卡，diff 随卡 |
-| 改旧 spec 卡 | 同上机械变更；末尾「审核修订记录」追加 | — |
-
-## 工作区与锁
-
-凡文件变更先 `git fetch`，从 `origin/main` 或 `origin/master` 开 worktree，别改主仓；issue 认领用 `issue-<N>`，不认领的活（如 spec 期，含占位 issue）命名随意、惯例 `<type>/<slug>`（如 `spec/<日期>-<主题>`）；认领、撞锁、放锁、进 worktree 重取基准见 `references/worktree-lock.md`（依据：rationale R6、R7）。
-
-## 各步要点
-
-**第 2/3 步·两张清单**
-
-- **机制清单**：每新增机制 / 概念 / 抽象（会被追问）单列「解决什么 / 没有会怎样」；没有写「无新增机制」。新增机制先单摆机制卡，不混正文点头，获准才写 spec；需求确认不代替它，机制来自需求也不免卡。清单入 spec。
-- **自定细节**：spec 未写死、agent 定的默认值、判定、命名、落点逐条列末尾「自定细节」；用户扫、不逐项问；该列不列违规。
-- spec 期审核核两张清单都在、与正文对应；清单外机制 = 漏报。
-
-**完成标准**（第 3、6、9 步）：**完成 = 有限承诺**——约定功能、相关测试通过、无未处理阻断、证据齐全；观察式收尾默认不进单；例外见 `references/done-criteria.md`（依据：rationale R18）。
-
-**spec 体量与拆分**：骨架版成形后按 `references/split-large-spec.md` 评估体量、多阶段，用户选后定稿；编号、父子单照细则（依据：rationale R15、R28）。
-
-**第 5 步·修订**：⛔ 改判据/定义/常量/术语必须全文同步；动笔前读 `references/spec-revision-sync.md`（依据：rationale R1）。
-
-**第 6 步·开 issue**：结构确认、spec 合并后开；正文含 spec 永久链接、关系、改动面、未勾验收及交接区（父单除外）；开单报告附批次表（依据：rationale R2、R28、R35）。
-
-**方案交接**：spec 合并后开执行 issue 写 `SPEC_READY` 交接区（见 `references/phase-handoff.md`）；报告后停，实施须用户明确委托；审核档位不继承（依据：rationale R29）。
-
-**第 9 步·回填**：spec 头部 Issue、状态随 PR 改，不另开 PR；正文写「关联 issue：#N」而非 `Closes` / `Fixes` / `Resolves`（依据：rationale R22）。合并后勾已满足项、评论「代码已合」、按完成标准关单、放锁。
-
-## 应用到项目
-
-应用/更新/语义变体读 `references/apply-to-project.md`。只指向不放副本；未知描述问清，旧副本只报告不删改。显式升级共用接入检查；普通任务不补制度；项目写入核授权、机器安装另同意，可执行资产走 §十 升级闸（依据：rationale R21、R25）。
-
-## 项目体例与参考
-
-目录、标题、标签、节序依项目 `AGENTS.md` / `CLAUDE.md` 或记忆。
-
-命中动作的细则必须读、执行；压缩丢失或版本变了，动作前重读。历史说明不增义务。表内「选修」默认关闭，不自动引入或推销；本次要求或项目声明已采用时才读，采用走行内修饰词。
+下表 3 份常驻默认读；场景包触发才读；标「选修」的默认关闭，项目规则声明已采用才读。
 
 | 文件 | 何时读 |
 |---|---|
-| `references/spec-maturity.md` | 第 2–4 步：三阶段与 DoR |
-| `references/one-path.md` | 方案页、骨架、走路审核、批次表、8 卡选项 / 默认值 |
-| `references/gate-details.md` | 派审核、合并前 |
-| `references/worktree-lock.md` | 文件变更、认领、撞锁、放锁时 |
-| `references/spec-revision-sync.md` | 第 5 步修订前 |
-| `references/done-criteria.md` | 完成标准、观察收尾、例外 |
-| `references/code-map.md` | 停用；明确试用/恢复时读 |
-| `references/split-large-spec.md` | 骨架、定稿、开单前 |
-| `references/phase-handoff.md` | 交接、委托、合并时 |
+| `references/one-page.md` | 常驻——开工写一页 |
+| `references/gates.md` | 常驻——过闸、派审、完成 |
+| `references/project-integration.md` | 常驻——PR / issue / worktree / 回填 |
+| `references/one-path.md` | 场景包——要 8 卡默认值 / 骨架主路表 / 多份叠加 |
+| `references/gate-details.md` | 场景包——要四档差异 / 多份叠加 / 文档检查红绿 |
+| `references/spec-maturity.md` | 场景包——要三阶段 / DoR 细则 |
+| `references/split-large-spec.md` | 场景包——跨端 / AC 超阈值 / 评估拆分 |
+| `references/phase-handoff.md` | 场景包——spec 合并后开 issue / 交接 |
+| `references/done-criteria.md` | 场景包——观察式收尾 / 长尾验收 |
+| `references/spec-revision-sync.md` | 场景包——改判据 / 定义 / 常量 / 术语 |
+| `references/worktree-lock.md` | 场景包——撞锁 / 放锁 / squash 换 `-D` |
+| `references/apply-to-project.md` | 场景包——接入 / 更新项目 |
 | `references/adr-decision-records.md` | 选修 `adr`——拍板、收尾 |
 | `references/documentation-lifecycle.md` | 选修 `doc-lifecycle`——读序、分工 |
 | `references/issue-status-labels.md` | 选修 `issue-status`——阶段、收尾 |
 | `references/issue-type-labels.md` | 选修 `issue-type`——开单、回填 |
 | `references/release-discipline.md` | 选修 `release`——发布纪律 |
-| `references/apply-to-project.md` | 应用、接入 |
-| `references/adoption-model.md` | 按需了解采纳 |
-| `references/rationale.md` | 按需查依据（R 号） |
+| `references/adoption-model.md` | 场景包——采用 / 接入契约 |
+| `references/code-map.md` | 归档——已停用；明确试用 / 恢复才读 |
+| `references/rationale.md` | 按需——查依据（R 号） |
