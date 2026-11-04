@@ -1,3 +1,5 @@
 .DS_Store
 *.bak
 .backup/
+__pycache__/
+*.pyc
