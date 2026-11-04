@@ -135,8 +135,8 @@
 
 **范围**：
 
-- 改：`SKILL.md`、`references/one-page.md`、`references/gates.md`、`references/project-integration.md`、`references/one-path.md`、`references/phase-handoff.md`、`references/done-criteria.md`、`references/gate-details.md`（后 4 份只改指向旧章节的指针）、`scripts/spec-check.py`、`scripts/replay-legacy-spec.py`、`scripts/check-docs.sh`、`README.md`、`README.zh-CN.md`、`references/rationale.md`（只追加 R36）
-- 不改：其余 12 份参考、DSH、Claude Code、历史 spec
+- 改：`SKILL.md`、`references/one-page.md`、`references/gates.md`、`references/project-integration.md`、`references/one-path.md`、`references/phase-handoff.md`、`references/done-criteria.md`、`references/gate-details.md`、`references/split-large-spec.md`、`references/issue-status-labels.md`、`references/apply-to-project.md`、`references/adoption-model.md`（后 8 份只改指向旧章节的指针）、`scripts/spec-check.py`、`scripts/replay-legacy-spec.py`、`scripts/check-docs.sh`、`README.md`、`README.zh-CN.md`、`references/rationale.md`（只追加 R36）
+- 不改：其余 8 份参考、DSH、Claude Code、历史 spec
 
 | 文件 | 改动 |
 |---|---|
@@ -149,7 +149,7 @@
 | `scripts/check-docs.sh` | 正文预算 4,700→2,800、整份 5,200→3,500；加 SKILL / 常驻 / 脚本行数上限 |
 | `README.md` / `README.zh-CN.md` | 参考表分「常驻 3 / 场景包」；两段 1–9 步；脚本路径；两份节标记一一对应 |
 | `references/rationale.md` | 新增 R36：默认面分层与场景包（目标锚、审核四进三出、spec-check、宪法） |
-| 现有 17 份参考 | 不删、不移动；步号保留；4 份只改指向旧章节的指针；`rationale.md` 追加 R36；`code-map.md` 仍为停用 |
+| 现有 17 份参考 | 不删、不移动；步号保留；8 份只改指向旧章节的指针；`rationale.md` 追加 R36；`code-map.md` 仍为停用 |
 
 ### 7.2 预算与压缩
 
@@ -225,7 +225,7 @@
 
 ### R2 复审（2026-11-04）
 
-21 闭合 / 7 部分 / 0 未闭合。7 条已补：H4 场景包指针（4 份）、H5 A2 走查、M1 AC 表头、M3 ❌ 处置、M9 DoR 自评、M12 README counterpart、L1 E4 行内代码。
+21 闭合 / 7 部分 / 0 未闭合。7 条已补；复核后 5 闭合 / 2 未闭合（H4、H5）。H4 再补 8 份场景包指针；H5 把 `gate-details.md` 改成按需读，普通 9 步不读第 4 份。
 
 ## 11. 回放记录（2026-11-04）
 
