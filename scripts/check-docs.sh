@@ -74,7 +74,8 @@ try:
 
     skill_lines = len(text.splitlines())
     report(skill_lines <= 60, f"SKILL.md 行数 {skill_lines} / 上限 60")
-    caps = [("references/one-page.md", 55), ("references/gates.md", 55), ("references/project-integration.md", 27)]
+    # project-integration 37 = 27 + 10 行回填评论骨架（R37）；三份合计仍受 180 行总预算约束
+    caps = [("references/one-page.md", 55), ("references/gates.md", 55), ("references/project-integration.md", 37)]
     total_lines = 0
     for rel, cap in caps:
         lines_n = len(open(rel, encoding="utf-8", newline="").read().splitlines())
