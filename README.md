@@ -146,6 +146,23 @@ To adopt it, say **"apply spec-flow to this project"**. It writes a pointer in `
 
 Already adopted ADR rules apply during discovery, before old-issue or design-exempt implementation, on explicit long-term decisions, and when checking this task's outcome. The current approved spec must be read before implementation; only historical specs are optional tracing material. These are existing action points, not new steps or three fixed ADR gates.
 
+<!-- s:route -->
+## The route in full
+
+The two segments are not one straight line; there is a stop between them:
+
+```
+Segment 1 · design (steps 1–6, no code is written)
+1 need → 2 confirm → 3 skeleton → 4 split / contrast / implementation-ready → 5 revise / merge → 6 open the execution issue
+                              ↓
+                              ⏸ stop: step 6 opens the issue and ends — wait for the handoff
+                              ↓
+Segment 2 · implementation (steps 7–9, only after your explicit go-ahead)
+7 claim (worktree `issue-<N>`) → 8 implement (`spec-check --base` each round) → 9 gate / merge / backfill
+```
+
+Entering from the middle ("do #N") starts at step 7 and does not retrofit steps 1–6. Stopping after step 6, instead of writing code, is part of the route rather than an omission.
+
 <!-- s:evidence -->
 ## This repo is its own case study
 

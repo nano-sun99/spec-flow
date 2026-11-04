@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+"""spec-check 的固定坏样本：11 条反例，逐条断言 exit code 与对应检查行。
+
+用法：python3 tests/test_spec_check.py
+零依赖：只用标准库 unittest；不引 pytest，不依赖 CI。
+末两条是变异测试：把解析分支故意改坏，断言同一份 fixture 变红——证明这些样本真守着代码。
+"""
+
+from __future__ import annotations
+
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+SCRIPT = ROOT / "scripts" / "spec-check.py"
+FIX = Path(__file__).resolve().parent / "spec-check"
+
+
+def run(spec: Path | str, *args: str, cwd: Path = ROOT, script: Path = SCRIPT) -> tuple[int, str]:
+    proc = subprocess.run([sys.executable, str(script), str(spec), *args],
+                          capture_output=True, text=True, cwd=cwd)
+    return proc.returncode, proc.stdout + proc.stderr
+
+
+def line(out: str, cid: str) -> str:
+    for row in out.splitlines():
+        if row.startswith(cid + " | "):
+            return row
+    raise AssertionError(f"输出里没有 {cid} 这行：\n{out}")
+
+
+class Fixtures(unittest.TestCase):
+    """每条 fixture 只坏一处，断言就咬得住：exit code + 那一行的红/绿 + 证据片段。"""
+
+    CASES = (
+        # 用例, fixture, 额外参数, 期望 exit, (检查项, 期望, 证据片段)
+        ("缺三行锚", "missing-anchors.md", (), 1, ("E1", "红", "缺：目标、不做、验收")),
+        ("空验证", "empty-verify.md", (), 1, ("E2", "红", "AC 行没有验证方法")),
+        ("占位符", "placeholder.md", (), 1, ("E3", "红", "TBD")),
+        ("❌ 未处置", "cross-no-disposition.md", (), 1, ("E4", "红", "AC1 上传成功")),
+        ("怎么验 表头", "clean.md", (), 0, ("E2", "绿", "AC 1 条")),
+        ("不改：无", "no-change-none.md", (), 0, ("W2", "绿", "不改：无")),
+        ("~~~ 围栏", "tilde-fence.md", (), 0, ("E3", "绿", "无占位符")),
+        ("行内代码里的 ❌", "inline-cross.md", (), 0, ("E2", "绿", "AC 1 条")),
+        ("patch", "clean.md", ("--diff", str(FIX / "patch-inside.patch")), 0,
+         ("E5", "绿", "diff 全在「改」清单内")),
+        ("无效 base", "clean.md", ("--base", "no-such-ref"), 1, ("E5", "红", "无效")),
+    )
+
+    def test_cases(self):
+        for name, fixture, args, want_exit, (cid, want, text) in self.CASES:
+            with self.subTest(name):
+                code, out = run(FIX / fixture, *args)
+                self.assertEqual(code, want_exit, f"{name}：\n{out}")
+                row = line(out, cid)
+                self.assertTrue(row.startswith(f"{cid} | {want} "), f"{name}：{row}")
+                self.assertIn(text, row, f"{name}：{row}")
+
+
+class Untracked(unittest.TestCase):
+    """第 11 条：E5 只放过 untracked 一侧的噪声目录，真改动照样红。"""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / "spec.md").write_text((FIX / "untracked.md").read_text(encoding="utf-8"), encoding="utf-8")
+        (self.repo / "a.py").write_text("x = 1\n", encoding="utf-8")
+        (self.repo / "other.py").write_text("y = 1\n", encoding="utf-8")
+        self.git("init", "-q", "-b", "main")
+        self.git("add", ".")
+        self.git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def git(self, *args: str) -> None:
+        subprocess.run(["git", *args], cwd=self.repo, check=True, capture_output=True, text=True)
+
+    def check(self, script: Path = SCRIPT) -> tuple[int, str]:
+        return run(self.repo / "spec.md", "--base", "HEAD", cwd=self.repo, script=script)
+
+    def test_noise_dir_ignored(self):
+        (self.repo / ".idea").mkdir()
+        (self.repo / ".idea" / "workspace.xml").write_text("<x/>", encoding="utf-8")
+        code, out = self.check()
+        self.assertEqual(code, 0, out)
+        self.assertIn("E5 | 绿", out)
+
+    def test_new_file_still_red(self):
+        (self.repo / "src").mkdir()
+        (self.repo / "src" / "new.py").write_text("z = 1\n", encoding="utf-8")
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertIn("越界：src", out)   # 未跟踪目录会被 git 折叠成 src/，红就够了
+
+    def test_tracked_change_still_red(self):
+        (self.repo / "other.py").write_text("y = 2\n", encoding="utf-8")
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertIn("越界：other.py", out)
+
+
+class Mutations(unittest.TestCase):
+    """解析分支被改坏，对应的 fixture 必须变红；否则这些用例只是摆设。"""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def mutate(self, old: str, new: str) -> Path:
+        src = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn(old, src, "变异点挪了——脚本改过，测试要跟着改")
+        path = self.dir / "spec-check-mutated.py"
+        path.write_text(src.replace(old, new, 1), encoding="utf-8")
+        return path
+
+    def test_noise_filter_mutation_goes_red(self):
+        script = self.mutate("if not is_noise(path):", "if True:")
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            (repo / "spec.md").write_text((FIX / "untracked.md").read_text(encoding="utf-8"), encoding="utf-8")
+            for args in (("init", "-q", "-b", "main"),
+                         ("-c", "user.name=t", "-c", "user.email=t@t", "add", "-A"),
+                         ("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init")):
+                subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
+            # 提交之后再放噪声目录：它必须是 untracked，否则守的不是这条分支
+            (repo / ".idea").mkdir()
+            (repo / ".idea" / "workspace.xml").write_text("<x/>", encoding="utf-8")
+            code, out = run(repo / "spec.md", "--base", "HEAD", cwd=repo, script=script)
+            self.assertEqual(code, 1, out)
+            self.assertIn("越界：.idea/", out)
+
+    def test_inline_strip_mutation_goes_red(self):
+        script = self.mutate("result = strip_inline(cells[result_idx]) if result_idx is not None",
+                             "result = cells[result_idx] if result_idx is not None")
+        code, out = run(FIX / "inline-cross.md", script=script)
+        self.assertEqual(code, 1, out)
+        self.assertIn("E2 | 红", out)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
