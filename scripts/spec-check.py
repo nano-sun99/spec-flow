@@ -24,6 +24,9 @@ SCOPE_RE = re.compile(r"^\s*[-*]?\s*(?:\*\*)?(改|不改)(?:\*\*)?\s*[：:]\s*(.
 ANCHOR_RE = re.compile(r"^\s*[-*]?\s*(?:\*\*)?(目标|不做|验收)(?:\*\*)?\s*[：:]\s*(.*)$")
 AC_BULLET_RE = re.compile(r"^\s*[-*]\s*(AC[-_]?\d+|A\d+)\b(.*)$", re.IGNORECASE)
 HEADER_KEYS = {"#", "ID", "编号", "序号", "AC", "R"}
+VERIFY_WORDS = ("验证", "证据", "怎么验", "如何验", "验法")
+RESULT_WORDS = ("结果", "结论")
+DISP_WORDS = ("处置", "处理")
 
 
 def strip_fences(lines: list[str]) -> list[str]:
@@ -68,7 +71,8 @@ def split_paths(value: str) -> list[str]:
     parts = re.split(r"[,，、]", value)
     out = []
     for p in parts:
-        p = p.strip().strip("`").lstrip("./").rstrip("。. ")
+        p = re.sub(r"[（(][^）)]*[）)]\s*$", "", p).strip()
+        p = p.strip("`").lstrip("./").rstrip("。. ")
         if p and p not in ("无", "—", "-"):
             out.append(p)
     return out
@@ -159,11 +163,11 @@ def parse_ac(lines: list[str]) -> tuple[int, list[str]]:
             continue
         if header is None:
             head = cells[0].upper() if cells else ""
-            if (head in HEADER_KEYS or "需求" in head or "编号" in head) and any("验收" in c for c in cells) and any("验证" in c or "证据" in c for c in cells):
+            if (head in HEADER_KEYS or "需求" in head or "编号" in head) and any("验收" in c for c in cells) and any(w in c for w in VERIFY_WORDS for c in cells):
                 header = cells
-                verify_idx = next((i for i, c in enumerate(cells) if "验证" in c or "证据" in c), None)
-                result_idx = next((i for i, c in enumerate(cells) if "结果" in c), None)
-                disp_idx = next((i for i, c in enumerate(cells) if "处置" in c or "处理" in c), None)
+                verify_idx = next((i for i, c in enumerate(cells) if any(w in c for w in VERIFY_WORDS)), None)
+                result_idx = next((i for i, c in enumerate(cells) if any(w in c for w in RESULT_WORDS)), None)
+                disp_idx = next((i for i, c in enumerate(cells) if any(w in c for w in DISP_WORDS)), None)
             continue
         if verify_idx is None or len(cells) <= verify_idx:
             continue
@@ -173,7 +177,7 @@ def parse_ac(lines: list[str]) -> tuple[int, list[str]]:
             problems.append(f"{idx}: AC 行没有验证方法")
         result = cells[result_idx] if result_idx is not None and len(cells) > result_idx else ""
         disp = cells[disp_idx] if disp_idx is not None and len(cells) > disp_idx else ""
-        if "❌" in result and not (disp.strip() or re.search(r"处置\s*[：:]|豁免\s*[：:]|已处置|不修", " ".join(cells))):
+        if "❌" in result and not (disp.strip() or re.search(r"处置\s*[：:]|豁免\s*[：:]", " ".join(cells))):
             problems.append(f"{idx}: ❌ 未写处置")
     return count, problems
 
@@ -259,7 +263,7 @@ def main() -> int:
     add("E3", not holes, "无占位符" if not holes else "发现：" + "、".join(holes))
 
     bad_bullets = [f"{i}: {l.strip()[:60]}" for i, l in enumerate(lines, 1)
-                   if AC_BULLET_RE.match(l) and "❌" in l and not re.search(r"处置\s*[：:]|豁免\s*[：:]|已处置|不修", strip_inline(l))]
+                   if AC_BULLET_RE.match(l) and "❌" in strip_inline(l) and not re.search(r"处置\s*[：:]|豁免\s*[：:]", strip_inline(l))]
     add("E4", not bad_bullets, "无未处置 ❌" if not bad_bullets else "；".join(bad_bullets[:4]))
 
     fuzzy = sorted({w for w in FUZZY if w in body})

@@ -127,14 +127,16 @@
 
 样例回答不了「输入输出 / 失败怎么办 / 重跑会怎样」就不算合格；上面 3 组都给了命令与输出。
 
+**默认面走查（普通单端，无页面、不拆分，2026-11-04）**：按 9 步只读 `one-page.md`（开工）→ `gates.md`（DoR / 审核 / 完成）→ `project-integration.md`（PR / issue / worktree）→ `scripts/spec-check.py`；未读 `spec-maturity.md` / `gate-details.md` / `done-criteria.md` / `split-large-spec.md`。记录人：agent。
+
 ## 7. 实施版
 
 ### 7.1 改动面
 
 **范围**：
 
-- 改：`SKILL.md`、`references/one-page.md`、`references/gates.md`、`references/project-integration.md`、`scripts/spec-check.py`、`scripts/replay-legacy-spec.py`、`scripts/check-docs.sh`、`README.md`、`README.zh-CN.md`、`references/rationale.md`（只追加 R36）
-- 不改：其余 16 份参考、DSH、Claude Code、历史 spec
+- 改：`SKILL.md`、`references/one-page.md`、`references/gates.md`、`references/project-integration.md`、`references/one-path.md`、`references/phase-handoff.md`、`references/done-criteria.md`、`references/gate-details.md`（后 4 份只改指向旧章节的指针）、`scripts/spec-check.py`、`scripts/replay-legacy-spec.py`、`scripts/check-docs.sh`、`README.md`、`README.zh-CN.md`、`references/rationale.md`（只追加 R36）
+- 不改：其余 12 份参考、DSH、Claude Code、历史 spec
 
 | 文件 | 改动 |
 |---|---|
@@ -147,7 +149,7 @@
 | `scripts/check-docs.sh` | 正文预算 4,700→2,800、整份 5,200→3,500；加 SKILL / 常驻 / 脚本行数上限 |
 | `README.md` / `README.zh-CN.md` | 参考表分「常驻 3 / 场景包」；两段 1–9 步；脚本路径；两份节标记一一对应 |
 | `references/rationale.md` | 新增 R36：默认面分层与场景包（目标锚、审核四进三出、spec-check、宪法） |
-| 现有 17 份参考 | 不删、不移动；步号保留；仅 `rationale.md` 追加 R36；`code-map.md` 仍为停用 |
+| 现有 17 份参考 | 不删、不移动；步号保留；4 份只改指向旧章节的指针；`rationale.md` 追加 R36；`code-map.md` 仍为停用 |
 
 ### 7.2 预算与压缩
 
@@ -168,7 +170,7 @@
 | 1 | 承重规则只有一个结论，没有 `TBD` | 过：3 份常驻各司其职；审核 / 完成只在 `gates.md` 一处判定，项目页只放指针 |
 | 2 | 每个流程节点有界面 / 样例，或明确「无界面」 | 过：无页面；§5 九步主路表 + §6 决策表与 3 组真实运行 |
 | 3 | 每条写路径单一入口；每个状态有字段、有读侧 | 过：入口 = 3 份常驻；状态字段 = 改 / 不改 / AC 结果；读侧 = `spec-check` + 审核 |
-| 4 | 每条验收可执行（命令 / 截图 / 断言） | 过：§8 的 A1–A7 都有命令或证据；A2 / A4 的结果另记 |
+| 4 | 每条验收可执行（命令 / 截图 / 断言） | 过：§8 的 A1–A7 都有命令或证据；A2 见 §6 走查，A4 见 §10 |
 | 5 | 数据迁移、回填、回滚、兼容都写了 | 不适用：无数据迁移；兼容 = 17 份参考不动、旧步号保留、旧 spec 不重写 |
 | 6 | 外部合同影响与版本写了；无则「不适用」 | 不适用：无外部合同 |
 | 7 | 项目已采用 ADR 的，supersede 链清楚；未采用写「不适用」 | 不适用：本仓未采用 ADR；决策记录在 R36 |
@@ -190,7 +192,7 @@
 | ID | 验收 | 验证 | 结果 |
 |---|---|---|---|
 | A1 | `SKILL.md` ≤ 60 行且正文 ≤ 2,800 字符；3 份常驻 ≤ 180 行；`spec-check` ≤ 350 行；回放 ≤ 120 行 | `wc -l` + `scripts/check-docs.sh` | 过：60 行 / 2,410 字符；137 行；305 + 95 行 |
-| A2 | 普通单端 spec 默认只读 3 份常驻，不读第 4 份 | 记录读过的文件清单 | 待验 |
+| A2 | 普通单端 spec 默认只读 3 份常驻，不读第 4 份 | 记录读过的文件清单 | 过：见 §6 默认面走查 |
 | A3 | 3 份历史 spec 至少 1 个真实越界 / 空 AC 被抓；干净 spec 不报 error | `scripts/replay-legacy-spec.py` + exit code | 过：复现 2 / 9 / 6；见 §11 |
 | A4 | 一轮审核只出 3 列 + 建议池；范围外建议不派修订；最多 2 轮 | 审核记录 | 过：本轮重审 1 阻断 / 11 高 / 12 中 / 4 低，已全改 |
 | A5 | 触发表 20 行齐全；随机抽 3 份能按触发找到 | `grep` + 人工抽查 | 过：3 常驻 + 15 场景包 + 1 归档 + 1 按需 |
@@ -220,6 +222,10 @@
 | 高 | 11 | 审核/完成补阻断/安全/测试；补两张清单；默认面 3 份；交接停点；E5 修误报/漏报/静默；脚本路径；回放脚本入仓 |
 | 中 | 12 | AC 解析、CLI、项目页、审核留痕、豁免、DoR、§6 证据、防增长检查、README 深水区 |
 | 低 | 4 | W2/E3/E4、A5 措辞、R36 commit、one-page 边界 |
+
+### R2 复审（2026-11-04）
+
+21 闭合 / 7 部分 / 0 未闭合。7 条已补：H4 场景包指针（4 份）、H5 A2 走查、M1 AC 表头、M3 ❌ 处置、M9 DoR 自评、M12 README counterpart、L1 E4 行内代码。
 
 ## 11. 回放记录（2026-11-04）
 

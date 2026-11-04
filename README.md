@@ -57,7 +57,7 @@ Not from theory. Each rule is the residue of a specific failure, recorded with i
 
 **Two phases, one shared gate.** Each step owns one of the seams above.
 
-- **Phase 1 · design (steps 1–6)** — describe the need → agree on it and a plan page (page / mechanism / exceptions / editing an old spec) → skeleton: start, end, step table → assess split, add the counterpart and implementation-ready spec in the same PR, pass the seven-point DoR → review gate: four inputs, three columns, at most two rounds; blocking / high never merge → confirm merge → merge → execution issue with a `SPEC_READY` handoff; stop. No code yet.
+- **Phase 1 · design (steps 1–6)** — describe the need → agree on it and a plan page (page / mechanism / exceptions / editing an old spec) → skeleton: start, end, step table → assess split; add the counterpart only when a page or a non-trivial contract needs it; implementation-ready spec in the same PR, pass the seven-point DoR → review gate: four inputs, three columns, at most two rounds; blocking / high never merge → confirm merge → merge → execution issue with a `SPEC_READY` handoff; stop. No code yet.
 - **Phase 2 · implementation (steps 7–9)** — after you explicitly delegate, claim the issue → worktree → implement → gate → confirm merge → backfill the issue and release the lock.
 
 | The step | The seam it owns |
