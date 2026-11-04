@@ -3,3 +3,6 @@
 .backup/
 __pycache__/
 *.pyc
+.idea/
+.vscode/
+.worktrees/
