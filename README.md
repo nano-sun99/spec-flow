@@ -9,7 +9,7 @@
 
 The workflow has no runtime or service. It is markdown the agent reads, plus a paper trail: a spec before code, an issue before work, and a permanent link between them. Code mapping is disabled by default; ordinary tasks use source searches, the actual diff and relevant tests to check impact.
 
-This revision limits the body to **4,700 characters**, frontmatter to **500**, and the whole skill to **5,200**, including newlines. [`scripts/check-docs.sh`](scripts/check-docs.sh) checks all three and rejects extra metadata fields or multiline descriptions. These are character budgets, not a cross-client token or compaction guarantee. Action-specific details are mandatory when needed; after compaction hides them, the agent reads them again.
+This revision limits the body to **2,800 characters**, frontmatter to **500**, and the whole skill to **3,500**, including newlines. [`scripts/check-docs.sh`](scripts/check-docs.sh) checks all three and rejects extra metadata fields or multiline descriptions. These are character budgets, not a cross-client token or compaction guarantee. Action-specific details are mandatory when needed; after compaction hides them, the agent reads them again.
 
 Every rule has a recorded origin. The dossier is [`references/rationale.md`](references/rationale.md): 36 entries with dates, measurements, decisions, costs and verification limits.
 
@@ -57,8 +57,8 @@ Not from theory. Each rule is the residue of a specific failure, recorded with i
 
 **Two phases, one shared gate.** Each step owns one of the seams above.
 
-- **Phase 1 · design** — describe the need → confirm it and write one page (goal / not doing / acceptance, scope, AC) → `spec-check` must pass → decide page vs no page, split vs keep → spec PR → gate: four inputs, three columns, at most two rounds → confirm merge → merge → execution issue with a `SPEC_READY` handoff. No code yet.
-- **Phase 2 · implementation** — after you explicitly delegate, claim the issue → worktree → implement → gate → confirm merge → backfill the issue and release the lock.
+- **Phase 1 · design (steps 1–6)** — describe the need → agree on it and a plan page (page / mechanism / exceptions / editing an old spec) → skeleton: start, end, step table → assess split, add the counterpart and implementation-ready spec in the same PR, pass the seven-point DoR → review gate: four inputs, three columns, at most two rounds; blocking / high never merge → confirm merge → merge → execution issue with a `SPEC_READY` handoff; stop. No code yet.
+- **Phase 2 · implementation (steps 7–9)** — after you explicitly delegate, claim the issue → worktree → implement → gate → confirm merge → backfill the issue and release the lock.
 
 | The step | The seam it owns |
 |---|---|
@@ -127,12 +127,14 @@ git clone https://github.com/Strelizialeomon/spec-flow.git ~/code/spec-flow
 ln -s ~/code/spec-flow ~/.claude/skills/spec-flow
 ```
 
+The check script lives inside the skill: `~/.claude/skills/spec-flow/scripts/spec-check.py`; run it with `python3` from the repo you are checking.
+
 Requirements: an agent that discovers skills, runs shell commands (`git worktree`), and opens PRs (`gh`). The rules are markdown; discovery, permissions and compaction behaviour still require real client tests. A passing document check does not prove that a client loaded or followed them.
 
 <!-- s:usage -->
 ## Using it
 
-Trigger it by describing work that deserves designing — "this touches the API, the DB and the frontend" — or invoke it by name. The agent confirms the need and writes a one-page start: three lines, scope, acceptance; `spec-check` must pass before anything else. It then decides whether the work has an interactive page: if it does, a draft PR holds the page while a design mock-up is produced; if not, three real examples or one decision table stand in. The spec lives in `docs/specs/<date>-<name>.md`; only the implementation-ready version passes the gate and merges. Deep-water rules — the three spec stages, splitting, handoff, observation-style done — are scenario packs read only when triggered.
+Trigger it by describing work that deserves designing — "this touches the API, the DB and the frontend" — or invoke it by name. The agent confirms the need and writes a one-page start: three lines, scope, acceptance; `spec-check` must pass before anything else. It then decides whether the work has an interactive page: if it does, a draft PR holds the page while a design mock-up is produced; if not, three real examples or one decision table stand in. The spec lives in `docs/specs/<date>-<name>.md`; only the implementation-ready version passes the gate and merges. The route keeps the old step numbers: 1–6 design, 7–9 implementation. Deep-water rules — the three spec stages, splitting, handoff, observation-style done — are scenario packs read only when triggered.
 
 Splitting produces smaller execution specs, each with its own execution issue, plus an overview and one tracking-only parent issue. A stable group ID and child number connect filenames, specs and issue titles; parent-child links show membership, while blocking links show real dependencies. Maximize parallel work where practical, without requiring it: explicit sequential dependencies and coordinated releases are allowed. Choosing not to split preserves one spec and one execution issue, rather than silently creating a set of phase-only issues.
 
@@ -180,6 +182,8 @@ The rules are cited by `R` number, like `（依据：rationale R12）`, and ever
 | `references/apply-to-project.md` | Applying and explicitly upgrading; pointer templates, asset boundaries and explicit map-restoration requests |
 | `references/adoption-model.md` | Historical explanation of the adoption model; no additional workflow obligations |
 | `docs/maintainer-notes.md` | Repo-local notes: how this checkout is wired, why the first commits are reconstructed |
+| `scripts/spec-check.py` | One-page / scope / AC / placeholder / diff checker: E1–E5, W1–W2; error exits 1 |
+| `scripts/replay-legacy-spec.py` | Maps an old-format spec to the one-page + AC table and replays it through `spec-check` |
 | `scripts/check-docs.sh` | Body / frontmatter / whole-skill budgets, reference paths, relative links, release adoption and release-loop sections, README sync, region-bound adoption contract |
 
 The workflow itself is `SKILL.md`; where this README and that file disagree, `SKILL.md` wins. Which reference to read when is listed at the bottom of `SKILL.md`.
