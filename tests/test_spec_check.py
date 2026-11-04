@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""spec-check 的固定坏样本：11 条反例，逐条断言 exit code 与对应检查行。
+"""spec-check 的固定坏样本：10 份 fixture / 11 条用例，逐条断言 exit code 与对应检查行。
 
 用法：python3 tests/test_spec_check.py
 零依赖：只用标准库 unittest；不引 pytest，不依赖 CI。
-末两条是变异测试：把解析分支故意改坏，断言同一份 fixture 变红——证明这些样本真守着代码。
+Mutations 一组把解析分支故意改坏，断言对应用例的结果翻转——证明这些样本真守着代码。
 """
 
 from __future__ import annotations
 
+import importlib.util
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -17,6 +19,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts" / "spec-check.py"
 FIX = Path(__file__).resolve().parent / "spec-check"
+NOISE = (".idea", ".vscode", "__pycache__", "node_modules", ".worktrees")
+
+
+def load():
+    """把被测脚本当模块加载，用来核用例清单与脚本常量没漂。"""
+    spec = importlib.util.spec_from_file_location("spec_check_under_test", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def run(spec: Path | str, *args: str, cwd: Path = ROOT, script: Path = SCRIPT) -> tuple[int, str]:
@@ -82,12 +94,17 @@ class Untracked(unittest.TestCase):
     def check(self, script: Path = SCRIPT) -> tuple[int, str]:
         return run(self.repo / "spec.md", "--base", "HEAD", cwd=self.repo, script=script)
 
-    def test_noise_dir_ignored(self):
-        (self.repo / ".idea").mkdir()
-        (self.repo / ".idea" / "workspace.xml").write_text("<x/>", encoding="utf-8")
-        code, out = self.check()
-        self.assertEqual(code, 0, out)
-        self.assertIn("E5 | 绿", out)
+    def test_noise_dirs_all_ignored(self):
+        """5 个噪声目录各一条用例；清单与脚本的 NOISE_DIRS 必须一致，漂了当场红。"""
+        self.assertEqual(tuple(load().NOISE_DIRS), NOISE)
+        for name in NOISE:
+            with self.subTest(dir=name):
+                (self.repo / name).mkdir()
+                (self.repo / name / "x.txt").write_text("x", encoding="utf-8")
+                code, out = self.check()
+                self.assertEqual(code, 0, out)
+                self.assertIn("E5 | 绿", out)
+                shutil.rmtree(self.repo / name)
 
     def test_new_file_still_red(self):
         (self.repo / "src").mkdir()
@@ -104,7 +121,21 @@ class Untracked(unittest.TestCase):
 
 
 class Mutations(unittest.TestCase):
-    """解析分支被改坏，对应的 fixture 必须变红；否则这些用例只是摆设。"""
+    """解析分支被改坏，对应 fixture 的结果必须翻转；否则这些用例只是摆设。"""
+
+    CASES = (
+        # 名字, 改前, 改后, fixture, 变异后期望 exit, (检查项, 期望结果)
+        ("行内剥离", "result = strip_inline(cells[result_idx]) if result_idx is not None",
+         "result = cells[result_idx] if result_idx is not None", "inline-cross.md", 1, ("E2", "红")),
+        ("三行锚", 'ANCHORS = ("目标", "不做", "验收")',
+         'ANCHORS = ("目标", "不做", "验收", "锚四")', "clean.md", 1, ("E1", "红")),
+        ("~~~ 围栏", 'if fence is None and (s.startswith("```") or s.startswith("~~~")):',
+         'if fence is None and s.startswith("```"):', "tilde-fence.md", 1, ("E3", "红")),
+        ("占位符", 'PLACEHOLDERS = ("{{", "TBD", "待补")', 'PLACEHOLDERS = ("{{", "待补")',
+         "placeholder.md", 0, ("E3", "绿")),
+        ("怎么验 表头", 'VERIFY_WORDS = ("验证", "证据", "怎么验", "如何验", "验法")',
+         'VERIFY_WORDS = ("验证", "证据", "如何验", "验法")', "clean.md", 1, ("E2", "红")),
+    )
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -119,6 +150,14 @@ class Mutations(unittest.TestCase):
         path = self.dir / "spec-check-mutated.py"
         path.write_text(src.replace(old, new, 1), encoding="utf-8")
         return path
+
+    def test_branches(self):
+        for name, old, new, fixture, want_exit, (cid, want) in self.CASES:
+            with self.subTest(name):
+                script = self.mutate(old, new)
+                code, out = run(FIX / fixture, script=script)
+                self.assertEqual(code, want_exit, f"{name}：\n{out}")
+                self.assertTrue(line(out, cid).startswith(f"{cid} | {want} "), f"{name}：{out}")
 
     def test_noise_filter_mutation_goes_red(self):
         script = self.mutate("if not is_noise(path):", "if True:")
@@ -135,13 +174,6 @@ class Mutations(unittest.TestCase):
             code, out = run(repo / "spec.md", "--base", "HEAD", cwd=repo, script=script)
             self.assertEqual(code, 1, out)
             self.assertIn("越界：.idea/", out)
-
-    def test_inline_strip_mutation_goes_red(self):
-        script = self.mutate("result = strip_inline(cells[result_idx]) if result_idx is not None",
-                             "result = cells[result_idx] if result_idx is not None")
-        code, out = run(FIX / "inline-cross.md", script=script)
-        self.assertEqual(code, 1, out)
-        self.assertIn("E2 | 红", out)
 
 
 if __name__ == "__main__":
