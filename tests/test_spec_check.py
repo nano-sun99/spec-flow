@@ -27,7 +27,12 @@ def load():
     spec = importlib.util.spec_from_file_location("spec_check_under_test", SCRIPT)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    # 别为被测脚本写 .pyc：跑一次测试就在仓里留一坨字节码，还会被 git 当成改动
+    cached, sys.dont_write_bytecode = sys.dont_write_bytecode, True
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        sys.dont_write_bytecode = cached
     return module
 
 
