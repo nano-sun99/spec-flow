@@ -32,6 +32,9 @@
 
 **得到什么（数字）**：默认面 2,945 → ~330 行；审核输入 17 份 → 3 份 + diff；范围检查从人盯变脚本非零退出；仓库总行数不降（约 +210 行，这是取舍）。
 
+- **改**：`SKILL.md`、`references/one-page.md`、`references/gates.md`、`references/project-integration.md`、`scripts/spec-check.py`、`README.md`、`README.zh-CN.md`
+- **不改**：现有 17 份参考、DSH、Claude Code、历史 spec
+
 **对应你的四条**：#1 一个 owner；#2 默认 330 行；#3 diff 越界红；#4 三行锚 + ❌ 闸。
 
 **你要拍的一件事**：这张表过不过。回「过」我就写 3 份 + 脚本；回「第 X 行改成 Y」我先改 spec。
@@ -156,13 +159,15 @@
 
 ## 6. 验收
 
-- **A1 体量**：`SKILL.md` ≤ 40 行且正文 ≤ 4,700 字符；3 份常驻合计 ≤ 150 行；脚本 ≤ 200 行。
-- **A2 默认面**：走一份普通单端 spec，实际只读 3 份常驻，不读第 4 份；记录读过的文件清单。
-- **A3 回放**：3 份历史 spec 至少 1 个真实越界 / 空 AC 被抓；干净 spec 不误报；exit code 与 5.4 一致。
-- **A4 审核**：一轮审核只出 3 列 + 建议池；范围外建议不派修订；最多 2 轮；有记录。
-- **A5 触发表**：17 行齐全、每份一行触发；随机抽 3 份，按触发能找到。
-- **A6 仓规**：双语 README 同步；`scripts/check-docs.sh` 绿。
-- **A7 边界**：diff 核不装插件、不改 DSH / Claude Code。
+| ID | 验收 | 验证 |
+|---|---|---|
+| A1 | `SKILL.md` ≤ 40 行且正文 ≤ 4,700 字符；3 份常驻合计 ≤ 150 行；脚本 ≤ 200 行 | `wc -l` + `check-docs.sh` |
+| A2 | 普通单端 spec 默认只读 3 份常驻，不读第 4 份 | 记录读过的文件清单 |
+| A3 | 3 份历史 spec 至少 1 个真实越界 / 空 AC 被抓；干净 spec 不误报 | `spec-check` 输出 + exit code |
+| A4 | 一轮审核只出 3 列 + 建议池；范围外建议不派修订；最多 2 轮 | 审核记录 |
+| A5 | 17 行触发齐全；随机抽 3 份能按触发找到 | `grep` + 人工抽查 |
+| A6 | 双语 README 同步；`check-docs.sh` 绿 | `scripts/check-docs.sh` |
+| A7 | 不装插件、不改 DSH / Claude Code | `git diff` 核 |
 
 ## 7. 风险
 
