@@ -57,8 +57,15 @@ None of these are model failures, and none are fixed by trying harder inside a s
 
 **Two phases, one shared gate.** Each step owns one of the seams above.
 
-- **Phase 1 · design (1–6):** need → agree on the plan page → skeleton → assess splitting, add the counterpart and the implementation-ready version → review / revise / merge → open the execution issue. **Stop. No code yet.**
-- **Phase 2 · implementation (7–9):** after you explicitly delegate — claim the issue → worktree → implement → gate → merge → backfill and release the lock.
+```
+Phase 1 · design (steps 1–6, no code is written)
+1 need → 2 confirm → 3 skeleton → 4 split / contrast / implementation-ready → 5 revise / merge → 6 open the execution issue
+                              ↓
+                              ⏸ stop: step 6 opens the issue and ends — wait for the handoff
+                              ↓
+Phase 2 · implementation (steps 7–9, only after your explicit go-ahead)
+7 claim (worktree `issue-<N>`) → 8 implement (`spec-check --base` each round) → 9 gate / merge / backfill
+```
 
 | The step | The seam it owns |
 |---|---|
@@ -135,23 +142,6 @@ Requirements: an agent that discovers skills, runs shell commands (`git worktree
 - **Code mapping is off by default.** Ordinary work does not query the map or repair its configuration; read the [code-map notes](references/code-map.md) only when you explicitly ask for a trial or a restoration.
 
 The currently approved spec must be read before implementation.
-
-<!-- s:route -->
-## The route in full
-
-The two segments are not one straight line; there is a stop between them:
-
-```
-Segment 1 · design (steps 1–6, no code is written)
-1 need → 2 confirm → 3 skeleton → 4 split / contrast / implementation-ready → 5 revise / merge → 6 open the execution issue
-                              ↓
-                              ⏸ stop: step 6 opens the issue and ends — wait for the handoff
-                              ↓
-Segment 2 · implementation (steps 7–9, only after your explicit go-ahead)
-7 claim (worktree `issue-<N>`) → 8 implement (`spec-check --base` each round) → 9 gate / merge / backfill
-```
-
-Entering from the middle ("do #N") starts at step 7 and does not retrofit steps 1–6. Stopping after step 6, instead of writing code, is part of the route rather than an omission.
 
 <!-- s:evidence -->
 ## This repo is its own case study
