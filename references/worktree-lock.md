@@ -1,9 +1,10 @@
-# 认领 issue 与锁（认领、撞锁、放锁时读）
+# 工作区、认领与锁（文件变更、认领、撞锁、放锁时读）
 
-> 本文件是认领、撞锁和放锁时必须读取的执行细则；不可见或版本变了时动作前重读。锁判据不变（依据：rationale R25）。
+> 本文件是文件变更、认领、撞锁和放锁时必须读取的执行细则；不可见或版本变了时动作前重读。锁判据不变（依据：rationale R25）。
 
 锁由 git 保管，不靠登记、不靠吱声。
 
+- **改文件先开 worktree**：凡文件变更先 `git fetch`，从 `origin/main`（或 `origin/master`）开 worktree，别改主仓。
 - **命名 = 锁**：分支和 worktree 目录同名 `issue-<N>`，纯号、无 slug、无前缀。同一 `.git` 里分支名唯一、已被检出的分支不许再检出——git 强制（依据：rationale R6）。认领就是开 worktree：开得成 = 没人做；被拒 = 有人在做。
 - **认领**：`git fetch origin --prune` 后 `git worktree add <wt根>/issue-<N> -b issue-<N> origin/main`（wt 根项目自定，如 `.claude/worktrees/`；从 origin/main 建，本地 main 可能落后）。想早知道可先 `git worktree list | grep issue-<N>`——可选，锁不靠它。⚠️ 别拿 issue `open` 当「没人认领」：open 同时表示待做和在做（依据：rationale R7）——只信锁。
 - **先授权后认领**：有 `spec-flow 交接` 区的执行 issue，先在 issue 写授权记录（对象、方式、原话、时间、范围、Spec commit 核对、基线核对），再开 worktree；既有 issue 无交接区按 `references/phase-handoff.md` §四记 5 字段，Spec commit 写「不适用」。没有授权记录就开 = 跳过交接协议（依据：rationale R29）。
