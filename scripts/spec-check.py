@@ -27,6 +27,8 @@ HEADER_KEYS = {"#", "ID", "编号", "序号", "AC", "R"}
 VERIFY_WORDS = ("验证", "证据", "怎么验", "如何验", "验法")
 RESULT_WORDS = ("结果", "结论")
 DISP_WORDS = ("处置", "处理")
+# 未跟踪的编辑器 / 依赖 / worktree 目录：不是本仓改动，不能冒充 E5 越界
+NOISE_DIRS = (".idea", ".vscode", "__pycache__", "node_modules", ".worktrees")
 
 
 def strip_fences(lines: list[str]) -> list[str]:
@@ -175,9 +177,10 @@ def parse_ac(lines: list[str]) -> tuple[int, list[str]]:
         verify = cells[verify_idx].strip()
         if not verify or verify in ("…", "-", "—"):
             problems.append(f"{idx}: AC 行没有验证方法")
-        result = cells[result_idx] if result_idx is not None and len(cells) > result_idx else ""
-        disp = cells[disp_idx] if disp_idx is not None and len(cells) > disp_idx else ""
-        if "❌" in result and not (disp.strip() or re.search(r"处置\s*[：:]|豁免\s*[：:]", " ".join(cells))):
+        # 表格行与 bullet 行同一口径：行内代码里的符号是举例，不算内容
+        result = strip_inline(cells[result_idx]) if result_idx is not None and len(cells) > result_idx else ""
+        disp = strip_inline(cells[disp_idx]) if disp_idx is not None and len(cells) > disp_idx else ""
+        if "❌" in result and not (disp.strip() or re.search(r"处置\s*[：:]|豁免\s*[：:]", strip_inline(" ".join(cells)))):
             problems.append(f"{idx}: ❌ 未写处置")
     return count, problems
 
@@ -187,6 +190,12 @@ def repo_root(spec: Path) -> Path | None:
     if proc.returncode != 0:
         return None
     return Path(proc.stdout.strip())
+
+
+def is_noise(path: str) -> bool:
+    """路径里有噪声目录段（编辑器 / 依赖 / worktree）就不算改动。只用在 untracked 一侧：
+    tracked 的改动一律照报，改名或挪进噪声目录也跑不掉。"""
+    return any(part in NOISE_DIRS for part in path.split("/"))
 
 
 def parse_diff(args: argparse.Namespace, spec: Path) -> tuple[list[str] | None, str | None]:
@@ -215,7 +224,9 @@ def parse_diff(args: argparse.Namespace, spec: Path) -> tuple[list[str] | None, 
     if status.returncode == 0:
         for line in status.stdout.splitlines():
             if len(line) > 3 and line[:2] == "??":
-                files.add(line[3:].strip())
+                path = line[3:].strip()
+                if not is_noise(path):
+                    files.add(path)
     return sorted(files), None
 
 

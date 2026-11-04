@@ -136,6 +136,23 @@ Requirements: an agent that discovers skills, runs shell commands (`git worktree
 
 The currently approved spec must be read before implementation.
 
+<!-- s:route -->
+## The route in full
+
+The two segments are not one straight line; there is a stop between them:
+
+```
+Segment 1 · design (steps 1–6, no code is written)
+1 need → 2 confirm → 3 skeleton → 4 split / contrast / implementation-ready → 5 revise / merge → 6 open the execution issue
+                              ↓
+                              ⏸ stop: step 6 opens the issue and ends — wait for the handoff
+                              ↓
+Segment 2 · implementation (steps 7–9, only after your explicit go-ahead)
+7 claim (worktree `issue-<N>`) → 8 implement (`spec-check --base` each round) → 9 gate / merge / backfill
+```
+
+Entering from the middle ("do #N") starts at step 7 and does not retrofit steps 1–6. Stopping after step 6, instead of writing code, is part of the route rather than an omission.
+
 <!-- s:evidence -->
 ## This repo is its own case study
 
