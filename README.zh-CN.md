@@ -150,7 +150,7 @@ spec-flow 是用 spec-flow 开发的。**101 个已合 PR、33 个 issue、30 �
 
 2026-11-04 这次瘦身也走了一遍两段流程：一轮重审抓出 1 阻断 / 11 高，全改后默认面 2,945 → 137 行，`SKILL.md` 118 → 60 行，新增 `spec-check` 与回放脚本。删掉的是默认要读的量，不是覆盖。
 
-规矩按 `R` 编号被引用，形如 `（依据：rationale R12）`，36 条全在 [`references/rationale.md`](references/rationale.md)：日期、实测、决定、代价、验证边界，外加完整案例——包括 IDC 那条在一处放宽而另外四处连同父文档都没改，以及让「没有 bug」不再等于「我们保证以后永不出错」的完成标准。
+规矩按 `R` 编号被引用，形如 `（依据：rationale R12）`，37 条全在 [`references/rationale.md`](references/rationale.md)：日期、实测、决定、代价、验证边界，外加完整案例——包括 IDC 那条在一处放宽而另外四处连同父文档都没改，以及让「没有 bug」不再等于「我们保证以后永不出错」的完成标准。
 
 <!-- s:docs -->
 ## 文件
@@ -178,7 +178,7 @@ spec-flow 是用 spec-flow 开发的。**101 个已合 PR、33 个 issue、30 �
 | 选修 | `references/issue-type-labels.md` | issue 类型标签 |
 | 选修 | `references/release-discipline.md` | 发布闭环：发布记录、就绪门槛、主干对齐、发布后回填 |
 | 归档 | `references/code-map.md` | 已停用；明确试用 / 恢复才读 |
-| 按需 | `references/rationale.md` | 每条规矩的依据：案例、实测、决定（R1–R36） |
+| 按需 | `references/rationale.md` | 每条规矩的依据：案例、实测、决定（R1–R37） |
 | 脚本 | `scripts/spec-check.py` | 一页 / 范围 / AC / 占位 / 越界：E1–E5、W1–W2 |
 | 脚本 | `scripts/replay-legacy-spec.py` | 把旧格式 spec 映射成一页 + AC 表，回放 `spec-check` |
 | 脚本 | `scripts/check-docs.sh` | 预算、路径、双语同步、采用契约 |

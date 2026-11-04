@@ -150,7 +150,7 @@ spec-flow is developed with spec-flow. **101 merged PRs, 33 issues, 30 specs** �
 
 The 2026-11-04 slimming went through the same two phases: one heavy review round found 1 blocking and 11 high findings, all fixed; the default surface went 2,945 → 137 lines, `SKILL.md` 118 → 60, plus two scripts. What shrank is what you read by default, not what is covered.
 
-Rules are cited by `R` number, like `（依据：rationale R12）`, and all 36 live in [`references/rationale.md`](references/rationale.md): date, measurement, decision, cost and verification limits, plus the full cases — including the IDC criterion widened in one place while four others and the parent document stayed stale, and the completion contract that stops "no bugs" from meaning "we promise nothing will ever break".
+Rules are cited by `R` number, like `（依据：rationale R12）`, and all 37 live in [`references/rationale.md`](references/rationale.md): date, measurement, decision, cost and verification limits, plus the full cases — including the IDC criterion widened in one place while four others and the parent document stayed stale, and the completion contract that stops "no bugs" from meaning "we promise nothing will ever break".
 
 <!-- s:docs -->
 ## Files
@@ -178,7 +178,7 @@ Rules are cited by `R` number, like `（依据：rationale R12）`, and all 36 l
 | Optional | `references/issue-type-labels.md` | Issue type labels |
 | Optional | `references/release-discipline.md` | Release loop: release record, readiness, mainline alignment, post-release backfill |
 | Archived | `references/code-map.md` | Disabled; read only for an explicit trial or restoration |
-| On demand | `references/rationale.md` | Why each rule exists: cases, measurements, decisions (R1–R36) |
+| On demand | `references/rationale.md` | Why each rule exists: cases, measurements, decisions (R1–R37) |
 | Script | `scripts/spec-check.py` | One-page / scope / AC / placeholders / scope creep: E1–E5, W1–W2 |
 | Script | `scripts/replay-legacy-spec.py` | Maps an old-format spec to a start page + AC table and replays `spec-check` |
 | Script | `scripts/check-docs.sh` | Budgets, paths, bilingual sync, adoption contract |
