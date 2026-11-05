@@ -7,3 +7,4 @@
 3. 新增规则时，案例 / 统计 / 来龙去脉写进 `references/rationale.md`、编新 R 号；主文件只留一句理由和「（依据：rationale Rn）」指针。
 4. 改完 `SKILL.md` 跑 `scripts/check-docs.sh`，预算见脚本顶部（依据：rationale R10）。
 5. 改任一份 README（`README.md` / `README.zh-CN.md`）必须同步另一份——节标记 `<!-- s:xxx -->` 一一对应、`references/` 文件两份都点到，改完跑 `scripts/check-docs.sh` 验证（依据：rationale R17）。
+6. 提方案时不要引入 git 钩子、CI 拦截或任何「靠外部强制才生效」的机制——没有 git 的仓会整条流程跑不通；脚本只在「比读一段文字更省 token、且确定性可判」时才提（文档检查、`spec-check` 属此列），其余一律用文字规则 + 用户点档（依据：rationale R38）。
