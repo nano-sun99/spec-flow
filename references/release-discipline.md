@@ -201,7 +201,6 @@
 ## 十一、验证边界
 
 本备忘录只写 Markdown 规则，不新增 CI、脚本、Hook、分支保护或 tag 自动化；发布记录是一张带模板的 issue，不是新的项目管理工具。`scripts/check-docs.sh` 绿只证明预算、路径、链接、双语与四个发布闭环章节存在，不证明任何客户端执行。项目采用后是否真的按 tag 发布、是否真的挡住未完成代码，要靠项目自己的发布记录和发布前对齐来验证。
----
 
 ## 十二、三层分支形态（可选）
 
@@ -210,14 +209,14 @@
 | 既有章节 | 在本形态下怎么读 |
 |---|---|
 | §三 合并闸 | 「未完成的功能不进主线」读作「不进**候选分支**」，核对对象是准备 pick 的 PR；集成分支照旧什么都能进 |
-| §四 发布记录 | 标题写 `release: vYY.M.PATCH`；〈主干增量核对〉里凡出现「main / 主干 / 主线」（如「生产 tag 到 main 的 PR」「不在本期范围的主干 PR」「未就绪但已合主干的项」）一律读作 `<候选分支>` |
+| §四 发布记录 | 标题写 `release: vYY.M.PATCH`；〈主干增量核对〉里的「生产 tag 到 main 的 PR」「不在本期范围的主干 PR」「未就绪但已合主干的项」三处读作 `<候选分支>` |
 | §五 就绪门槛 | 「已合进主线的代码无法从 tag 里剔除」读作「已合进候选分支的代码无法从 tag 里剔除」；三类处置不变 |
-| §六 发布前对齐 | 步骤 2 的 `..main` 读作 `..<候选分支>`——**生产分支上只有快照提交，拿它当基线永远得到「零增量」**（这正是漏检的形状） |
+| §六 发布前对齐 | 步骤 2 的 `..main` 读作 `..<候选分支>` |
 | §七 发布与 hotfix | hotfix tag 不另加 `-hotfix.N` 后缀（见〈版本号〉）；回灌目标是集成分支**和**候选分支（见 D） |
 | §七 hotfix 记录 | 「是否已合回主线」读作「是否已合回集成分支**和**候选分支」 |
 | §八 发布后回路 | 照旧 |
 
-**总则**：本形态下正文里任何「main / 主干 / 主线」都按候选分支理解；拿生产分支当增量基线必然拉不到本批的功能提交（它上面只有 `release:` 快照提交），这正是 2026-11-03 那类漏检的形状。
+**总则**：凡指**发布基线**的「main / 主干」，本形态下读作 `<候选分支>`——生产分支上只有 `release:` 快照提交，拿它拉增量拉不到本批的功能提交，正是 2026-11-03 那类漏检的形状。**表行优先于总则**：§七 的「合回主线」读作「集成分支**和**候选分支」，不按候选分支单独理解；§三 / §五 讲「单主线」的句子只是解释前提被替换，不是要替换的词。
 
 ### 对象
 
@@ -285,21 +284,17 @@ git fetch origin --tags
 BASE=$(git rev-parse "origin/$PROD")
 NEW=$(git commit-tree "$(git rev-parse "$VER^{tree}")" \
       -p "$BASE" -p "$(git rev-parse "$VER^{commit}")" \
-      -m "release: $VER（tree = tag）")
+      -m "release: ${VER}（tree = tag）")
 git push origin "$NEW:refs/heads/$PROD"
-# 本地引用只在「该分支没被 checkout」时跟——checkout 着的分支动 ref 会把工作区弄脏
-if [ "$(git symbolic-ref -q --short HEAD || true)" != "$PROD" ]; then
-  git update-ref "refs/heads/$PROD" "$NEW"
-fi
 git fetch origin
-git diff "$VER" "origin/$PROD"               # 必须为空
+git diff --quiet "$VER" "origin/$PROD" || { echo "⛔ 快照 tree 与 tag 不一致"; exit 1; }
 ```
 
-⚠️ 这段只能在**不 checkout 生产分支**的地方跑（构建用的 detached worktree，或临时 worktree）；主仓 HEAD 常驻生产分支时，`update-ref` 会让 index/worktree 停在旧树。
+⚠️ 这段不碰本地分支：推完 `fetch` 一次，用 `origin/$PROD` 核对即可。⛔ 不要加 `git update-ref refs/heads/<生产分支>`——`update-ref` 不检查该分支是否被别的 worktree checkout，会把那边的工作区弄脏且不报错；真要移动本地引用用 `git branch -f`（git 会拒绝被别处 checkout 的分支）。
 
 9. 回填：发布记录、线上台账、状态标签（§八）。
 
-**D 热修**：从**生产 tag** 切，不从候选分支、不从生产分支；修完打 hotfix tag，**只从它构建发布**；验过后补一次生产分支快照（同 C.8），再把 hotfix 分支 **merge**（不是 cherry-pick）回集成分支和候选分支——merge 之后 tag 在祖先链上，`git describe` 与清单命令自动准确。⛔ 不能「改完直接拿候选分支打 tag」：那会把候选分支上排着的下一批一起发出去。
+**D 热修**：从**生产 tag** 切，不从候选分支、不从生产分支；修完打 hotfix tag（同样 `git tag -a` 并 `git push origin "$VER"`），**只从它构建发布**；验过后补一次生产分支快照（同 C.8），再把 hotfix 分支 **merge**（不是 cherry-pick）回集成分支和候选分支——merge 之后 tag 在祖先链上，`git describe` 与清单命令自动准确。⛔ 不能「改完直接拿候选分支打 tag」：那会把候选分支上排着的下一批一起发出去。
 
 ### 版本号
 
