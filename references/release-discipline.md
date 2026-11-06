@@ -270,7 +270,7 @@
 
 1. 前置：建发布记录（§四）；把生产分支独有的文档回流到集成分支（快照会覆盖它）；列出本批服务及其 DDL / 配置 / 数据前置；列破坏性变更的影响面。
 2. 冻结候选，不再 pick。
-3. 取本期清单（= §六 步骤 2 在本形态下的取法）：`git log --oneline --first-parent --no-merges <上一个生产 tag>..<候选分支>`（热修 merge 回候选分支会产生一个 merge commit，`--no-merges` 把它挡掉），逐行核；对范围内每个 commit 各跑一次 `git tag --contains <commit>`，有输出即已发布，剔除（⚠️ 不带参数的 `git tag --contains` 默认看 HEAD，方向恰好相反）。
+3. 取本期清单（= §六 步骤 2 在本形态下的取法）：`git log --oneline --first-parent <上一个生产 tag>..<候选分支>`，逐行核。⛔ 别加 `--no-merges`——多数项目一个 PR 一个 merge commit，加了它清单会直接空掉（实测踩过）。对范围内每个 commit 各跑一次 `git tag --contains <commit>`，有输出即已发布、剔除；热修 merge 回候选分支那一行正是靠这一步被剔掉的（⚠️ 不带参数的 `git tag --contains` 默认看 HEAD，方向恰好相反）。
 4. 核 hotfix 掉队：对所有生产 tag 跑 `git cherry <候选> <tag>`，有未带入的就停。
 5. 定版本号、打 tag（`git tag -a`）后**立即 push**：`git push origin "$VER"`，再 `git ls-remote --tags origin` 核对——⛔ 不 push 的话新 clone 拿不到 tag，「只从 tag 构建」就不可复现。
 6. 只从 tag 构建（独立 worktree）。
