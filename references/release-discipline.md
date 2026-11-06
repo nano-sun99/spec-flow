@@ -26,7 +26,7 @@
 
 ## 二、发布线
 
-本节假设**一条长期主线**。如果项目做不到「主线始终可发布」——同一仓里长期混着已上线和未上线代码、一次只发其中一部分——把本节换成〈十二〉的三层形态，其余章节不变。
+本节假设**一条长期主线**。如果项目做不到「主线始终可发布」——同一仓里长期混着已上线和未上线代码、一次只发其中一部分——把本节换成〈十二〉的三层形态，其余章节按〈十二〉开头的覆盖表读。
 
 - **一条长期主线**（`master` / `main`）：功能分支从它切，短生命周期，合并后删除。
 - **不新增长期 `develop` / `uat` 分支**：环境差异用部署流程区分；要长期 uat 环境，也把它当部署目标，不当版本选择器。
@@ -201,6 +201,8 @@
 ## 十一、验证边界
 
 本备忘录只写 Markdown 规则，不新增 CI、脚本、Hook、分支保护或 tag 自动化；发布记录是一张带模板的 issue，不是新的项目管理工具。`scripts/check-docs.sh` 绿只证明预算、路径、链接、双语与四个发布闭环章节存在，不证明任何客户端执行。项目采用后是否真的按 tag 发布、是否真的挡住未完成代码，要靠项目自己的发布记录和发布前对齐来验证。
+---
+
 ## 十二、三层分支形态（可选）
 
 用在**做不到「主线始终可发布」**的项目：同一仓里长期混着已上线和未上线代码、一次只发其中一部分。本节替换〈二〉的发布线；其余章节按下表读。
@@ -208,11 +210,14 @@
 | 既有章节 | 在本形态下怎么读 |
 |---|---|
 | §三 合并闸 | 「未完成的功能不进主线」读作「不进**候选分支**」，核对对象是准备 pick 的 PR；集成分支照旧什么都能进 |
-| §四 发布记录 | 标题写 `release: vYY.M.PATCH`；〈主干增量核对〉里的 `..main` 读作 `..<候选分支>` |
+| §四 发布记录 | 标题写 `release: vYY.M.PATCH`；〈主干增量核对〉里凡出现「main / 主干 / 主线」（如「生产 tag 到 main 的 PR」「不在本期范围的主干 PR」「未就绪但已合主干的项」）一律读作 `<候选分支>` |
 | §五 就绪门槛 | 「已合进主线的代码无法从 tag 里剔除」读作「已合进候选分支的代码无法从 tag 里剔除」；三类处置不变 |
 | §六 发布前对齐 | 步骤 2 的 `..main` 读作 `..<候选分支>`——**生产分支上只有快照提交，拿它当基线永远得到「零增量」**（这正是漏检的形状） |
 | §七 发布与 hotfix | hotfix tag 不另加 `-hotfix.N` 后缀（见〈版本号〉）；回灌目标是集成分支**和**候选分支（见 D） |
+| §七 hotfix 记录 | 「是否已合回主线」读作「是否已合回集成分支**和**候选分支」 |
 | §八 发布后回路 | 照旧 |
+
+**总则**：本形态下正文里任何「main / 主干 / 主线」都按候选分支理解；拿生产分支当增量基线必然拉不到本批的功能提交（它上面只有 `release:` 快照提交），这正是 2026-11-03 那类漏检的形状。
 
 ### 对象
 
@@ -243,7 +248,7 @@
 2. 候选分支上超出上一个生产 tag 的每一笔，都在本批范围里；
 3. 生产 tag 永不移动、永不删除（打错就再打一个，旧的不动）。
 
-不变式 1 依赖两件事，缺一不可：**快照提交要把 tag 作为父提交**（只把树拷过去不留父提交，tag 不可达），**tag 必须是附注 tag**（`git tag -a`；轻量 tag 下 `git describe` 会直接报「No tags can describe」，加 `--tags` 才认）。
+不变式 1 依赖两件事，缺一不可：**快照提交要把 tag 作为父提交**（只把树拷过去不留父提交，tag 不可达），**tag 必须是附注 tag**（`git tag -a`；轻量 tag 下 `git describe` 会直接报 `No annotated tags can describe …`，加 `--tags` 才认）。
 
 ### 六条禁止
 
@@ -252,7 +257,7 @@
 | 从生产分支切功能分支 | 生产分支只记录已上线版本，不是开发基线 |
 | 从任何分支 HEAD 构建发布产物 | 分支会动；**只从 tag 构建** |
 | 在生产分支上 revert 未上线内容 | 生产分支不被 merge，而是被下一次快照整树覆盖——revert 只换来「看着撤了、下一批又回到生产」 |
-| 用 merge / reset / read-tree 更新生产分支 | merge 会顺着历史把旧改动重新应用；reset / read-tree 会改写保护分支历史或覆盖共享工作区 |
+| 用 merge / reset / read-tree 更新生产分支 | merge 会绕过 tag、把生产分支的树变成合并结果，不变式 1 当场破；reset / read-tree 会改写保护分支历史或覆盖共享工作区 |
 | 在共享主仓切分支 / 做快照 | 会拽走别人的 HEAD、抹掉别人的未提交改动；构建与快照用独立 worktree，或不碰工作区的 plumbing |
 | 开 `pick/*-to-生产分支` | 这条路不存在，生产分支只从 tag 长出来 |
 
@@ -266,14 +271,15 @@
 
 1. 前置：建发布记录（§四）；把生产分支独有的文档回流到集成分支（快照会覆盖它）；列出本批服务及其 DDL / 配置 / 数据前置；列破坏性变更的影响面。
 2. 冻结候选，不再 pick。
-3. 取本期清单（= §六 步骤 2 在本形态下的取法）：`git log --oneline --first-parent <上一个生产 tag>..<候选分支>`，逐行核；对范围内每个 commit 各跑一次 `git tag --contains <commit>`，有输出即已发布，剔除（⚠️ 不带参数的 `git tag --contains` 默认看 HEAD，方向恰好相反）。
+3. 取本期清单（= §六 步骤 2 在本形态下的取法）：`git log --oneline --first-parent --no-merges <上一个生产 tag>..<候选分支>`（热修 merge 回候选分支会产生一个 merge commit，`--no-merges` 把它挡掉），逐行核；对范围内每个 commit 各跑一次 `git tag --contains <commit>`，有输出即已发布，剔除（⚠️ 不带参数的 `git tag --contains` 默认看 HEAD，方向恰好相反）。
 4. 核 hotfix 掉队：对所有生产 tag 跑 `git cherry <候选> <tag>`，有未带入的就停。
-5. 定版本号、打 tag（`git tag -a`）。
+5. 定版本号、打 tag（`git tag -a`）后**立即 push**：`git push origin "$VER"`，再 `git ls-remote --tags origin` 核对——⛔ 不 push 的话新 clone 拿不到 tag，「只从 tag 构建」就不可复现。
 6. 只从 tag 构建（独立 worktree）。
 7. 发布：断流 → 验静 → 本批 DDL（如果有）→ 替换产物 → 验 → 复流。
 8. 验证通过后快照生产分支：
 
 ```bash
+set -euo pipefail
 VER=v26.11.0; PROD=master
 git fetch origin --tags
 BASE=$(git rev-parse "origin/$PROD")
@@ -281,9 +287,15 @@ NEW=$(git commit-tree "$(git rev-parse "$VER^{tree}")" \
       -p "$BASE" -p "$(git rev-parse "$VER^{commit}")" \
       -m "release: $VER（tree = tag）")
 git push origin "$NEW:refs/heads/$PROD"
-git update-ref "refs/heads/$PROD" "$NEW"     # 本地没 checkout 该分支时也要跟上
+# 本地引用只在「该分支没被 checkout」时跟——checkout 着的分支动 ref 会把工作区弄脏
+if [ "$(git symbolic-ref -q --short HEAD || true)" != "$PROD" ]; then
+  git update-ref "refs/heads/$PROD" "$NEW"
+fi
+git fetch origin
 git diff "$VER" "origin/$PROD"               # 必须为空
 ```
+
+⚠️ 这段只能在**不 checkout 生产分支**的地方跑（构建用的 detached worktree，或临时 worktree）；主仓 HEAD 常驻生产分支时，`update-ref` 会让 index/worktree 停在旧树。
 
 9. 回填：发布记录、线上台账、状态标签（§八）。
 
@@ -291,7 +303,7 @@ git diff "$VER" "origin/$PROD"               # 必须为空
 
 ### 版本号
 
-推荐 `vYY.M.PATCH`（两位年、月不补零、PATCH = 当月第几次）：月不补零是为了兼容 SemVer（数字段不许有前导零）；常规版与热修用同一算法（当月已有最大 PATCH + 1；当月还没有 tag 时从 `.0` 起），因此不会撞名，也不再需要 `-2` / `-3` / `-hotfix.N` 后缀。发布记录标题随之写 `release: vYY.M.PATCH`（§四 模板里的日期示例按本形态替换）。项目已有日期式 tag 的，老 tag 全部保留不动，新格式从下一个开始。
+推荐 `vYY.M.PATCH`（两位年、月不补零、PATCH = 当月已发布数，第一版是 `.0`）：月不补零是为了兼容 SemVer（数字段不许有前导零）；常规版与热修用同一算法（当月已有最大 PATCH + 1；当月还没有 tag 时从 `.0` 起，所以它是「已发次数」不是「第几次」），因此不会撞名，也不再需要 `-2` / `-3` / `-hotfix.N` 后缀。发布记录标题随之写 `release: vYY.M.PATCH`（§四 模板里的日期示例按本形态替换）。项目已有日期式 tag 的，老 tag 全部保留不动，新格式从下一个开始。
 
 查 tag 的创建时间必须带 `refs/tags/` 前缀，否则静默返回空：
 
