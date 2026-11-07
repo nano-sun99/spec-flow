@@ -14,7 +14,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 **段一·方案期**（新需求）
 
 1. **用户描述需求**
-2. **一起确认需求** —— 有岔路问清，不猜；能自己查判的先做；判有没有页面，判不了摆页面卡；出方案页：页面 / 机制 / 例外 / 改旧 spec 四个选择各自独立点，再问 3 句（起点 / 岔路 / 终点）
+2. **一起确认需求** —— 有岔路问清，不猜；能自己查判的先做；页面卡必摆（设计稿 / 样例），agent 不预判；出方案页：页面 / 机制 / 例外 / 改旧 spec 四个选择各自独立点，再问 3 句（起点 / 岔路 / 终点）
 3. **点头后才动 spec** —— 先出骨架版，即路的第一屏（起点 / 终点 / 主路表）；有页面开 Draft PR 等设计稿，无页面用样例
 4. **拆分 → 对照 → 实施版 → DoR → 派审** —— 骨架成形后摆拆分卡；同一 PR 补主路对照与实施版；过 DoR 且点头才转 Ready（无 Draft PR 开普通 PR）、摆派审卡
 5. **按需修订 → 确认合并**
@@ -28,9 +28,9 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 ## 卡片总表
 
-要拍板就摆卡，不打字问。**2 组、3 类确认**：方案组（页面 / 机制 / 例外 / 改旧 spec，方案页同页逐项点；拆分卡在骨架后单独点）、交付组（派审 / 修订 / 合并，每份 PR 按需点）。选项、默认值与没点的后果见 `references/one-path.md`（依据：rationale R35）。
+要拍板就摆卡，不打字问。**动手前摆入口卡**（直接改 / 开 spec），再 **2 组、3 类确认**：方案组（页面 / 机制 / 例外 / 改旧 spec，方案页同页逐项点；拆分卡在骨架后单独点）、交付组（派审 / 修订 / 合并，每份 PR 按需点）。选项、默认值与没点的后果见 `references/one-path.md`（依据：rationale R35、R36）。
 
-- 定稿 spec 反复改会乱，新开还是改旧由用户定（依据：rationale R12）。
+- 定稿 spec 新开还是改旧由用户定（依据：rationale R12）。
 
 ## 闸（两段共用）
 
@@ -58,14 +58,14 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 
 | 免什么 | 条件 | 照样不免 |
 |---|---|---|
-| 方案期（不出 spec、不开 issue） | 改一行、纯查事实、「直接干 / 别走流程」 | 闸、合并卡 |
-| 开 worktree | 当场说「直接改 / 不开 wt」；agent 不自判、不建议 | 声明真并行的仓认领仍开锁 |
+| 方案期（不出 spec、不开 issue） | 入口卡点过「直接改」（含「直接干 / 别走流程」）；纯查事实 | 闸、合并卡 |
+| 开 worktree | 当场说「不开 wt」；agent 不自判、不建议 | 声明真并行的仓认领仍开锁 |
 | 闸 | 无新内容机械变更（回填号、状态、索引、勾验收）；不进仓的草稿 / PR 底稿 | 无 PR 的交付前照摆卡，diff 随卡 |
 | 改旧 spec 卡 | 同上机械变更；末尾「审核修订记录」追加 | — |
 
 ## 工作区与锁
 
-凡文件变更先 `git fetch`，从 `origin/main` 或 `origin/master` 开 worktree，别改主仓；issue 认领用 `issue-<N>`，不认领的活（如 spec 期，含占位 issue）命名随意、惯例 `<type>/<slug>`（如 `spec/<日期>-<主题>`）；认领、撞锁、放锁、进 worktree 重取基准见 `references/worktree-lock.md`（依据：rationale R6、R7）。
+凡文件变更先 `git fetch`，从 `origin/main` 或 `origin/master` 开 worktree，别改主仓；issue 认领用 `issue-<N>`，不认领的活（如 spec 期，含占位 issue）命名随意、惯例 `<type>/<slug>`；认领、撞锁、放锁、进 worktree 重取基准见 `references/worktree-lock.md`（依据：rationale R6、R7）。
 
 ## 各步要点
 
@@ -100,7 +100,7 @@ description: "复杂活的两段流程：需求确认、spec、PR 过闸、合�
 | 文件 | 何时读 |
 |---|---|
 | `references/spec-maturity.md` | 第 2–4 步：三阶段与 DoR |
-| `references/one-path.md` | 方案页、骨架、走路审核、批次表、8 卡选项 / 默认值 |
+| `references/one-path.md` | 入口卡、方案页、骨架、走路审核、批次表、9 卡选项 / 默认值 |
 | `references/gate-details.md` | 派审核、合并前 |
 | `references/worktree-lock.md` | 文件变更、认领、撞锁、放锁时 |
 | `references/spec-revision-sync.md` | 第 5 步修订前 |
