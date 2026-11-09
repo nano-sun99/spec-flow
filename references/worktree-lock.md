@@ -12,4 +12,4 @@
 - **撞锁 = 停**：`fatal: a branch named 'issue-<N>' already exists` = 有人领过。`git worktree list` 找到对方工作区路径：目录还在 → 人在做，去读该 issue 的评论定等 / 让；目录没了 → 对方已不在，`git worktree prune` 清掉残留登记后接手：`git worktree add <wt根>/issue-<N> issue-<N>`（不带 -b 复用旧分支 = 接着既有提交干；推倒重来涉及危险删除，须用户明确要求，不能因本页描述自行 `git branch -D`）。
 - **放锁**：按完成/交付事实收尾，先 fetch 并核本任务实际目标，再 `git worktree remove <wt根>/issue-<N>` + `git branch -d issue-<N>`；保留未提交工作时不强删。squash 等情形 `-d` 可能拒绝，报告残留锁/分支，危险 `-D` 仍须用户明确要求，不从收尾指令外推（历史原因见 rationale R8）。不放 = issue 重开时会撞锁；不能用提前放锁冒充完成。
 - **进 worktree 第一件事重新取基准**（`pwd`）：编辑工具用的绝对路径不跟 cwd 走，照会话前半段记下的主仓路径写，改的是主仓、还没报错。快信号：新写的测试报 `no tests to run`、新符号 grep 不到、worktree 里 `git status` 是空的。
-- **边界**：锁只挡同号认领——不同 issue 改同一堆文件拦不住（那是拆 spec 时「独占文件」规矩管的，见 `references/split-large-spec.md`）；跨机 / 跨 clone 不共享 `.git`，无锁；`git worktree add --force` 能强拆——本机制只防守规矩的人犯错，不防故意绕过。不认领的活（如 spec 期，含占位 issue）：wt 照开（见主文件「工作区与锁」节）但无锁可领，命名随意（惯例 `<type>/<slug>`）。
+- **边界**：锁只挡同号认领——不同 issue 改同一堆文件拦不住（那是拆 spec 时「独占文件」规矩管的，见 `references/split-large-spec.md`）；跨机 / 跨 clone 不共享 `.git`，无锁；`git worktree add --force` 能强拆——本机制只防守规矩的人犯错，不防故意绕过。不认领的活（如 spec 期，含占位 issue）：wt 照开（见本页的文件变更规则）但无锁可领，命名随意（惯例 `<type>/<slug>`）。
