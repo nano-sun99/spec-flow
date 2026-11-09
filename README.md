@@ -7,11 +7,11 @@
 
 **A set of process rules for AI coding agents.** You clone it into your agent's skills directory. From then on, when you ask for work worth designing, the agent agrees with you on what it is building *before* it writes code — and everything it produces has to pass a gate where **you** decide how much review it gets.
 
-The workflow has no runtime or service. It is markdown the agent reads, plus a paper trail: a spec before code, an issue before work, and a permanent link between them. Code mapping is disabled by default; ordinary tasks use source searches, the actual diff and relevant tests to check impact.
+The workflow has no runtime or service. It is markdown the agent reads, plus a paper trail: on the spec path, a spec before code, an issue before implementation, and a permanent link between them. Direct implementation skips the spec and execution issue, not the delivery gate. Code mapping is disabled by default; ordinary tasks use source searches, the actual diff and relevant tests to check impact.
 
 This revision limits the body to **4,700 characters**, frontmatter to **500**, and the whole skill to **5,200**, including newlines. [`scripts/check-docs.sh`](scripts/check-docs.sh) checks all three and rejects extra metadata fields or multiline descriptions. These are character budgets, not a cross-client token or compaction guarantee. Action-specific details are mandatory when needed; after compaction hides them, the agent reads them again.
 
-Every rule has a recorded origin. The dossier is [`references/rationale.md`](references/rationale.md): 35 entries with dates, measurements, decisions, costs and verification limits.
+Every rule has a recorded origin. The dossier is [`references/rationale.md`](references/rationale.md): 36 entries with dates, measurements, decisions, costs and verification limits.
 
 **English** · [中文](README.zh-CN.md)
 
@@ -24,7 +24,11 @@ You type the same request either way: *"add image upload to the profile page."*
 
 **Without it**, the agent starts writing. Forty minutes later there is a diff across eleven files, a database table you didn't ask for, and a resize limit it picked itself. Reading the code is how you find out what it decided.
 
-**With it**, it comes back in two minutes with the three questions it cannot answer for you — where do the files live, does this need to work on mobile, what should happen to a 40MB upload — and nothing else. Before any spec exists, the four independent choices — page / mechanism / exceptions / editing an old spec — sit on one page with three questions: where does the route start, which fork do you take, where does it end. Then it writes a spec as one route: a start, an end, and a table of steps with trigger → response, failure / empty state, and executable evidence. That spec goes to a pull request of its own, before any code, and you get a card asking how much review it should get — **none / light / heavy / heavy + mutation testing**. Review walks the route: R1 full, R2 only checks closures, R3 stops and you choose redraw / cut scope / stop. You point at a level. After review and any revision, it asks separately whether to merge; every PR — spec, docs, config or code — gets that confirmation. It merges the spec and opens an execution issue with a `SPEC_READY` handoff, then stops. When you explicitly delegate — “start implementation” in the same window right after a single handoff, or the issue number from anywhere else — it implements in a git worktree of its own and hands you a second card before merging.
+**With it**, a new request starts with your choice: implement directly or open a spec. The agent does not choose for you because a change looks small. For a spec, grill-me helps clarify where files live, mobile support and a 40MB upload; spec-flow collects what changes, how, the problem solved or capability gained, and the goal, scope and acceptance criteria into one plan. **No** feeds back into that same plan. No spec is written before the first **Yes**; Yes immediately leads to your choice of pages or no pages. There is no separate mechanism card or fixed three-question gate.
+
+With pages, it writes a goal-and-acceptance draft in one Draft PR, asks about splitting, then pauses for your design. The agent uses grill-me to analyze interactions, states, permissions and API requests / responses / errors before completing that same spec. Without pages, normal, boundary and failure or rerun examples replace the design wait; the split choice still follows the draft. Only a final spec that passes the Definition of Ready, with your consent to send it for review, reaches the review card — **none / light / heavy / heavy + mutation testing**. Review walks the route: R1 full, R2 checks closures, R3 stops for your choice to redraw, cut scope or stop.
+
+After review and any revision, every PR gets a separate merge confirmation. Only after the spec merges does it open an execution issue with a `SPEC_READY` handoff and stop for your explicit implementation delegation. Implementation uses an isolated worktree and gets a fresh review choice and merge confirmation. Exception and merged-spec-edit cards remain conditional, not mandatory questions on every run.
 
 The misunderstanding that used to surface at minute forty now surfaces at minute two.
 
@@ -57,7 +61,7 @@ Not from theory. Each rule is the residue of a specific failure, recorded with i
 
 **Two phases, one shared gate.** Each step owns one of the seams above.
 
-- **Phase 1 · design** — describe the need → agree on it and decide whether it has an interactive page → one plan page: four independent choices (page / mechanism / exceptions / editing an old spec) plus three questions (start / forks / end) → skeleton spec = the first screen of the route (start, end, step table) → if it has pages, a draft PR holds the spec from here on → assess size, you choose split or keep → counterpart: a design mock-up if it has pages, three real examples or one decision table if it does not → implementation-ready spec that passes the seven-point Definition of Ready → you confirm it is ready → the draft PR becomes ready for review (no draft PR: a normal PR opens here) → gate → confirm merge → merge → execution issue with a `SPEC_READY` handoff and a batch table → stop. No code yet. It stays one file in one PR: skeleton and counterpart are stages of that spec, and only the implementation-ready version faces the gate.
+- **Phase 1 · design** — entry choice for new requests only; open a spec → grill-me assists clarification, spec-flow collects one plan → Yes / No loop → Yes immediately opens the pages / no-pages choice → draft → separate split choice → with pages, pause for your design and then analyze pages and APIs; without pages, use examples → the same final spec passes the seven-point Definition of Ready → you consent to send it for review → Draft becomes Ready (or a normal PR opens) → choose review, revise if needed, separately confirm merge → merge spec, open execution issues with `SPEC_READY` handoffs and a batch table → stop. Draft, counterpart and final remain one file in one PR; only the final faces the gate. Direct implementation creates no mandatory spec or execution issue, but still faces the implementation delivery gate.
 - **Phase 2 · implementation** — after you explicitly delegate implementation, claim the issue → implement → gate → confirm merge → merge → backfill the issue and release the lock.
 
 | The step | The seam it owns |
@@ -83,8 +87,8 @@ It isn't restraint bolted onto the agent. It's rework moved to where rework is c
 | The design | Why it's smooth |
 |---|---|
 | The review level is chosen per deliverable and never inherited | Cost tracks risk: **none / light / heavy / heavy + mutation testing**. A one-line doc change costs nothing; a core change gets two reviewers. No blanket policy to argue about. |
-| An unanswered card never adds anything | All eight cards — 2 groups (plan / delivery), 3 confirmation classes (plan page / split / delivery) — default away from acting: no review, no merge, no new spec, no exception, no edit, no execution issue — and an unanswered page card stops the run rather than picking a default. |
-| Interruptions are split by whether they need an answer | A new mechanism gets its own card — that's the thing you'd later ask "what is this, and where did it come from". Everything else the agent decided by itself (defaults, naming, where things land) is listed in one block at the end to skim, not answer one by one. |
+| An unanswered card never adds anything | No entry choice means no file writes; no confirmed plan means no spec; unanswered page / split choices stop progress. Missing dependencies never imply installation consent. No review choice means no reviewer, and no merge choice means no merge; conditional exceptions and merged-spec edits are not silently included. |
+| Confirm decisions once, without duplicate summaries | New approaches and their reasons belong in the same Yes / No plan, not a separate mechanism card or fixed three-question gate. Agent-chosen defaults, names and locations stay in a final details section to skim; only material plan changes return to the same confirmation loop. |
 | The judgement is taken away from the agent | It may not decide "this one counts as core". That removes the argument, not just the risk. |
 | Every rule cites the incident that produced it | Disagree with a rule and its origin is one hop away. You never re-litigate it from scratch. |
 
@@ -127,12 +131,14 @@ git clone https://github.com/Strelizialeomon/spec-flow.git ~/code/spec-flow
 ln -s ~/code/spec-flow ~/.claude/skills/spec-flow
 ```
 
-Requirements: an agent that discovers skills, runs shell commands (`git worktree`), and opens PRs (`gh`). The rules are markdown; discovery, permissions and compaction behaviour still require real client tests. A passing document check does not prove that a client loaded or followed them.
+Requirements: an agent that discovers skills, runs shell commands (`git worktree`), and opens PRs (`gh`). Professional clarification in PLAN / ANALYZE also needs loadable `grill-me` and its actual `grilling` dependency; an entry directory alone is not enough. Loading spec-flow checks this read-only. Only a clarification path that needs missing skills asks Yes / No with specific installation contents; refusal or failure pauses that path. Existing dependencies are not reinstalled, and other repositories or machine configuration are not silently changed. Missing clarification skills do not block direct implementation, existing-task implementation or delivery. The rules are markdown; discovery, permissions and compaction still need real client tests. Passing doc checks does not prove compliance, and superpowers is no longer a dependency.
 
 <!-- s:usage -->
 ## Using it
 
-Trigger it by describing work that deserves designing — "this touches the API, the DB and the frontend" — or invoke it by name. The agent confirms the requirement and first decides whether the work has an interactive page. If it does, the spec starts as a one-page skeleton and the agent opens a draft PR to hold it while a design mock-up is produced; if it does not, the skeleton is technical and the placeholder is three real examples or one decision table. Either way the spec lives in `docs/specs/<date>-<name>.md`, and the agent assesses its size and recommends splitting or keeping it with both choices. Multiple implementation milestones, including in a child spec, always prompt a reminder; ordinary coding, testing and PR steps are not separate milestones. You choose the structure before review and merging. The spec then grows in that same PR, through a counterpart in the route's four columns (step | trigger → response | failure / empty state | landing · basis · evidence), into the implementation-ready version; only that version passes the gate and merges. Execution issues come afterward.
+Describe work worth designing, or invoke spec-flow by name. Only a new request starts with the entry choice. Choosing a spec immediately brings in grill-me; spec-flow collects the plan, No adjusts it, and Yes immediately asks you to choose pages or no pages. The spec lives in `docs/specs/<date>-<name>.md`: with pages, a goal / acceptance / design-brief draft goes into a Draft PR; without pages, use three real examples or one decision table. After the chosen branch's draft, the agent assesses size, offers real split candidates and a recommendation, and you choose split or keep. Multiple implementation milestones, including in children, require a reminder; ordinary coding, testing and PR steps are not milestones. No split choice means no further progress.
+
+With pages, the split choice is followed by a pause for your design; only afterward does grill-me help analyze pages and APIs. The agent neither draws for you nor automatically switches to no pages, and valid designs need not be resubmitted. Without pages there is no design wait: normal, boundary / exception, and failure or rerun examples fill the same route table (step | trigger → response | failure / empty state | landing · basis · evidence). Results complete the same final spec. Unresolved load-bearing decisions or unexecutable acceptance block review. Only passing the DoR plus your consent makes it Ready for a review choice; only the final faces the gate and a merge confirmation, before execution issues open. No implementation-planning stage is added.
 
 Splitting produces smaller execution specs, each with its own execution issue, plus an overview and one tracking-only parent issue. A stable group ID and child number connect filenames, specs and issue titles; parent-child links show membership, while blocking links show real dependencies. Maximize parallel work where practical, without requiring it: explicit sequential dependencies and coordinated releases are allowed. Choosing not to split preserves one spec and one execution issue, rather than silently creating a set of phase-only issues.
 
@@ -159,12 +165,12 @@ The rules are cited by `R` number, like `（依据：rationale R12）`, and ever
 | `SKILL.md` | The workflow itself — the file the agent loads |
 | `AGENTS.md` | This repo's maintenance rules for the agent |
 | `CLAUDE.md` | One line: `@AGENTS.md` |
-| `references/rationale.md` | Why each rule exists: cases, measurements, decisions (R1–R35) |
-| `references/one-path.md` | The route template, plan page, walking review, batch table, and all eight card options / defaults |
+| `references/rationale.md` | Why each rule exists: cases, measurements, decisions (R1–R36) |
+| `references/one-path.md` | The route template, one plan-confirmation loop, page branches, walking review, batch table and card defaults |
 | `references/gate-details.md` | How the gate runs: walking review (R1–R3), severity, doc checks, batching, merge confirmation |
 | `references/worktree-lock.md` | File changes, claiming an issue; the worktree lock, and how it breaks |
 | `references/phase-handoff.md` | Handoff state, authorization, takeover and the issue handoff block |
-| `references/spec-maturity.md` | One spec in three stages: the page fork, the skeleton as the route's first screen, the counterpart, the implementation-ready version and the DoR |
+| `references/spec-maturity.md` | One spec's draft, post-design page / API counterpart, final and DoR; the user chooses the page branch |
 | `references/spec-revision-sync.md` | Changing one clause means syncing every place it lands |
 | `references/code-map.md` | Disabled by default; explicit trials, coverage limits and fallback |
 | `references/done-criteria.md` | Done criteria, observational close-outs, the three exception types |
@@ -174,7 +180,7 @@ The rules are cited by `R` number, like `（依据：rationale R12）`, and ever
 | `references/issue-status-labels.md` | Optional: issue status labels |
 | `references/issue-type-labels.md` | Optional: issue type labels |
 | `references/release-discipline.md` | Optional: release closed loop (release record, readiness gate, mainline alignment, post-release backfill) |
-| `references/apply-to-project.md` | Applying and explicitly upgrading; pointer templates, asset boundaries and explicit map-restoration requests |
+| `references/apply-to-project.md` | Applying and explicitly upgrading; pointer templates, asset boundaries, clarification dependencies and install consent, explicit map-restoration requests |
 | `references/adoption-model.md` | Historical explanation of the adoption model; no additional workflow obligations |
 | `docs/maintainer-notes.md` | Repo-local notes: how this checkout is wired, why the first commits are reconstructed |
 | `scripts/check-docs.sh` | Body / frontmatter / whole-skill budgets, reference paths, relative links, release adoption and release-loop sections, README sync, region-bound adoption contract |
