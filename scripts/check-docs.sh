@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # spec-flow 文档检查入口：SKILL.md 正文字数、警示符个数、references 路径是否存在、
-# references 内相对链接、发布纪律采纳节与发布闭环四节、README 双语是否同步（节标记一一对应、
+# references 内相对链接、职责 owner/交付契约、Git/发布章节、README 双语是否同步（节标记一一对应、
 # references 文件两份都点到）、采用契约两侧是否对应。
 # 同时核 frontmatter / 整份预算，禁止把规则搬进元信息绕正文预算（依据 R25）。
-# 每项一行结果，末行「绿 / 红」；退出码 0 = 绿，1 = 红。依据见 references/rationale.md R10、R17、R19、R25。
+# 仅核必要结构/信息存在，不把推荐指南的写法、顺序、列数或样例数量机械强制。
+# 每项一行结果，末行「绿 / 红」；退出码 0 = 绿，1 = 红。依据见 references/rationale.md R10、R17、R19、R25、R37。
 
 BUDGET_CHARS=4700   # 本次交付正文预算；含换行、按字符计，原 5,000 上限不上调（依据 R25）
 MAX_ALERTS=3        # SKILL.md 正文 ⚠️ + ⛔ 个数上限
@@ -221,6 +222,39 @@ try:
     report(not link_problems, "references 内相对链接都可达" if not link_problems
            else "断链：" + "、".join(link_problems))
 
+    # ── R37 职责归位与必要交付信息：只核 owner/章节/字段存在，语义仍靠真实对照 ──
+    owners = {
+        "references/one-path.md": ("方案期", "实施期", "阶段事实与衔接", "定稿流程图"),
+        "references/gate-details.md": ("选项交互与权限", "方案与可实施判据", "实施授权与停止", "审核、修订与轮次", "文档检查", "独立合并与生产批准"),
+        "references/phase-handoff.md": ("交付信息与更新责任", "授权与接手留痕"),
+        "references/done-criteria.md": ("完成判据", "已批准例外"),
+    }
+    owner_bodies, owner_problems = {}, []
+    for path, required in owners.items():
+        try:
+            content = "\n".join(unfenced(open(path, encoding="utf-8", newline="").read()))
+        except OSError:
+            owner_problems.append(f"{path} 读不到")
+            continue
+        owner_bodies[path] = content
+        # 允许序号变化；不规定段落/表格的写作形状。
+        names = [re.sub(r"^[0-9一二三四五六七八九十百]+、\s*", "", m.group(1))
+                 for m in re.finditer(r"(?m)^ {0,3}##\s+(.+?)\s*$", content)]
+        for name in required:
+            if name not in names:
+                owner_problems.append(f"{path} 缺正文节：{name}")
+        if path != "references/one-path.md" and re.search(
+                r"(?m)^ {0,3}#{1,3}\s+(?:[0-9一二三四五六七八九十百]+、\s*)?(?:状态模型|状态转移|阶段事实与衔接)\s*$", content):
+            owner_problems.append(f"{path} 重新定义流程状态；正文应归 one-path.md")
+    report(not owner_problems, "职责 owner 章节与状态正文归位（语义须另核）" if not owner_problems
+           else "职责归位：" + "；".join(owner_problems))
+
+    delivery = owner_bodies.get("references/phase-handoff.md", "")
+    delivery_groups = ("获批依据", "预期交付", "全部实际来源", "必要依赖", "就绪证据", "候选结果")
+    missing_delivery = [field for field in delivery_groups if field not in delivery]
+    report(not missing_delivery, "交付契约六类信息存在（不限定表格或逐文件清单）" if not missing_delivery
+           else "交付契约缺信息组：" + "、".join(missing_delivery))
+
     ROW_RE = re.compile(r"\|\s*`(references/[^`]+\.md)`\s*\|(.*)\|\s*$")
     # 修饰词可写在行内（「采用走 `x`」），也可由行首的「选修 `x`」承载（R24 去重后的形态）；
     # 两串都认，保证 rows_to_mod ↔ §十 登记表的映射不断。
@@ -299,15 +333,15 @@ try:
         ap_text = ""
         problems.append("references/apply-to-project.md 读不到")
     report("## 九之三、发布纪律" in ap_text, "apply-to-project.md 有发布纪律采纳节")
-    # ── 发布闭环四节存在性（依据 R33）：模板与流转留在 release-discipline.md，apply 只放指针 ──
+    # ── Git 形态/完整候选/发布章节存在性（R33、R37）：正文留 release，apply 只放采用指针 ──
     try:
         rd_body = "\n".join(unfenced(open("references/release-discipline.md", encoding="utf-8", newline="").read()))
-        release_sections = ("发布记录", "状态与就绪门槛", "发布前对齐", "发布后回路")
+        release_sections = ("Git 分支形态", "按任务形成完整候选", "发布记录", "状态与就绪门槛", "发布前对齐", "发布后回路")
         # 允许 1-3 个前导空格、可选序号与可选括号后缀；只认名称本身，诱饵「## 附：发布记录」不算。
         section_re = re.compile(r"^ {0,3}##\s+(?:[0-9一二三四五六七八九十百]+、\s*)?(.*?)\s*(?:（[^）]*）)?$")
         headings = [m.group(1) for m in (section_re.match(line) for line in rd_body.splitlines()) if m]
         missing_sections = [name for name in release_sections if name not in headings]
-        report(not missing_sections, "release-discipline.md 有发布闭环四节" if not missing_sections
+        report(not missing_sections, "release-discipline.md 有 Git 形态、完整候选与发布闭环章节" if not missing_sections
                else "release-discipline.md 缺章节：" + "、".join(missing_sections))
     except OSError:
         report(False, "references/release-discipline.md 读不到——发布闭环章节检查失效")
