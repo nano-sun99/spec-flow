@@ -37,7 +37,7 @@ description: "v2 草案入口（默认不启用）。用户明确说「按 v2 �
 | L4 案例库（首版 ≤15 条） | `40-cases/`、`40-cases/INDEX.md` | B3 待交付 |
 | 项目接入（5 个选修模块） | `50-adapters/` | B3 待交付 |
 
-层未交付期间，该层对应的 v1 文件继续适用（按上一条 v1/v2 冲突规则）：发布查旧 `references/release-discipline.md`，工作区与锁查旧 `references/worktree-lock.md`，标签查旧 `references/issue-status-labels.md` 与 `issue-type-labels.md`，项目接入查旧 `references/apply-to-project.md`。B2 已交付的 L1/L2 直接按新文件走，不再并行查旧 `one-path` / `gate-details` / `phase-handoff` / `done-criteria`。
+层未交付期间，该层对应的 v1 文件继续适用（按上一条 v1/v2 冲突规则）：发布查旧 `references/release-discipline.md`，工作区与锁查旧 `references/worktree-lock.md`，标签查旧 `references/issue-status-labels.md` 与 `issue-type-labels.md`，项目接入查旧 `references/apply-to-project.md`。B2 已交付的 L1/L2 直接按新文件走，不再并行查旧 `one-path` / `phase-handoff` / `done-criteria`；旧 `gate-details` 只保留 B3 playbook 尚未覆盖的操作细则（落点判定、审核派发方法、文档检查入口、worktree 命令），与 L1/L2 冲突时按 L1/L2。
 
 ## 重读触发
 
