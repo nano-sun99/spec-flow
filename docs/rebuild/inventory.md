@@ -14,7 +14,7 @@
 | `SKILL.md`（43 行） | 保留（载体切换） | `references/v2/SKILL.md`；根文件不动，P8 再切。理由：入口只做导航，规则各有 owner |
 | `references/one-path.md` | 拆解（理由见 §2.1） | 4 段阶段合同 `10-stages.md` + `20-decisions.md` + `30-playbooks/`；逐条见 §二 |
 | `references/gate-details.md` | 拆解（理由见 §2.2） | `00-constitution.md`（铁律）+ `20-decisions.md`（D0-D7）+ `30-playbooks/`；逐条见 §二 |
-| `references/phase-handoff.md` | 合并 | `15-records.md`（11 类记录 + 授权记录）；逐条见 §二 |
+| `references/phase-handoff.md` | 合并 | `15-records.md`（15 类记录 = 11 类交付/授权与决定 + 4 类补充）；逐条见 §二 |
 | `references/done-criteria.md` | 合并 | `10-stages.md` 完成条件 + `15-records.md` 关单判据与观察式例外 |
 | `references/worktree-lock.md` | 合并 | 锁语义与「改文件先独立 worktree」进 `10-stages.md` 交付前置；操作细则进 `30-playbooks/worktree.md` |
 | `references/worktree-lock.md` §进 worktree 先 pwd | 编辑工具绝对路径不跟 cwd 走；进 worktree 先重取基准 | playbook `worktree.md` | 防改到主仓却无报错 |
@@ -230,7 +230,7 @@
 |---|---|---|---|
 | G1 | 总纲未提 `grilling-cards`；v1 的硬依赖与安装卡无 v2 落点 | **已定**：降为 `30-playbooks/spec.md` 的推荐做法，不设硬闸、不弹安装卡（D4）。保留能力，不保证结构化 | B3 落地 |
 | G2 | 18 卡里 7 张（入口、落点、安装、公共缺口、送审、修订、标签）不在 D0-D7 | **已定**：分流到 playbook / L0-7 / D1-D4 选项；送审与修订作为 D2/D4 的选项出现，但按 L0-5 仍是独立授权项 | B2 落地 |
-| G3 | `phase-handoff` 只有 10 组记录，总纲 §八 写 11 组（多「收尾/关单」） | **已修**：总纲 §八 补「原任务字段 / PR 关联 / 事故记录」三行，现为 13 组 | 已落 |
+| G3 | `phase-handoff` 只有 10 组记录，总纲 §八 写 11 组（多「收尾/关单」） | **已修**：总纲 §八 补「原任务字段 / PR 关联 / 事故记录」三行，现为 15 组；B2 spec 原写 11 类为笔误 | 已落 |
 | G4 | 总纲 §十三 要求 B1 更新 `AGENTS.md` 的 R 号说明，但 B1 交付物清单无此文件 | **已定**：B1 补做。`AGENTS.md` 第 3 条已改为「rationale 冻结为历史档案、R 号只用于铁律变更、新案例进案例库」，记入 `v1-drift.md` | 已落 |
 | G5 | 「盘点」流程（5 条可疑清单）无 v2 明文落点 | 归 `30-playbooks/labels.md`（支撑 4 条之一），不算法条 | B3 |
 | G6 | `rationale.md` R1-R40 的选材标准只有「保留/归档/丢弃」，无条数分配 | B3 按「改变了什么行为 / 教了什么失败」选，首版 ≤15 条 | B3 |
