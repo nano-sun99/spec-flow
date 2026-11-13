@@ -7,7 +7,8 @@ description: "v2 草案入口（默认不启用）。用户明确说「按 v2 �
 
 - **是什么**：一个决策环境，不是流程编译器。给出五层知识（铁律 → 阶段合同 → 决策目录 → playbook → 案例），由 agent 按当前事实自选路径。
 - **何时用**：只有用户显式点名 v2 才加载。P0-P6 期间 v1（根 `SKILL.md` + 旧 `references/`）仍是运行权威；两个入口若拿到不同权威，停，报告，由用户指定。
-- **硬闸**：只有 D0-D7 八类用户决定（实施委托、范围与结构、设计确认、spec 合并、每份 PR 合并、整条 issue 合入 staging、生产发布、回滚）。其余判断由 agent 做并报告。
+- **硬闸**：只有 D0-D7 八类用户决定（实施委托、范围与结构、设计确认、spec 合并、每份 PR 合并、整条 issue 合入 staging、生产发布、回滚）。这八类必须停；八类之外遇到 L0-7 承重缺口，走异常协议停。
+- **v1/v2 冲突**：同一窗口同时读 v1 与 v2 时，**v2 的铁律与入口优先**，v1 只补 v2 尚未交付的层；两处对同一动作给出不同要求，按 v2，并报告「v1 与 v2 不一致：<一句>」。不静默二选一。
 
 ## 运行循环
 
@@ -21,8 +22,8 @@ description: "v2 草案入口（默认不启用）。用户明确说「按 v2 �
 2. **定阶段**：这一单从哪段进、到哪段出；直接干可跳过澄清/设计。
 3. **出计划（按触发）**：仅当「新任务且范围不平凡」「即将不可逆」「预计问用户超过 3 次」才摆计划卡；其他情况一句话说明后直接做。
 4. **执行**：agent 自选路径；到硬闸摆事实 + 证据 + 选项。
-5. **异常**：先查 playbook / 案例与事实；非不可逆且有安全默认 → 采用默认并报告；不可逆、无安全默认或多 owner → 停、给 2-3 个选项 + 推荐、等用户选。
-6. **收尾**：写案例；只有发现铁律缺一条才提议替换/合并一条，否则只记案例。
+5. **异常**：先查 L0-L2（L3/L4 未交付时跳过）与事实；非不可逆且有安全默认 → 采用默认并报告；不可逆、无安全默认或多 owner → 停、给 2-3 个选项 + 推荐、等用户选。
+6. **收尾**：只有发生了「改变了什么行为」或「教了什么失败」才写案例；普通任务不写。只有发现铁律缺一条才提议替换/合并一条，否则只记案例。
 
 ## 五层导航
 
@@ -32,11 +33,11 @@ description: "v2 草案入口（默认不启用）。用户明确说「按 v2 �
 | L1 阶段合同（4 段，≤200 行） | `10-stages.md` | B2 待交付 |
 | L1 记录契约 | `15-records.md` | B2 待交付 |
 | L2 决策目录（D0-D7，≤100 行） | `20-decisions.md` | B2 待交付 |
-| L3 playbook（9 条） | `30-playbooks/*.md` | B3 待交付 |
+| L3 playbook（9 条核心 + 4 条支撑） | `30-playbooks/*.md` | B3 待交付 |
 | L4 案例库（首版 ≤15 条） | `40-cases/`、`40-cases/INDEX.md` | B3 待交付 |
 | 项目接入（5 个选修模块） | `50-adapters/` | B3 待交付 |
 
-层未交付期间，该层对应的 v1 文件继续适用：阶段与状态查旧 `references/one-path.md`，闸口查旧 `references/gate-details.md`，交付查旧 `references/phase-handoff.md`，完成查旧 `references/done-criteria.md`。交付后按新文件替换，不并行。
+层未交付期间，该层对应的 v1 文件继续适用（按上一条 v1/v2 冲突规则）：阶段与状态查旧 `references/one-path.md`，闸口查旧 `references/gate-details.md`，交付查旧 `references/phase-handoff.md`，完成查旧 `references/done-criteria.md`，发布查旧 `references/release-discipline.md`，工作区与锁查旧 `references/worktree-lock.md`，标签查旧 `references/issue-status-labels.md` 与 `issue-type-labels.md`，项目接入查旧 `references/apply-to-project.md`。交付后按新文件替换，不并行。
 
 ## 重读触发
 
