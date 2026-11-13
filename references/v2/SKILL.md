@@ -30,14 +30,14 @@ description: "v2 草案入口（默认不启用）。用户明确说「按 v2 �
 | 层 | 文件 | 状态 |
 |---|---|---|
 | L0 铁律（8 条，≤60 行） | [00-constitution.md](00-constitution.md) | 已交付（B1） |
-| L1 阶段合同（4 段，≤200 行） | `10-stages.md` | B2 待交付 |
-| L1 记录契约 | `15-records.md` | B2 待交付 |
-| L2 决策目录（D0-D7，≤100 行） | `20-decisions.md` | B2 待交付 |
+| L1 阶段合同（4 段，≤200 行） | [10-stages.md](10-stages.md) | 已交付（B2） |
+| L1 记录契约 | [15-records.md](15-records.md) | 已交付（B2） |
+| L2 决策目录（D0-D7，≤100 行） | [20-decisions.md](20-decisions.md) | 已交付（B2） |
 | L3 playbook（9 条核心 + 4 条支撑） | `30-playbooks/*.md` | B3 待交付 |
 | L4 案例库（首版 ≤15 条） | `40-cases/`、`40-cases/INDEX.md` | B3 待交付 |
 | 项目接入（5 个选修模块） | `50-adapters/` | B3 待交付 |
 
-层未交付期间，该层对应的 v1 文件继续适用（按上一条 v1/v2 冲突规则）：阶段与状态查旧 `references/one-path.md`，闸口查旧 `references/gate-details.md`，交付查旧 `references/phase-handoff.md`，完成查旧 `references/done-criteria.md`，发布查旧 `references/release-discipline.md`，工作区与锁查旧 `references/worktree-lock.md`，标签查旧 `references/issue-status-labels.md` 与 `issue-type-labels.md`，项目接入查旧 `references/apply-to-project.md`。交付后按新文件替换，不并行。
+层未交付期间，该层对应的 v1 文件继续适用（按上一条 v1/v2 冲突规则）：发布查旧 `references/release-discipline.md`，工作区与锁查旧 `references/worktree-lock.md`，标签查旧 `references/issue-status-labels.md` 与 `issue-type-labels.md`，项目接入查旧 `references/apply-to-project.md`。B2 已交付的 L1/L2 直接按新文件走，不再并行查旧 `one-path` / `gate-details` / `phase-handoff` / `done-criteria`。
 
 ## 重读触发
 
