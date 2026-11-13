@@ -20,7 +20,7 @@ Every rule has a recorded origin: **37 entries** in [`references/rationale.md`](
 
 With a request like “add avatar uploads,” an agent without a shared understanding can deliver an unwanted database table and a size limit it invented.
 
-With spec-flow, a new request starts with the user's choice of direct implementation or a spec. For a spec, grill-me helps clarify the goal and real alternatives; spec-flow collects one proposal. No permits rethinking, not just local patching. No spec is written before the first Yes.
+With spec-flow, every new request starts with grilling-cards clarification; then the user chooses direct implementation or a spec. The clarification record stays with the spec or task PR. For a spec, grill-me continues the deeper analysis; spec-flow collects one proposal. No permits rethinking, not just local patching. No spec is written before the first Yes.
 
 **Yes creates the common outline and the same Draft PR before the page decision.** Pages wait for the user's design, then analyze behavior and APIs; no-page work analyzes rules and APIs against material that can be judged. Both paths converge on unresolved decisions, then one split-or-keep choice and a refined final spec. Sufficient prose, tables or diagrams are valid; four columns or three examples are not arbitrary admission requirements.
 
@@ -92,7 +92,7 @@ git clone https://github.com/Strelizialeomon/spec-flow.git ~/.claude/skills/spec
 
 Alternatively, clone into a code directory and symlink it into the client's skill location. The example is Claude Code's personal skill path; other clients use their own discovery locations. Installing a skill is not project adoption, configuration readiness or verified client behavior.
 
-Professional clarification in PLAN/ANALYZE needs loadable grill-me and its actual grilling dependency. If needed and missing, verify sources and exact installation locations before asking Yes/No. Refusal or failure pauses that clarification path, not direct implementation, an existing implementation or delivery. Do not silently substitute a template or claim a skill ran. Superpowers is not a dependency.
+Entry clarification needs loadable grilling-cards and its underlying grilling text; PLAN/ANALYZE deeper clarification needs loadable grill-me and grilling. If needed and missing, verify sources and exact installation locations before asking Yes/No. If entry clarification is unavailable, fall back to manual questions and record the reason; deeper clarification pauses that path. Direct implementation still keeps the entry clarification, but an existing implementation or delivery is not blocked. Do not silently substitute a template or claim a skill ran. Superpowers is not a dependency.
 
 <!-- s:usage -->
 ## Using it
@@ -103,7 +103,7 @@ Choose useful working methods: examples, diagrams, prose and tables should clari
 
 Say “apply spec-flow to this project” to adopt, or “update this project's spec-flow integration” for an explicit upgrade. Only authorized pointers and project locations are written. Repeat runs are idempotent; no copied workflow, surprise optional adoption or automatic migration of existing projects.
 
-The options remain `adr`, `doc-lifecycle`, `issue-status`, `issue-type` and `release`, all off by default. `release` covers **Git branching and release** together: adoption chooses single-mainline or three-layer operation and real branch mappings, not a separate Git switch. In three layers, ordinary documentation also enters staging by task. With no deployment obligation and required branch delivery/acceptance complete, it can finish and wait for the next normal snapshot; no documentation hotfix/tag ceremony. Code still requiring deployment cannot finish early.
+The options remain `adr`, `doc-lifecycle`, `issue-status`, `issue-type` and `release`, all off by default. `release` covers **Git branching and release** together: adoption chooses single-mainline or three-layer operation and real branch mappings, not a separate Git switch. Three-layer projects may use the staging line: issue integration branches are tested before a whole-issue merge; a pre-merge rehearsal against current staging and the four-class check move to the merge gate. In three layers, ordinary documentation also enters staging by task. With no deployment obligation and required branch delivery/acceptance complete, it can finish and wait for the next normal snapshot; no documentation hotfix/tag ceremony. Code still requiring deployment cannot finish early.
 
 Code mapping remains disabled unless explicitly requested for a trial/restoration; see [code-map](references/code-map.md). Already adopted ADR and document-reading rules apply at their existing moments. Read the current approved construction spec; do not redesign these systems merely for structural symmetry.
 

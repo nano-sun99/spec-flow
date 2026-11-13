@@ -20,7 +20,7 @@
 
 同一句“给个人资料页加头像上传”，没有共同理解时，agent 可能直接交来你没要的数据库表和自定上传上限。
 
-有 spec-flow，新需求先选直接干或开 spec。开 spec 后，grill-me 帮助查清目标和真实岔路，spec-flow 汇成同一份方案。No 可以重新构思，不限于局部打补丁；首次 Yes 前不写 spec。
+有 spec-flow，新需求先用 grilling-cards 澄清，再选直接干或开 spec；澄清记录随 spec 或原任务 PR 保留。开 spec 后，grill-me 继续帮助查清目标和真实岔路，spec-flow 汇成同一份方案。No 可以重新构思，不限于局部打补丁；首次 Yes 前不写 spec。
 
 **Yes 后先写公共骨架并开同一 Draft PR，再判断页面。** 有页面等你提供设计后分析交互与接口，无页面结合规则/接口及可判对错的材料分析。两支汇合，确认待决定缺口已补齐，再统一选拆或不拆、细化终稿；充分的段落、表格或图都可以，不靠固定四列或三个样例卡住。
 
@@ -92,7 +92,7 @@ git clone https://github.com/Strelizialeomon/spec-flow.git ~/.claude/skills/spec
 
 也可 clone 到自己的代码目录，再软链进客户端技能目录。Claude Code 的个人技能路径如上；其他客户端使用各自发现路径。安装技能不等于项目接入、配置就绪或客户端已经验证。
 
-PLAN / ANALYZE 的专业梳理需能加载 grill-me 及其实际调用的 grilling。需要且缺失时，核来源和具体安装位置再问 Yes/No；拒绝或失败只暂停该梳理路径，不挡直接干、既有实施或交付。不自动换模板或冒称技能已运行；superpowers 不是依赖。
+入口澄清需能加载 grilling-cards 及其读取的 grilling 正文；PLAN / ANALYZE 的深度梳理需能加载 grill-me 及其实际调用的 grilling。需要且缺失时，核来源和具体安装位置再问 Yes/No；入口澄清不可用才退回手动提问并记录原因，深度梳理拒绝或失败只暂停该路径。直接干仍做入口澄清；既有实施或交付不被阻断。不自动换模板或冒称技能已运行；superpowers 不是依赖。
 
 <!-- s:usage -->
 ## 怎么用
@@ -103,7 +103,7 @@ PLAN / ANALYZE 的专业梳理需能加载 grill-me 及其实际调用的 grilli
 
 接入说“把 spec-flow 应用到本项目”，显式升级说“更新本项目的 spec-flow 接入”：只写获准指针和项目落点，重复执行幂等，不复制流程、不顺手开启选修或迁移旧项目。
 
-选修仍是 `adr`、`doc-lifecycle`、`issue-status`、`issue-type`、`release`，默认关闭。`release` 同时管 **Git 分支流程与发布**：采用时明确单主线/三层及实际分支映射，不新增独立 Git 开关。三层普通文档也按任务进入 staging；无部署义务且分支交付/验收完成可结束，等下次正常快照，不另造文档热修/tag；仍需部署的代码不能提前完成。
+选修仍是 `adr`、`doc-lifecycle`、`issue-status`、`issue-type`、`release`，默认关闭。`release` 同时管 **Git 分支流程与发布**：采用时明确单主线/三层及实际分支映射，不新增独立 Git 开关。三层可采用 staging 线：issue 集成分支先测后整条合入；合入前对当前 staging 做合入预演，四类核对前移到合入闸。三层普通文档也按任务进入 staging；无部署义务且分支交付/验收完成可结束，等下次正常快照，不另造文档热修/tag；仍需部署的代码不能提前完成。
 
 代码地图默认停用，仅明确试用/恢复才读 [code-map](references/code-map.md)。已采用 ADR、文档读序等按其真实时点执行；当前获批施工规格仍必读，不为结构对称重做这些制度。
 

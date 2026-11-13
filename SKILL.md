@@ -9,7 +9,7 @@ description: "Use when 用户提出值得先设计的复杂需求、要求实施
 
 ## 从当前入口读
 
-- **新需求**：先读 `references/one-path.md` 的方案期，再读 `references/gate-details.md` 的入口与方案闸口。已有效的选择不重问。
+- **新需求**：第 1 步调用 `grilling-cards` 澄清（模型可调用；不得用普通提问代替，不可用才退回手动并记录原因），再选直接干 / 开 spec；然后读 `references/one-path.md` 的方案期与 `references/gate-details.md` 的入口与方案闸口。已有效的选择不重问（依据：rationale R38）。
 - **既有 issue / 实施委托**（如“请做 #N”）：读 issue、当前获批 spec 和项目指令；按 `references/gate-details.md` 识别授权，按 `references/phase-handoff.md` 留痕，再按 `references/worktree-lock.md` 认领。不重走新需求访谈。
 - **续接未合并 spec / PR 或暂停任务**：从 `references/one-path.md` 核当前阶段事实；确认的适用范围和恢复条件见 `references/gate-details.md`，交接记录见 `references/phase-handoff.md`。
 - **应用 / 更新项目接入**：读 `references/apply-to-project.md`，只处理获准的采用意图、指针和项目落点；不因普通任务补制度或自动迁移采用项目。

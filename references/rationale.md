@@ -693,3 +693,53 @@ TS 两个导入方结果的**数量相同、文件集合不同**；这也是只�
 **取代范围**：R34–R36 中旧页面/拆分时序和固定写法、R29 的状态/授权正文位置、R23 的入口完成判据位置按本轮 owner 归位；R32/R33 的文档一律非部署、三层只挑实现、单主线拒绝采用等旧口径以获批新范围为准。R1/R12/R18/R22/R30 的同步、改旧、例外、中性关联与独立授权边界继续有效。工作区锁、Git 危险操作、已采用规则及生产权限不因搬家丢失；旧规格/裁决只保留历史来源，不重写。本仓不自动升级真实采用仓、不建立采用名单、不新增脚本平台/CI/Hook。
 
 **验证与边界**：本次文档检查增加必要 owner 导航、章节存在性、状态定义归位与交付字段契约的静态护栏，保留原字符预算、双语/链接/采用登记；不按推荐写法的字面顺序、固定表头或样例数量判违规。实际客户端与 Git 假仓覆盖输入、预期、实际动作/产物和结果，完整证据随本次实施交付；范围只到临时任务、当次客户端及既有检查，不宣称所有模型/工具/故障认证，不进行真实采用项目或生产验证。实施审核与合并仍各等用户本次选择。
+
+## R38 入口澄清前移：grilling-cards 硬依赖与澄清记录
+
+来源：2026-11-11 三轮 staging 演练（录音 App、taoxi_system 审批拆分、客户线索筛选）的实际调用轨迹。第一次 `grill-me` 被 `disable-model-invocation` 拦住；第二次调的是新建的 `grilling-cards` 适配版；第三次在直接干分支手动提问。共同原因：流程只在「开 spec 后」要求 grill-me，直接干没有澄清步骤；可调用的 `grilling-cards` 没有被流程引用；手动选项卡与 grilling 输出形态相同，跳过调用不留痕。
+
+**决定**：
+
+- 新需求第 1 步先调 `grilling-cards`，再选直接干 / 开 spec；不得用普通提问代替。`grilling-cards` 读 `grilling` 原文，输出选项卡，每轮最多 4 题；`grill-me` 保留用户手动版。
+- skill 不可用时才退回手动提问，并在澄清记录写明原因。
+- 澄清记录（轮次、问题、用户决定）是 spec 送审 / 合并的必要信息；缺失或只写结论 → 阻断。直接干由原任务 PR 承接。
+
+**取代边界**：R36「开 spec 后立即加载 grill-me」改为「入口第 1 步加载 grilling-cards」；R36 的依赖检查、PLAN / ANALYZE 分工和安装边界继续有效。R37 的闸口、交付、完成边界不变。
+
+**验证**：本轮只改 Markdown；`scripts/check-docs.sh` 通过。实际调用轨迹如上来历；未做新客户端端到端验证。
+
+## R39 直接干路径：task 分支先测后合；rc 验收测试
+
+来源：2026-11-11 客户线索列表「渠道变更时间」筛选的直接干演练。演练中把 PR 先合进 staging 再问「用 staging 测吗」，暴露直接干路径缺「先测后合」规则；同时发现 rc tag 后没有验收测试——删 rc 监控时把整步删了，批次测试测的是 staging HEAD，替代不了 rc tag 构建。
+
+**决定**：
+
+- 直接干不补 spec / 执行 issue；从 staging 切 `task/<slug>`，worktree 目录 `task-<slug>`，分支名唯一即锁。
+- 改动和测试在 task 分支完成；PR 先不合，部署测试环境验收通过后再走合并闸进 staging。
+- 无 issue 标签；发布记录手工列直接干任务（分支、PR、commit、验收证据），不能靠标签查询。
+- 批次测试失败切 `fix/<slug>`，不回已合并的任务分支。
+- rc tag 后从 tag 构建、部署测试环境跑验收，通过才打最终 tag；rc 不做 15 分钟监控；生产部署后 Monitor 15 分钟，崩了停住上报，不自动回滚。
+
+**边界**：R38 的入口澄清与澄清记录不变；R30 的合并独立确认、R37 的流程 owner 与闸口不变。本决定只补直接干与 rc 验收，不改三层/单主线的既有分支映射；完整 staging 线落文档仍按演练文档待改清单推进。
+
+**验证**：本轮只改 Markdown；`scripts/check-docs.sh` 通过。直接干路径来自一次演练，未做真实项目发布验证。
+
+## R40 staging 线：整条 issue 合入、合入预演与四类清单前移
+
+来源：2026-11-11 至 11-13 的 staging 线演练（taoxi_system 审批拆分、客户线索筛选、录音 App 起步）与 2026-11-13 对 dev+pick 和 issue 集成分支的对照梳理。用户提出的问题是：一个需求 PR 很多时，怎么保证整体到达 staging 并被发布。演练先按「issue 分支 → 整条合入 staging」走通，再对照行业做法发现两处缺口：issue 分支只在自身绿，合入后可能和别的 issue 或 staging 新提交冲突；四类核对只在发布分拣时做，合入闸没有。
+
+**决定**：
+
+- staging 线按 issue 整条集成：从 `origin/staging` 开 `issue/<N>`，实现 PR 只回该分支；issue 分支验收通过后，整条合入 staging。不按任务挑 PR；单主线/既有三层未声明采用时仍按原映射。
+- 整条合入前做合入预演：把当前 staging 合入 issue 分支（或临时预演分支），在合并后的树上构建并跑本 issue 验收；绿了才进合入闸。预演回答「能不能安全合进去」，批次测试回答「这一批能不能发」。
+- 四类核对（spec、实现/测试、文档、依赖）从发布分拣前移到整条合入闸；缺项不放进闸。
+- 合入用真 merge，不 squash；merge commit 保留 issue 分支全部 PR 提交；`--first-parent` 看发布单元，完整历史看每份 PR。
+- 合入后标签「待上线」且不可逆；批次测试失败切 `fix/<N>`，不回退标签。
+- rc tag 后从 tag 构建、测试环境验收，通过才打最终 tag；rc 不做 15 分钟监控；生产部署后 Monitor 15 分钟，崩溃停住上报，不自动回滚。
+- 发布记录按 issue 引用交付区清单（分支、merge commit、PR、证据），不重抄；直接干任务手工列。
+
+**行业对照**：GitHub merge queue 用目标分支最新 + 排在前面的 PR 一起测，解决「每个 PR 单独绿、一起红」（https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue）；Gerrit `submitWholeTopic` 在单仓内保证 topic 原子提交，跨仓只尽力（https://gerrit-review.googlesource.com/Documentation/cross-repository-changes.html）；Chromium CQ 先跑 trybots 再提交（https://www.chromium.org/developers/testing/commit-queue/design/）；trunk-based + feature flag 用短分支和开关替代长集成分支（https://trunkbaseddevelopment.com/）；stacked PR 用依赖链替代集成分支（https://github.blog/changelog/2026-07-30-stacked-pull-requests-are-now-in-public-preview/）。staging 线取「集成分支 + 原子合入 + 预演」三件，不引入 merge queue 的 CI 改造，也不要求全量 feature flag。
+
+**取代边界**：R39 的直接干 task 分支先测后合、rc 验收、生产监控继续有效；R38 的入口澄清与澄清记录不变；R37 的流程 owner 与闸口不变。`release-discipline` 中「按任务挑 PR」对 staging 线改为「整条 issue 合入」；单主线和既有 pick 形态不改。`issue-status-labels` 新增「测试完成」，重定义「待测试 / 待上线」；采用 staging 线时标签默认使用，其他项目仍按选修。
+
+**验证**：本轮只改 Markdown；`scripts/check-docs.sh` 通过。行业对照来自公开文档，未在真实项目跑 merge queue 或跨仓 topic；staging 线仍以演练和假仓记录为限，未做真实生产发布验证。
