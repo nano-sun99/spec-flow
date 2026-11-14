@@ -3,8 +3,8 @@
 - 日期：2026-11-14
 - 依据：总纲 `docs/specs/2026-11-13-spec-flow-v2-master.md` §三 P8 准入 1-2、§十一 B4；批次 spec `docs/specs/2026-11-13-v2-b4-entry.md` §三.3 / §四
 - 范围：v1 `references/gate-details.md` §一 的 18 个闸口；drill `docs/specs/2026-11-11-branch-release-flow-drill.md` §一 的 25 步主流程（1-23 + 14a + 14b）
-- 口径：每条必须有 v2 运行落点（`references/v2/` 内的 L0 / L1 / L2 / L3 / L4），并给 `file:line` 证据。有意丢弃或降级必须指到 `docs/rebuild/inventory.md` 的 drop / 行为变化条目，并写明替代行为或「本期不保证」；「由 v1 继续」不算 v2 落点。
-- 结论：**18/18、25/25 有落点；0 条「无落点」**。其中 1 条有意丢弃（安装卡）、1 条行为变化（入口用户选不再必停）、4 条降级/并入（落点判定、送审、标签、hotfix 合回），均有 inventory 依据与替代行为/本期不保证，见各表「判定」列。
+- 口径：每条必须有 v2 运行落点（`references/v2/` 内的 L0 / L1 / L2 / L3 / L4），并给 `file:line` 证据。有意丢弃或降级必须指到 `docs/rebuild/inventory.md` 的对应处置行（drop 列表、行为变化表或 §2.2 逐条处置），并写明替代行为或「本期不保证」；「由 v1 继续」不算 v2 落点。
+- 结论：**18/18、25/25 有落点；0 条「无落点」**。其中 1 条有意丢弃（安装卡）、1 条行为变化（入口用户选不再必停）、5 条降级/并入（落点判定、公共缺口、送审、标签、hotfix 合回），均有 inventory 依据与替代行为/本期不保证，见各表「判定」列。
 
 ## 一、18 个闸口
 
@@ -19,7 +19,7 @@
 | 5 | 页面（有页面 / 无页面） | L2 D1 + L3 `spec` 对照 | `20-decisions.md:19`（D1 证据含页面/无页面）；`new-spec.md:15-17`；`spec.md:18-20` | 落点（D1） |
 | 6 | 公共缺口（给口径 / 补充入口） | L0-7 + L3 `spec` 缺口清单 | `00-constitution.md:44-49`（L0-7）；`spec.md:17`（未决问题标出）；`inventory.md:209`（D8） | 落点（并入 L0-7，行为变化 V3） |
 | 7 | 拆分（拆 / 不拆） | L2 D1 + L3 `spec` 拆分评估 | `20-decisions.md:16-21`；`spec.md:23-32` | 落点（D1 + playbook） |
-| 8 | 同意送审（送审 / 继续完善） | L2 D2 | `20-decisions.md:23-28`（确认 / 改 / 重做 + 审核档位）；`new-spec.md:19`；`review.md:15`；`inventory.md:106`（卡 8 → D2 选项） | 落点（并入 D2，行为变化 V4 / D9） |
+| 8 | 同意送审（送审 / 继续完善） | L2 D2 | `20-decisions.md:23-28`（确认 / 改 / 重做 + 审核档位）；`new-spec.md:19`；`review.md:15`；`inventory.md:106`（卡 8 → D2 选项）、`inventory.md:222`（V4） | 落点（并入 D2，行为变化 V4 / D9） |
 | 9 | 当份派审（不审 / 轻审 / 重审 / 重审+变异） | L2 D2 / D4 ① + L3 `review` | `20-decisions.md:27,41`；`review.md:12-28` | 落点（D2/D4 选项） |
 | 10 | 按发现修订（全改 / 只改阻断+高 / 不改） | L2 D2 / D4 修订范围 + L3 `review` | `20-decisions.md:27,41`（含砍路径 / 写明本期不保证）；`review.md:24` | 落点（D2/D4 选项） |
 | 11 | 观察式例外（纳入 / 不纳入） | L2 D1 子项 + L1 `15-records` §六 | `20-decisions.md:72-74`；`15-records.md:88-102` | 落点 |
@@ -107,7 +107,7 @@ print(n, len(bad)); print("\n".join(bad))
 PY
 ```
 
-结果（2026-11-14，提交 `fe8be6d`）：检查 148 条 v2 内部相对链接，0 断；入口 `SKILL.md` 直链 4 个核心文件、13 条 playbook、15 条案例、INDEX 与 50-adapters。
+结果（2026-11-14，提交 `626f6b3`）：检查 162 条 v2 内部相对链接，0 断；入口 `SKILL.md` 直链 4 个核心文件、13 条 playbook、15 条案例、INDEX 与 50-adapters。
 
 ## 六、P8 准入（只登记，不执行）
 
