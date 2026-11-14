@@ -6,9 +6,9 @@ description: "v2 草案入口（默认不启用）。用户明确说「按 v2 �
 # spec-flow v2（草案）
 
 - **是什么**：一个决策环境，不是流程编译器。给出五层知识（铁律 → 阶段合同 → 决策目录 → playbook → 案例），由 agent 按当前事实自选路径。
-- **何时用**：只有用户显式点名 v2 才加载。P0-P6 期间 v1（根 `SKILL.md` + 旧 `references/`）仍是运行权威；两个入口若拿到不同权威，停，报告，由用户指定。
-- **硬闸**：只有 D0-D7 八类用户决定（实施委托、范围与结构、设计确认、spec 合并、每份 PR 合并、整条 issue 合入 staging、生产发布、回滚）。这八类必须停；八类之外遇到 L0-7 承重缺口，走异常协议停。
-- **v1/v2 冲突**：同一窗口同时读 v1 与 v2 时，**v2 的铁律与入口优先**，v1 只补 v2 尚未交付的层；两处对同一动作给出不同要求，按 v2，并报告「v1 与 v2 不一致：<一句>」。不静默二选一。
+- **何时用**：只有用户显式点名 v2 才加载。P0-P6 期间 v1（根 `SKILL.md` + 旧 `references/`）仍是默认运行权威；两个入口若拿到不同权威，停，报告，由用户指定。
+- **硬闸**：D0-D7 八类用户决定（实施委托、范围与结构、设计确认、spec 合并、每份 PR 合并、整条 issue 合入 staging、生产发布、回滚）。这八类必须停；八类之外遇到 L0-7 承重缺口，走异常协议停。
+- **v1/v2 冲突**：v2 任务内同时读 v1 与 v2 时，**v2 铁律与入口优先**；v1 只保留两类用途——项目采用动作以 `references/apply-to-project.md` 为准（见 [50-adapters](50-adapters/README.md)），历史档案按需查。两处对同一动作给出不同要求，按 v2，并报告「v1 与 v2 不一致：<一句>」。不静默二选一。
 
 ## 运行循环
 
@@ -22,22 +22,28 @@ description: "v2 草案入口（默认不启用）。用户明确说「按 v2 �
 2. **定阶段**：这一单从哪段进、到哪段出；直接干可跳过澄清/设计。
 3. **出计划（按触发）**：仅当「新任务且范围不平凡」「即将不可逆」「预计问用户超过 3 次」才摆计划卡；其他情况一句话说明后直接做。
 4. **执行**：agent 自选路径；到硬闸摆事实 + 证据 + 选项。
-5. **异常**：先查 L0-L2（L3/L4 未交付时跳过）与事实；非不可逆且有安全默认 → 采用默认并报告；不可逆、无安全默认或多 owner → 停、给 2-3 个选项 + 推荐、等用户选。
+5. **异常**：先查 L0-L2、L3 playbook、L4 案例与事实；非不可逆且有安全默认 → 采用默认并报告；不可逆、无安全默认或多 owner → 停、给 2-3 个选项 + 推荐、等用户选。
 6. **收尾**：只有发生了「改变了什么行为」或「教了什么失败」才写案例；普通任务不写。只有发现铁律缺一条才提议替换/合并一条，否则只记案例。
 
-## 五层导航
+## 五层导航（一跳）
 
-| 层 | 文件 | 状态 |
+| 层 | 入口 | 内容 |
 |---|---|---|
-| L0 铁律（8 条，≤60 行） | [00-constitution.md](00-constitution.md) | 已交付（B1） |
-| L1 阶段合同（4 段，≤200 行） | [10-stages.md](10-stages.md) | 已交付（B2） |
-| L1 记录契约 | [15-records.md](15-records.md) | 已交付（B2） |
-| L2 决策目录（D0-D7，≤100 行） | [20-decisions.md](20-decisions.md) | 已交付（B2） |
-| L3 playbook（9 条核心 + 4 条支撑） | `30-playbooks/*.md` | B3 待交付 |
-| L4 案例库（首版 ≤15 条） | `40-cases/`、`40-cases/INDEX.md` | B3 待交付 |
-| 项目接入（5 个选修模块） | `50-adapters/` | B3 待交付 |
+| L0 铁律（≤60 行） | [00-constitution.md](00-constitution.md) | 8 条铁律 |
+| L1 阶段合同 + 记录（≤200 行） | [10-stages.md](10-stages.md) · [15-records.md](15-records.md) | 4 段完成条件 + 15 类记录 |
+| L2 决策目录（≤100 行） | [20-decisions.md](20-decisions.md) | D0-D7、标签规则、观察式例外 |
+| L3 playbook（示例非必须） | [new-spec](30-playbooks/new-spec.md) · [spec](30-playbooks/spec.md) · [direct](30-playbooks/direct.md) · [issue](30-playbooks/issue.md) · [review](30-playbooks/review.md) · [release](30-playbooks/release.md) · [hotfix](30-playbooks/hotfix.md) · [rollback](30-playbooks/rollback.md) · [batch-fix](30-playbooks/batch-fix.md) · [main-snapshot](30-playbooks/main-snapshot.md) · [labels](30-playbooks/labels.md) · [worktree](30-playbooks/worktree.md) · [adr](30-playbooks/adr.md) | 9 核心 + 4 支撑 |
+| L4 案例（≤15 条） | [INDEX](40-cases/INDEX.md) · [目录](40-cases/) | 叙述 + 提议，不是法条 |
+| 项目接入 | [50-adapters/README.md](50-adapters/README.md) | 5 个选修模块与只指向式契约 |
 
-层未交付期间，该层对应的 v1 文件继续适用（按上一条 v1/v2 冲突规则）：发布查旧 `references/release-discipline.md`，工作区与锁查旧 `references/worktree-lock.md`，标签查旧 `references/issue-status-labels.md` 与 `issue-type-labels.md`，项目接入查旧 `references/apply-to-project.md`。B2 已交付的 L1/L2 直接按新文件走，不再并行查旧 `one-path` / `phase-handoff` / `done-criteria`；旧 `gate-details` 只保留 B3 playbook 尚未覆盖的操作细则（落点判定、审核派发方法、文档检查入口、worktree 命令），与 L1/L2 冲突时按 L1/L2。
+阅读顺序见 [README.md](README.md)：L0 → L1 → L2 → L3 → L4。
+
+## 异常协议
+
+- 先查 L0-L2 落点，再查 L3 playbook、L4 案例，并核实际事实（`file:line`、diff、锁、证据）。
+- 非不可逆且有安全默认：采用默认并报告。
+- 不可逆、无安全默认、多 owner 或承重缺口（数值/接口/范围/权限/数据）：停，给 2-3 个选项 + 推荐，等用户选（L0-7）。
+- 失败、崩溃、监控异常：停住上报，不自动回滚、不静默重试（L0-4）。
 
 ## 重读触发
 
@@ -45,6 +51,6 @@ description: "v2 草案入口（默认不启用）。用户明确说「按 v2 �
 
 ## 边界
 
-- 本文件是 B1 骨架；B4 定稿并做入口链接审计。
-- 不写阶段合同、决策目录、playbook 或案例正文；它们各有唯一 owner。
-- `check-docs.sh` 只核 v1 结构；v2 的链接检查在 B4 建立。
+- P8 前根 `SKILL.md` 不动；v2 只在用户显式点名时使用。
+- 本文件只做入口与导航，不写步骤、不新增规则；各层各有唯一 owner。
+- 项目采用动作以 v1 `references/apply-to-project.md` 为准；[50-adapters](50-adapters/README.md) 只做形态映射。
