@@ -84,6 +84,7 @@
 
 ## 三、交付前置条件
 
+- **独立 worktree**：文件变更在独立 worktree 完成，不在共享主检出上改；用户当场明确要求直接改 / 不开 worktree 的除外，须记录理由。直接干、批次修复、hotfix 同样适用。
 - **分支起点与 PR 目标按项目形态**：staging 线从 `origin/staging` 开 `issue/<N>`，实现 PR 回该 issue 分支；三层从 `origin/<集成>` 开任务分支，PR 回集成分支；单主线从 `origin/<主线>` 开短期分支，PR 回主线。实际映射以项目指令为准；映射不明按 L0-7 问。
 - **锁键 = 精确分支名**：`issue/<N>`（无 slug、无前缀），worktree 目录 `issue-<N>`；该分支已被检出 = 有人在做，撞锁停，不双写同一工作区。
 - 直接干 `task/<slug>`；批次修复 `fix/<N>-<slug>`（直接干 `fix/<slug>`）；hotfix 从生产 tag 切 `hotfix/<tag>-<slug>`，修复提交打临时 tag、从该 tag 构建，不立即打生产 tag，跟下一班车。
