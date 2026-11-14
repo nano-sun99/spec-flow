@@ -1,5 +1,7 @@
 # Case: 2026-09-16 并发认领与 open 误判
 
+- **来源**：v1 rationale R6、R7；并发认领与 xhs-analysis #12 实例
+
 - **情况**：同一 issue 号出现 5 个进程并发认领；另一仓 xhs-analysis #12 有两个 agent 都以「issue 是 open」判断没人做。
 - **预期**：只有一个人做，另一个人另找活。
 - **实际**：5 个进程里恰好 1 个 `git worktree add` 成功，其余全被 git 以 fatal 拒绝；xhs-analysis 的两个 agent 都做完了，浪费一份。

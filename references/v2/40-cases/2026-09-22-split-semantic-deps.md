@@ -1,5 +1,7 @@
 # Case: 2026-09-22 拆分漏掉语义依赖
 
+- **来源**：v1 rationale R15；finance-workspace 与 taoxi_system 拆分记录
+
 - **情况**：finance-workspace 一份大 spec 拆成十二份；taoxi_system 拆成九份。
 - **预期**：文件地盘划清——独占 / 不碰 / 波次 / 共享件一个 owner / 跨份的账挂收尾份 / 拆分复核——子件就可以并行。
 - **实际**：finance 的两份各写了一遍「账号是否启用」判定，一份只认 `is_active = 1`、另一份只判「按姓名查得到行」，那家机构被静默挂空，拖到实施期 issue #7 才炸；另一处跨份落库载荷键没定，靠拆完那次「拆分本身」的复核才补出契约表。taoxi 九份里，一份必须改 `AlertNotifier.java:62` 一行注释，另一份不碰 `taoxi_cloud/**`、自己又声明不改该文件，谁都不动，成了跨份死锁。
