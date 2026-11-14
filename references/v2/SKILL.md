@@ -7,8 +7,8 @@ description: "v2 草案入口（默认不启用）。用户明确说「按 v2 �
 
 - **是什么**：一个决策环境，不是流程编译器。给出五层知识（铁律 → 阶段合同 → 决策目录 → playbook → 案例），由 agent 按当前事实自选路径。
 - **何时用**：只有用户显式点名 v2 才加载。P0-P6 期间 v1（根 `SKILL.md` + 旧 `references/`）仍是默认运行权威；两个入口若拿到不同权威，停，报告，由用户指定。
-- **硬闸**：D0-D7 八类用户决定（实施委托、范围与结构、设计确认、spec 合并、每份 PR 合并、整条 issue 合入 staging、生产发布、回滚）。这八类必须停；八类之外遇到 L0-7 承重缺口，走异常协议停。
-- **v1/v2 冲突**：v2 任务内同时读 v1 与 v2 时，**v2 铁律与入口优先**；v1 只保留两类用途——项目采用动作以 `references/apply-to-project.md` 为准（见 [50-adapters](50-adapters/README.md)），历史档案按需查。两处对同一动作给出不同要求，按 v2，并报告「v1 与 v2 不一致：<一句>」。不静默二选一。
+- **硬闸**：D0-D7 八类用户决定（实施委托、范围与结构、设计确认、spec 合并、每份 PR 的两个时点〔审核档位 / 合并〕、整条 issue 合入 staging、生产发布、回滚）。这八类必须停；八类之外遇到 L0-7 承重缺口，走异常协议停。
+- **v1/v2 冲突**：v2 任务内同时读 v1 与 v2 时，**v2 铁律与入口优先**；v1 保留三类用途——项目采用动作以 `references/apply-to-project.md` 为准（见 [50-adapters](50-adapters/README.md)）；v2 playbook 明确指向的 v1 操作细则（如 issue-type 迁移、release 历史操作）按该处引用；历史档案按需查。两处对同一动作给出不同要求，按 v2，并报告「v1 与 v2 不一致：<一句>」。不静默二选一。
 
 ## 运行循环
 
@@ -30,10 +30,11 @@ description: "v2 草案入口（默认不启用）。用户明确说「按 v2 �
 | 层 | 入口 | 内容 |
 |---|---|---|
 | L0 铁律（≤60 行） | [00-constitution.md](00-constitution.md) | 8 条铁律 |
-| L1 阶段合同 + 记录（≤200 行） | [10-stages.md](10-stages.md) · [15-records.md](15-records.md) | 4 段完成条件 + 15 类记录 |
+| L1 阶段合同（≤200 行） | [10-stages.md](10-stages.md) | 4 段完成条件 + 证据 + 出口 |
+| L1 记录 | [15-records.md](15-records.md) | 15 类记录 + 关单收尾 + 观察式例外 |
 | L2 决策目录（≤100 行） | [20-decisions.md](20-decisions.md) | D0-D7、标签规则、观察式例外 |
 | L3 playbook（示例非必须） | [new-spec](30-playbooks/new-spec.md) · [spec](30-playbooks/spec.md) · [direct](30-playbooks/direct.md) · [issue](30-playbooks/issue.md) · [review](30-playbooks/review.md) · [release](30-playbooks/release.md) · [hotfix](30-playbooks/hotfix.md) · [rollback](30-playbooks/rollback.md) · [batch-fix](30-playbooks/batch-fix.md) · [main-snapshot](30-playbooks/main-snapshot.md) · [labels](30-playbooks/labels.md) · [worktree](30-playbooks/worktree.md) · [adr](30-playbooks/adr.md) | 9 核心 + 4 支撑 |
-| L4 案例（≤15 条） | [INDEX](40-cases/INDEX.md) · [目录](40-cases/) | 叙述 + 提议，不是法条 |
+| L4 案例（≤15 条） | [INDEX](40-cases/INDEX.md) · [09-11](40-cases/2026-09-11-criterion-sync.md) · [09-16](40-cases/2026-09-16-claim-race.md) · [09-22 拆](40-cases/2026-09-22-split-semantic-deps.md) · [09-22 副本](40-cases/2026-09-22-copy-drift.md) · [09-26](40-cases/2026-09-26-rule-bloat.md) · [10-04](40-cases/2026-10-04-merged-spec-edit.md) · [10-06](40-cases/2026-10-06-long-tail-close.md) · [10-15](40-cases/2026-10-15-adoption-contract.md) · [10-17 地图](40-cases/2026-10-17-code-map.md) · [10-17 假绿](40-cases/2026-10-17-false-green.md) · [10-24](40-cases/2026-10-24-no-delegation.md) · [11-03 发布](40-cases/2026-11-03-release-unclear.md) · [11-03 顺序](40-cases/2026-11-03-spec-order.md) · [11-07](40-cases/2026-11-07-review-scope-explosion.md) · [11-11](40-cases/2026-11-11-staging-drill.md) | 叙述 + 提议，不是法条 |
 | 项目接入 | [50-adapters/README.md](50-adapters/README.md) | 5 个选修模块与只指向式契约 |
 
 阅读顺序见 [README.md](README.md)：L0 → L1 → L2 → L3 → L4。
