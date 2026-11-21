@@ -11,7 +11,7 @@
 
 | 旧文件 | 处置 | 新落点 |
 |---|---|---|
-| `SKILL.md`（43 行） | 保留（载体切换） | `references/v2/SKILL.md`；根文件不动，P8 再切。理由：入口只做导航，规则各有 owner |
+| `SKILL.md` | 保留路径，切换默认入口 | 根文件统一选择版本，默认指向 `references/v2/SKILL.md`；明确指定 v1 时仍能从原文件找到 v1 导航 |
 | `references/one-path.md` | 拆解（理由见 §2.1） | 4 段阶段合同 `10-stages.md` + `20-decisions.md` + `30-playbooks/`；逐条见 §二 |
 | `references/gate-details.md` | 拆解（理由见 §2.2） | `00-constitution.md`（铁律）+ `20-decisions.md`（D0-D7）+ `30-playbooks/`；逐条见 §二 |
 | `references/phase-handoff.md` | 合并 | `15-records.md`（15 类记录 = 11 类交付/授权与决定 + 4 类补充）；逐条见 §二 |
@@ -31,6 +31,12 @@
 | `references/code-map.md` | 降级 | `30-playbooks/`（实施辅助）；默认停用不变；安装/写入授权细则留在旧文件，不搬 |
 | `references/rationale.md`（745 行 / R1-R40） | 归档 + 案例 | 原文保留为历史档案；选材进 `40-cases/`；新案例进案例库，R 号只用于铁律变更 |
 | drill（218 行） | 案例 | `40-cases/` 候选（staging 线演练、多 PR 整体到达、落点判定）；B3 按选材标准保留/归档 |
+
+### 默认入口切换时的旧文件清单
+
+- 上表 17 个旧 `references/*.md` 保留原路径，供明确指定 v1 的任务和既有链接使用。上表及下文记录各自的 v2 落点。
+- v2 继续通过 `50-adapters/` 借用适用的 v1 接入条款；v2 playbook 中明确引用的迁移及发布操作也继续使用旧路径。
+- 历史规格、案例及 rationale 供追溯使用。既有项目入口随各自采用的版本走；此次切换只改中央仓库入口。路径不移动，采用项目无需为链接改写而迁移。
 
 ## 二、核心三份逐条处置
 
