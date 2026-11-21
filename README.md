@@ -9,7 +9,7 @@
 
 There is no runtime or service: these are Markdown instructions an agent reads. The spec path preserves an approved specification, an execution issue and traceable sources. Direct implementation creates no mandatory spec or execution issue, but still has delivery and merge gates. Code mapping remains off by default; source, the actual diff and relevant tests establish impact.
 
-`SKILL.md` is **entry and navigation only**. Existing budgets remain **4,700 characters** for its body, **500** for frontmatter and **5,200** overall, including newlines. [`scripts/check-docs.sh`](scripts/check-docs.sh) also guards against hiding rules in metadata. Character budgets do not guarantee tokens or retention across clients; reread action-specific rules when unavailable or changed.
+`SKILL.md` is the entry point for [v2](references/v2/SKILL.md), the default. Ask explicitly to use v1 when needed. [`scripts/check-docs.sh`](scripts/check-docs.sh) checks the existing limits of **4,700 characters** for the body, **500** for frontmatter and **5,200** overall, including newlines.
 
 Every rule has a recorded origin: **37 entries** in [`references/rationale.md`](references/rationale.md) retain cases, decisions, costs and verification limits. History is not a second set of operating rules.
 
@@ -20,9 +20,9 @@ Every rule has a recorded origin: **37 entries** in [`references/rationale.md`](
 
 With a request like “add avatar uploads,” an agent without a shared understanding can deliver an unwanted database table and a size limit it invented.
 
-With spec-flow, every new request starts with grilling-cards clarification; then the user chooses direct implementation or a spec. The clarification record stays with the spec or task PR. For a spec, grill-me continues the deeper analysis; spec-flow collects one proposal. No permits rethinking, not just local patching. No spec is written before the first Yes.
+Spec-flow v2 checks for existing answers and asks only about gaps that affect scope, acceptance or authorization. It can make a clear, small change directly. For a complex request, it clarifies against existing project facts or approved requirements and records the decisions and their sources.
 
-**Yes creates the common outline and the same Draft PR before the page decision.** Pages wait for the user's design, then analyze behavior and APIs; no-page work analyzes rules and APIs against material that can be judged. Both paths converge on unresolved decisions, then one split-or-keep choice and a refined final spec. Sufficient prose, tables or diagrams are valid; four columns or three examples are not arbitrary admission requirements.
+When a spec is needed, keep the outline, design comparison and final version in one draft. For a page, use the user's design to analyze interactions and APIs. Other work uses verifiable inputs and outputs to define acceptance.
 
 An implementable spec and consent to send it for review lead to that deliverable's review choice, chosen revisions and a separate merge confirmation. After the spec merges and execution issues are handed off, implementation waits for explicit delegation. Implementation delivery gets a fresh review choice. Exceptions and edits to merged specs are conditional, not questions on every run.
 
@@ -52,7 +52,7 @@ The rationale keeps the original evidence and its limits; old cases do not expan
 - **Design**: clarification and proposal confirmation → common outline/Draft → page or rule analysis → common gap confirmation → one split decision → final spec → review/separate merge → execution handoff.
 - **Implementation**: explicit delegation → isolated claim, implementation/tests/supporting docs → fresh review/separate merge → all actual sources and evidence → necessary acceptance and applicable release → close-out.
 
-The sole operating owners are [one-path](references/one-path.md) for flow/state, [gate-details](references/gate-details.md) for choices/authority, [phase-handoff](references/phase-handoff.md) for delivery information and [done-criteria](references/done-criteria.md) for completion. The entrypoint and guides do not repeat those rules.
+See the [v2 file map](references/v2/README.md) for the current rules. The file table below also keeps the original paths for explicit v1 work and historical references.
 
 <!-- s:self-review -->
 ## The one rule worth stealing: a subagent is not a second opinion
@@ -87,17 +87,17 @@ Promotion reads expected deliverables before checking the design PR and all impl
 ## Install
 
 ```bash
-git clone https://github.com/Strelizialeomon/spec-flow.git ~/.claude/skills/spec-flow
+git clone --branch rebuild/v2 https://github.com/nano-sun99/spec-flow.git ~/.claude/skills/spec-flow
 ```
 
 Alternatively, clone into a code directory and symlink it into the client's skill location. The example is Claude Code's personal skill path; other clients use their own discovery locations. Installing a skill is not project adoption, configuration readiness or verified client behavior.
 
-Entry clarification needs loadable grilling-cards and its underlying grilling text; PLAN/ANALYZE deeper clarification needs loadable grill-me and grilling. If needed and missing, verify sources and exact installation locations before asking Yes/No. If entry clarification is unavailable, fall back to manual questions and record the reason; deeper clarification pauses that path. Direct implementation still keeps the entry clarification, but an existing implementation or delivery is not blocked. Do not silently substitute a template or claim a skill ran. Superpowers is not a dependency.
+V2 handles clarification using the client's existing choice tool or equivalent text options. For project adoption, see the [v2 adoption instructions](references/v2/50-adapters/README.md).
 
 <!-- s:usage -->
 ## Using it
 
-Describe a request or invoke spec-flow. For an existing task, say “do #12.” Continue the current valid phase instead of restarting an interview. The strict same-window bare-start rules are in gate-details; a globally unique task is not enough to infer delegation.
+Describe a request or invoke spec-flow. For an existing task, say “do #12.” Continue from the current valid phase. See the [v2 decision catalog](references/v2/20-decisions.md) for the evidence required to establish delegation.
 
 Choose useful working methods: examples, diagrams, prose and tables should clarify rules, APIs and verifiable acceptance. Honor explicitly agreed project formats, and do not use replaceable guides to omit necessary contracts. Within-scope implementation methods need no approval at every internal step; stop the affected portion at actual declared stopping points.
 
@@ -119,7 +119,8 @@ This reorganization follows merged design PR #164 and execution issue #165. Impl
 
 | File | Responsibility |
 |---|---|
-| `SKILL.md` | Entry/navigation, not complete workflows/cards/templates |
+| `SKILL.md` | Version selection, with v2 as the default |
+| `references/v2/` | Default workflow, evidence and project adoption |
 | `AGENTS.md`, `CLAUDE.md` | Repository maintenance rules; the latter imports the former |
 | `references/one-path.md` | Sole flow/final diagram/state and transition owner |
 | `references/gate-details.md` | Sole choices, approval scope, release/stop, review and merge owner |

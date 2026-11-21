@@ -32,3 +32,7 @@ git log --oneline 6b447ab..HEAD -- SKILL.md references/ README.md README.zh-CN.m
 ## 重新归类
 
 除上述一行外无新增改动，盘点表 §一 的文件级处置继续有效。
+
+## 默认入口切换（P8）
+
+用户明确要求默认使用 v2。根入口改为默认加载 v2，明确指定 v1 的任务继续使用原有一套文档。两份 README 同步说明当前入口。[迁移盘点](inventory.md#默认入口切换时的旧文件清单)记录旧路径、v2 引用及既有项目的处置。

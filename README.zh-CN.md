@@ -9,7 +9,7 @@
 
 它没有运行时或服务，是 agent 读取的 Markdown。开 spec 的路径保留获批规格、执行 issue 和可追溯来源；直接干不补造 spec 或执行单，但不免实施交付与合并确认。代码地图仍默认停用，影响判断靠源码、实际 diff 和相关测试。
 
-`SKILL.md` **只做入口和导航**。正文预算仍为 **4,700 字符**、frontmatter **500**、整份 **5,200**，含换行；[`scripts/check-docs.sh`](scripts/check-docs.sh) 不把规则挤进元信息。预算不是跨客户端 token 或压缩保证，动作细则不可见或版本变化时重新读取。
+`SKILL.md` **只做入口和导航**，默认加载 [v2](references/v2/SKILL.md)。需要 v1 时可明确说「按 v1 走」。正文预算仍为 **4,700 字符**、frontmatter **500**、整份 **5,200**，含换行；见 [`scripts/check-docs.sh`](scripts/check-docs.sh)。
 
 每条规则有可回溯来源：[`references/rationale.md`](references/rationale.md) 的 **37 条记录**保留案例、决定、代价和验证边界，历史不是另一套运行规则。
 
@@ -20,9 +20,9 @@
 
 同一句“给个人资料页加头像上传”，没有共同理解时，agent 可能直接交来你没要的数据库表和自定上传上限。
 
-有 spec-flow，新需求先用 grilling-cards 澄清，再选直接干或开 spec；澄清记录随 spec 或原任务 PR 保留。开 spec 后，grill-me 继续帮助查清目标和真实岔路，spec-flow 汇成同一份方案。No 可以重新构思，不限于局部打补丁；首次 Yes 前不写 spec。
+spec-flow v2 先查已有答案，只把影响范围、验收或授权的缺口交给你选。明确的小改可以直接做。有复杂需求时，按现有规格或项目事实澄清，记录决定及其来源。
 
-**Yes 后先写公共骨架并开同一 Draft PR，再判断页面。** 有页面等你提供设计后分析交互与接口，无页面结合规则/接口及可判对错的材料分析。两支汇合，确认待决定缺口已补齐，再统一选拆或不拆、细化终稿；充分的段落、表格或图都可以，不靠固定四列或三个样例卡住。
+需要规格时，骨架、设计对照和终稿沿用同一份稿。有页面从你给的设计分析交互与接口，无页面用可判对错的输入输出补齐验收。
 
 可实施且你同意送审才进入本份审核；按选择修订，单独确认合并。规格合并、执行单交接后停等明确实施委托；实施交付重新选档，不继承方案期审核。例外和改旧规格只在触发时问。
 
@@ -52,7 +52,7 @@
 - **方案期**：澄清与方案确认 → 公共骨架/Draft → 页面或规则分析 → 公共缺口确认 → 统一拆分 → 终稿 → 审核/独立合并 → 执行任务交接。
 - **实施期**：明确委托 → 隔离认领、实现/测试/配套文档 → 本份审核/独立合并 → 实际来源及证据回填 → 必要验收与适用发布 → 完成收尾。
 
-职责唯一正文：流程/状态在 [one-path](references/one-path.md)，选项与权限在 [gate-details](references/gate-details.md)，交付信息在 [phase-handoff](references/phase-handoff.md)，完成在 [done-criteria](references/done-criteria.md)。入口和指南不重复立规。
+当前职责与正文见 [v2 文件地图](references/v2/README.md)。下方文件表也保留 v1 的原路径，供明确走 v1 或追溯历史时使用。
 
 <!-- s:self-review -->
 ## 唯一值得直接拿走的一条：分身不是第二个人
@@ -87,17 +87,17 @@ agent 派出去的仍是它自己的执行分身。换模型、名字或 prompt 
 ## 装
 
 ```bash
-git clone https://github.com/Strelizialeomon/spec-flow.git ~/.claude/skills/spec-flow
+git clone --branch rebuild/v2 https://github.com/nano-sun99/spec-flow.git ~/.claude/skills/spec-flow
 ```
 
 也可 clone 到自己的代码目录，再软链进客户端技能目录。Claude Code 的个人技能路径如上；其他客户端使用各自发现路径。安装技能不等于项目接入、配置就绪或客户端已经验证。
 
-入口澄清需能加载 grilling-cards 及其读取的 grilling 正文；PLAN / ANALYZE 的深度梳理需能加载 grill-me 及其实际调用的 grilling。需要且缺失时，核来源和具体安装位置再问 Yes/No；入口澄清不可用才退回手动提问并记录原因，深度梳理拒绝或失败只暂停该路径。直接干仍做入口澄清；既有实施或交付不被阻断。不自动换模板或冒称技能已运行；superpowers 不是依赖。
+v2 自己完成需求澄清，用客户端现有的选项卡或等价文字。接入项目时按 [v2 接入说明](references/v2/50-adapters/README.md) 处理。
 
 <!-- s:usage -->
 ## 怎么用
 
-描述需求或点名 spec-flow；实施已有单直接说“做 #12”。既有任务从当前有效阶段接，不重新访谈；同窗口紧接唯一交接时的裸开工命令及其严格边界见 gate-details，不凭全局唯一任务猜授权。
+描述需求或点名 spec-flow；实施已有单直接说“做 #12”。既有任务从当前有效阶段接，不重新访谈。委托的证据要求见 [v2 决策目录](references/v2/20-decisions.md)。
 
 方案指南可按需选用：样例、图、段落和表格都服务于可判定规则/接口/验收。项目明确格式仍遵守，不因指南可替换省必要合同。范围内改实现方法不逐内部阶段求许可，真正触发停止点才停受影响部分。
 
@@ -119,7 +119,8 @@ git clone https://github.com/Strelizialeomon/spec-flow.git ~/.claude/skills/spec
 
 | 文件 | 职责 |
 |---|---|
-| `SKILL.md` | 入口与导航，不承接完整流程/卡片/模板 |
+| `SKILL.md` | 选择版本，默认加载 v2 |
+| `references/v2/` | 当前默认流程、证据与项目接入 |
 | `AGENTS.md`、`CLAUDE.md` | 本仓维护规矩，后者导入前者 |
 | `references/one-path.md` | 流程/定稿图/状态与衔接唯一正文 |
 | `references/gate-details.md` | 选项、批准范围、放行/停止、审核与合并唯一正文 |
