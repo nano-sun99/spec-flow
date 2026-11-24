@@ -23,7 +23,7 @@
 | 9 | 当份派审（不审 / 轻审 / 重审 / 重审+变异） | L2 D2 / D4 ① + L3 `review` | `20-decisions.md:27,41`；`review.md:12-28` | 落点（D2/D4 选项） |
 | 10 | 按发现修订（全改 / 只改阻断+高 / 不改） | L2 D2 / D4 修订范围 + L3 `review` | `20-decisions.md:27,41`（含砍路径 / 写明本期不保证）；`review.md:24` | 落点（D2/D4 选项） |
 | 11 | 观察式例外（纳入 / 不纳入） | L2 D1 子项 + L1 `15-records` §六 | `20-decisions.md:72-74`；`15-records.md:96-108` | 落点 |
-| 12 | 改已合并 spec（新开 / 改旧的） | L0-1 + L2 D3 条件分支 + L1 `15-records` | `00-constitution.md:9`；`20-decisions.md:34`；`15-records.md:79`；`spec.md:72` | 落点 |
+| 12 | 改已合并 spec（新开 / 改旧的） | L0-1 + L2 D3 条件分支 + L1 `15-records` | `00-constitution.md:9`；`20-decisions.md:34`；`15-records.md:79`；`spec.md:75` | 落点 |
 | 13 | 合并（每份 PR） | L2 D4 ② + L0-5 + L3 `review` | `20-decisions.md:39-42`；`00-constitution.md:32-36`；`review.md:27` | 落点 |
 | 14 | 整条 issue 合入 staging | L2 D5 + L1 交付段 + L3 `issue` | `20-decisions.md:44-49`；`10-stages.md:74`；`issue.md:34` | 落点 |
 | 15 | 标签转换（转 / 先不转） | L2 标签规则 + L3 `labels` | `20-decisions.md:65-70`（只有待上线/待验证/关单必须确认）；`labels.md:12-35,55-63`；`inventory.md:207,220`（D6 / V2） | 落点（降级为视图；三标签保留确认） |

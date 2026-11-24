@@ -27,7 +27,7 @@
 | 1 | `SKILL.md`、`00-constitution.md`、`10-stages.md`、`20-decisions.md` | 读事实：无 open issue 覆盖、分支未合入候选；定阶段为澄清/交付，跳过设计 | 0（入口由 agent 判定并报告，用户可按 L0-6 否决） |
 | 2 | `30-playbooks/direct.md:14`（L0-6 计划说明） | 一句话说明改哪里、怎么改、验收是什么 | 0（报告后可被否决） |
 | 3 | `30-playbooks/issue.md:12-23`（落点表）、`direct.md:15` | 落点判定：无命中，边界清楚 → 直接干 | 0 |
-| 4 | `30-playbooks/worktree.md:14-16`、`10-stages.md:99-101` | 从开发基线切 `task/<slug>`、worktree `task-<slug>` | 0 |
+| 4 | `30-playbooks/worktree.md:14-16`、`10-stages.md:102` | 从开发基线切 `task/<slug>`、worktree `task-<slug>` | 0 |
 | 5 | `10-stages.md:69-82`（交付段） | 实现 + 必要测试，在 task 分支完成 | 0 |
 | 6 | `direct.md:17-18` | PR 先不合；有测试环境则部署 PR 分支验收 | 0 |
 | 7 | `20-decisions.md:39`（D4 ①）、`review.md:15` | 选当份审核档位与修订范围 | **1** |
