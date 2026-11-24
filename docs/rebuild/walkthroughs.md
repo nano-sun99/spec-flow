@@ -27,8 +27,8 @@
 | 1 | `SKILL.md`、`00-constitution.md`、`10-stages.md`、`20-decisions.md` | 读事实：无 open issue 覆盖、分支未合入候选；定阶段为澄清/交付，跳过设计 | 0（入口由 agent 判定并报告，用户可按 L0-6 否决） |
 | 2 | `30-playbooks/direct.md:14`（L0-6 计划说明） | 一句话说明改哪里、怎么改、验收是什么 | 0（报告后可被否决） |
 | 3 | `30-playbooks/issue.md:12-23`（落点表）、`direct.md:15` | 落点判定：无命中，边界清楚 → 直接干 | 0 |
-| 4 | `30-playbooks/worktree.md:14-16`、`10-stages.md:87-90` | 从开发基线切 `task/<slug>`、worktree `task-<slug>` | 0 |
-| 5 | `10-stages.md:58-70`（交付段） | 实现 + 必要测试，在 task 分支完成 | 0 |
+| 4 | `30-playbooks/worktree.md:14-16`、`10-stages.md:98-100` | 从开发基线切 `task/<slug>`、worktree `task-<slug>` | 0 |
+| 5 | `10-stages.md:68-81`（交付段） | 实现 + 必要测试，在 task 分支完成 | 0 |
 | 6 | `direct.md:17-18` | PR 先不合；有测试环境则部署 PR 分支验收 | 0 |
 | 7 | `20-decisions.md:39`（D4 ①）、`review.md:15` | 选当份审核档位与修订范围 | **1** |
 | 8 | `review.md:24` | 假设首轮零发现，不触发修订卡 | 0 |
@@ -37,7 +37,7 @@
 | 异常 | `batch-fix.md:14-20` | 批次失败 → 停住记录、切 `fix/<slug>`、重跑批次 | 0（D6 范围变化时才重新批准） |
 
 **卡点**：
-- 入口不再有「直接干 / 开 spec」卡（`inventory.md:206` D5）。agent 必须主动报告入口（`10-stages.md:37`），否则用户失去否决点；回放中已报告，用户未否决。
+- 入口不再有「直接干 / 开 spec」卡（`inventory.md:206` D5）。agent 必须主动报告入口（`10-stages.md:44`），否则用户失去否决点；回放中已报告，用户未否决。
 - 直接干无 issue 标签，发布记录不能靠标签查询（`direct.md:20`）；这是 v1 已有要求，不是 v2 新增。
 - 无阻断：两份文档（`10-stages` 交付段 + `direct`）衔接完整，没有需要补规则才能走的缺口。
 
@@ -58,11 +58,11 @@
 | 5 | `15-records.md:11-21,45-58`、`new-spec.md:19` | 开执行 issue，写获批依据、预期交付、交接字段 | 0 |
 | 6 | `20-decisions.md:9-14`（D0）、`new-spec.md:20` | **停**：等明确实施委托；父单/PR/锁/审核都不算 | 0（用户说「请做 #N」时按 D0 记录授权） |
 | 7 | `15-records.md:25-43`、`issue.md:26-30` | 写 D0 授权 8 字段（issue open、spec 合并提交、范围、锁、无第二份授权），认领 `issue/<N>` | 0 |
-| 8 | `issue.md:31`、`10-stages.md:58-70` | 实现 PR 只回 `issue/<N>` | 0 |
+| 8 | `issue.md:31`、`10-stages.md:68-81` | 实现 PR 只回 `issue/<N>` | 0 |
 | 9 | `20-decisions.md:39`（D4 ①） | 选实施 PR 审核档位与修订范围 | **4** |
 | 10 | `20-decisions.md:41`（D4 ②） | 实施 PR 合并卡 | **5** |
-| 11 | `10-stages.md:62`、`issue.md:32`、`15-records.md:19` | issue 分支验收 + 四类逐项（spec / 实现测试 / 文档 / 依赖），缺项记「不适用及原因」 | 0 |
-| 12 | `10-stages.md:14,63`、`issue.md:33`、`15-records.md:18` | 合入预演：把当前 staging 合入 issue 分支，真实 merge 树构建并跑本 issue 验收 | 0 |
+| 11 | `10-stages.md:72-73`、`issue.md:32`、`15-records.md:19` | issue 分支验收 + 四类逐项（spec / 实现测试 / 文档 / 依赖），缺项记「不适用及原因」 | 0 |
+| 12 | `10-stages.md:14,73`、`issue.md:33`、`15-records.md:18` | 合入预演：把当前 staging 合入 issue 分支，真实 merge 树构建并跑本 issue 验收 | 0 |
 | 13 | `20-decisions.md:44-49`（D5） | 整条合入卡：issue、分支、完整提交、预演证据、四类、未处理项、staging 当前提交 | **6** |
 | 14 | `labels.md:22`、`20-decisions.md:65-70` | 标签转「待上线」必须用户确认 | 另计 |
 | 15 | `release.md:16-18`、`10-stages.md:15-16` | 批次测试 → rc 附注 tag → 从 rc tag 构建验收 | 0 |
@@ -86,7 +86,7 @@
 
 | 步 | 读哪份 v2 文档 | 判定 / 动作 | 用户确认 |
 |---|---|---|---|
-| 1 | `hotfix.md:14`、`10-stages.md:90,92` | 从生产 tag 切 `hotfix/<tag>-<slug>`，不从 staging / 集成 / 生产 HEAD 切 | 0 |
+| 1 | `hotfix.md:14`、`10-stages.md:101` | 从生产 tag 切 `hotfix/<tag>-<slug>`，不从 staging / 集成 / 生产 HEAD 切 | 0 |
 | 2 | `hotfix.md:15` | 只修该问题，不夹带其他改动 | 0 |
 | 3 | `hotfix.md:16` | 在修复提交打临时 tag，从该 tag 构建、部署可用环境验证 | 0 |
 | 4 | `20-decisions.md:39`（D4 ①）、`hotfix.md:17` | 选 hotfix PR 审核档位与修订范围 | **1** |
