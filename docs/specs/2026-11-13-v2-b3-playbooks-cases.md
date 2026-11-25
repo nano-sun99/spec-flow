@@ -6,16 +6,17 @@
 - 批次：B3 / P4 playbooks + P5 案例库
 - 依赖：B1、B2
 - 下游：B4
+- 2026-11-25 更新：新增 `change-protocol.md`（第 10 条核心）；本页计数同步为 10 + 4。
 
 ## 一、目标
 
-把常见走法写成 9 条 playbook，把演练/事故/项目适配迁移成受控的案例库。案例不是法条；playbook 不是必须顺序。
+把常见走法写成 10 条 playbook，把演练/事故/项目适配迁移成受控的案例库。案例不是法条；playbook 不是必须顺序。
 
 ## 二、交付物
 
 | 文件 | 内容 |
 |---|---|
-| `references/v2/30-playbooks/*.md` | 9 条核心：新需求、直接干、续 issue、发布、hotfix、回滚、批次失败、main 分叉、审核与修订；4 条支撑：标签 `labels.md`、工作区与锁 `worktree.md`、ADR `adr.md`、规格成熟度与拆分 `spec.md` |
+| `references/v2/30-playbooks/*.md` | 10 条核心：新需求、直接干、续 issue、发布、hotfix、回滚、批次失败、main 分叉、审核与修订、替换式变更（`change-protocol.md`）；4 条支撑：标签 `labels.md`、工作区与锁 `worktree.md`、ADR `adr.md`、规格成熟度与拆分 `spec.md` |
 | `references/v2/50-adapters/*.md` | 项目接入：apply-to-project + adoption-model 的形态映射；保留 5 个选修模块与只指向式契约 |
 | `references/v2/40-cases/*.md` | 首版 ≤15 条案例；每条按总纲 §九 格式 |
 | `references/v2/40-cases/INDEX.md` | 案例索引：case 名 + 何时读 + 关键词 |
@@ -31,7 +32,7 @@
 
 ## 四、验收
 
-- [ ] 9 条核心 + 4 条支撑 playbook 齐全；每条有适用、路径、失败模式、证据、注意。
+- [ ] 10 条核心 + 4 条支撑 playbook 齐全；每条有适用、路径、失败模式、证据、注意。
 - [ ] 4 条支撑的验收补充：`labels.md` 含阶段/类型标签与盘点动作、`worktree.md` 含锁与撞锁/放锁、`adr.md` 含采用与取代链、`spec.md` 含成熟度/拆分/DoR 表达。
 - [ ] 审核派发方法、严重度分级、R1-R3 轮次上限在 `review.md` 内写全；档位名称/成本/选择权/时点引用 L1/L2，不重定义。
 - [ ] 文档检查（摆派审卡前跑、红/存量/豁免处置）在 `review.md` 内写全，并在阶段合同有对应出口证据。

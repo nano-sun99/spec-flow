@@ -20,7 +20,7 @@ description: "spec-flow v2 的运行入口。根 SKILL.md 默认指向本页，�
 | 核实已有的结果能否满足本次请求 | 满足就直接交付并结束。例如既有 CSV 的记录已按获批范围过滤、格式也吻合，答复列出范围依据和结果路径。此时没有待执行的改动、待选的范围或需要确认的计划。 |
 | 完善现有需求稿，只缺一项会影响范围、目标、验收、权限或数据的决定 | 用**业务选项卡**直接问这一项。比如导出范围待定，按钮给「仅本人」「全组」，允许自填；答了写回同一份稿。范围已定则引用原决定。选择范围不授权取数。 |
 | 对照用户给的设计与现有规格 | 在同一稿中核对实际交互、状态和接口，尚无依据的细节记为待核。一次对照涵盖多个页面状态，仍是同一份交付。 |
-| 明确的单处修改或按已有委托交付 | 一句话说明后执行并验证。改名时，原文件用来定位旧名，目标文本取自用户原话；单字母也可以是完整名称。「把表头 A 改为 B，顺序不变」就把原列名 `A` 替换成字面值 `B`，再核对其他列和数据。 |
+| 明确的单处修改或按已有委托交付 | 一句话说明后执行并验证。改判据 / 术语 / 范围 / owner / 边界 / 分类时，按 [change-protocol](30-playbooks/change-protocol.md) 交 manifest 并跑 `check-change.py`；纯措辞改名且不改变判定 / 范围 / 默认 / 权限的，不触发本协议。改名时，原文件用来定位旧名，目标文本取自用户原话；单字母也可以是完整名称。「把表头 A 改为 B，顺序不变」就把原列名 `A` 替换成字面值 `B`，再核对其他列和数据。 |
 | 新任务且范围不平凡，例如按同一结算口径更新列表、报表、接口三处交付物 | 发下方的**计划卡**。实施委托或个别契约尚待核实，也能先让用户核对改动面和验收。 |
 
 按总纲判断计划卡的三个触发条件：新任务且范围不平凡、即将不可逆、预计要问用户超过 3 次。分别按本轮实际交付、下一步动作和真实缺口判断。简单直接干、已有需求补一个答案，以及在同一稿内做对照，通常不触发；如果确有不可逆动作或超过 3 次的实际提问，仍发计划卡。
@@ -48,7 +48,7 @@ description: "spec-flow v2 的运行入口。根 SKILL.md 默认指向本页，�
 | L1 阶段合同（≤200 行） | [10-stages.md](10-stages.md) | 4 段完成条件 + 证据 + 出口 |
 | L1 记录 | [15-records.md](15-records.md) | 15 类记录 + 关单收尾 + 观察式例外 |
 | L2 决策目录（≤100 行） | [20-decisions.md](20-decisions.md) | D0-D7、标签规则、观察式例外 |
-| L3 playbook（示例非必须） | [new-spec](30-playbooks/new-spec.md) · [spec](30-playbooks/spec.md) · [direct](30-playbooks/direct.md) · [issue](30-playbooks/issue.md) · [review](30-playbooks/review.md) · [release](30-playbooks/release.md) · [hotfix](30-playbooks/hotfix.md) · [rollback](30-playbooks/rollback.md) · [batch-fix](30-playbooks/batch-fix.md) · [main-snapshot](30-playbooks/main-snapshot.md) · [labels](30-playbooks/labels.md) · [worktree](30-playbooks/worktree.md) · [adr](30-playbooks/adr.md) | 9 核心 + 4 支撑 |
+| L3 playbook（示例非必须） | [new-spec](30-playbooks/new-spec.md) · [spec](30-playbooks/spec.md) · [direct](30-playbooks/direct.md) · [issue](30-playbooks/issue.md) · [review](30-playbooks/review.md) · [change-protocol](30-playbooks/change-protocol.md) · [release](30-playbooks/release.md) · [hotfix](30-playbooks/hotfix.md) · [rollback](30-playbooks/rollback.md) · [batch-fix](30-playbooks/batch-fix.md) · [main-snapshot](30-playbooks/main-snapshot.md) · [labels](30-playbooks/labels.md) · [worktree](30-playbooks/worktree.md) · [adr](30-playbooks/adr.md) | 10 核心 + 4 支撑 |
 | L4 案例（≤15 条） | [INDEX](40-cases/INDEX.md) · [09-11](40-cases/2026-09-11-criterion-sync.md) · [09-16](40-cases/2026-09-16-claim-race.md) · [09-22 拆](40-cases/2026-09-22-split-semantic-deps.md) · [09-22 副本](40-cases/2026-09-22-copy-drift.md) · [09-26](40-cases/2026-09-26-rule-bloat.md) · [10-04](40-cases/2026-10-04-merged-spec-edit.md) · [10-06](40-cases/2026-10-06-long-tail-close.md) · [10-15](40-cases/2026-10-15-adoption-contract.md) · [10-17 地图](40-cases/2026-10-17-code-map.md) · [10-17 假绿](40-cases/2026-10-17-false-green.md) · [10-24](40-cases/2026-10-24-no-delegation.md) · [11-03 发布](40-cases/2026-11-03-release-unclear.md) · [11-03 顺序](40-cases/2026-11-03-spec-order.md) · [11-07](40-cases/2026-11-07-review-scope-explosion.md) · [11-11](40-cases/2026-11-11-staging-drill.md) | 叙述 + 提议，不是法条 |
 | 项目接入 | [50-adapters/README.md](50-adapters/README.md) | 5 个选修模块与只指向式契约 |
 
