@@ -1,0 +1,966 @@
+{
+  "change": "2026-11-25-streamline-v2",
+  "title": "精简重构 spec-flow（单轨扶正、抽两份总纲、裁决冲突、升级双校验）",
+  "base": "8c4edbe02a4664f5c8fb96e897f289bb95a9e2ca",
+  "head": "ed9081ae464b02b6f1ca9a128043df8085b8d434",
+  "classification": "replace",
+  "approval": {
+    "user_quote": "全部采纳你的建议，请你为我改；R3 0阻断/0高闭合后不重开修订，授权代留批准记录并执行 manifest-only 正式钉扎",
+    "timestamp": "2026-11-25",
+    "scope": "单轨扶正 v2 为根 SKILL.md + references/；17 份 v1 归档 docs/archive/v1/；抽出 25-spec-governance 与 26-review-contract；瘦身 L0-L2（含经批准的 L0-6 迁出与 L0-8 记录）与合并 Playbook 14->9；裁决 4 处冲突；升级 check-docs.sh 与 check-change.py（61 项单测）并同步 AGENTS.md 与双语 README",
+    "base": "8c4edbe02a4664f5c8fb96e897f289bb95a9e2ca",
+    "head": "ed9081ae464b02b6f1ca9a128043df8085b8d434",
+    "link": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7161250084"
+  },
+  "rules": [
+    {
+      "id": "R-001",
+      "type": "replace",
+      "old": {
+        "file": "SKILL.md",
+        "line": 10,
+        "text": "默认先读取 [v2 入口]"
+      },
+      "new": {
+        "file": "SKILL.md",
+        "section": "# spec-flow",
+        "anchor": "决策环境，不是流程编译器。提供五层知识"
+      },
+      "disposition": "replace",
+      "evidence": "根 SKILL.md 扶正为唯一单轨入口，去掉 v1/v2 版本分叉与评测字面补丁",
+      "status": "done"
+    },
+    {
+      "id": "R-002",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/SKILL.md",
+        "line": 12,
+        "text": "v1/v2 冲突"
+      },
+      "new": {
+        "file": "references/v2/SKILL.md",
+        "section": "# spec-flow v2（已扶正）",
+        "anchor": "仅为兼容曾显式指向"
+      },
+      "disposition": "replace",
+      "evidence": "旧 references/v2/SKILL.md 收缩为 6 行过渡跳转指针，零运行规则",
+      "status": "done"
+    },
+    {
+      "id": "R-003",
+      "type": "replace",
+      "old": {
+        "file": "AGENTS.md",
+        "line": 9,
+        "text": "**v2 规则**（`references/v2/`）不走 R 号"
+      },
+      "new": {
+        "file": "AGENTS.md",
+        "section": "# spec-flow 仓的维护规矩",
+        "anchor": "v1 已归档至 `docs/archive/v1/`"
+      },
+      "disposition": "replace",
+      "evidence": "AGENTS.md 改为单轨维护规矩，统一案例、铁律变更、manifest 与双语检查口径",
+      "status": "done"
+    },
+    {
+      "id": "R-004",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/00-constitution.md",
+        "line": 41,
+        "text": "范围盘点表的状态机见"
+      },
+      "new": {
+        "file": "references/00-constitution.md",
+        "section": "## L0-6 范围变了回确认",
+        "anchor": "草案原位替换、已拍板重开条件与范围盘点表冻结细则见"
+      },
+      "disposition": "replace",
+      "evidence": "经用户批准将 L0-6 流程状态机细则迁至 25-spec-governance.md 并留 L0-8 变更记录",
+      "status": "done"
+    },
+    {
+      "id": "R-005",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/10-stages.md",
+        "line": 5,
+        "text": "唯一例外：v2 设计总纲 §八"
+      },
+      "new": {
+        "file": "references/10-stages.md",
+        "section": "# 阶段合同（L1）",
+        "anchor": "2026-11-13 重建总纲为历史设计稿"
+      },
+      "disposition": "replace",
+      "evidence": "清掉失实总纲唯一例外声明，明确直接干不走 D1，治理/审核/发布细节改为单点引用",
+      "status": "done"
+    },
+    {
+      "id": "R-006",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/15-records.md",
+        "line": 88,
+        "text": "摘要、总纲是决定索引的视图"
+      },
+      "new": {
+        "file": "references/15-records.md",
+        "section": "## 四、文档载体、读序与替换处置",
+        "anchor": "同一决定单 owner、唯一活动 ID、范围盘点表"
+      },
+      "disposition": "replace",
+      "evidence": "15-records 剥离 826 字规格治理长段并保留防擅改目标/ADR 护栏与替换载体处置表",
+      "status": "done"
+    },
+    {
+      "id": "R-007",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/20-decisions.md",
+        "line": 19,
+        "text": "直接干不建表，写不适用及事实理由"
+      },
+      "new": {
+        "file": "references/20-decisions.md",
+        "section": "## D1 范围与结构（开 spec 适用；直接干不走 D1）",
+        "anchor": "直接干走 L0-6 说明改动面 + D4，不走 D1"
+      },
+      "disposition": "replace",
+      "evidence": "明确直接干不走 D1；D0 归位同窗口闭集；D3/D4 豁免 manifest-only 钉扎提交；集中交互卡片契约",
+      "status": "done"
+    },
+    {
+      "id": "R-008",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/15-records.md",
+        "line": 88,
+        "text": "权威顺序只写一处"
+      },
+      "new": {
+        "file": "references/25-spec-governance.md",
+        "section": "## 三、摘要、视图与唯一权威顺序",
+        "anchor": "唯一权威顺序**（全套文档唯一定义）"
+      },
+      "disposition": "merge",
+      "evidence": "抽出 25-spec-governance.md 作为决定索引/唯一 ID、跨切面盘点表、权威顺序与重开边界唯一 owner",
+      "status": "done"
+    },
+    {
+      "id": "R-009",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/review.md",
+        "line": 22,
+        "text": "报告开头先输出「已拍板清单」"
+      },
+      "new": {
+        "file": "references/26-review-contract.md",
+        "section": "## 五、给材料、报告格式与审核边界",
+        "anchor": "关闭项与发现严格分流"
+      },
+      "disposition": "replace",
+      "evidence": "抽出 26-review-contract.md 消除 5 遍复读；裁决关闭项不进发现、派生回填边界与 Lane A/B 分流",
+      "status": "done"
+    },
+    {
+      "id": "R-010",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/new-spec.md",
+        "line": 7,
+        "text": "骨架 → 对照 → 终稿"
+      },
+      "new": {
+        "file": "references/30-playbooks/new-spec.md",
+        "section": "## 一、从澄清到终稿（同一份 spec、同一个 PR）",
+        "anchor": "草稿骨架、对照、终稿是同一份文件的成熟度"
+      },
+      "disposition": "merge",
+      "evidence": "合并原 new-spec.md 与 spec.md，治理规则改引 25-spec-governance.md",
+      "status": "done"
+    },
+    {
+      "id": "R-011",
+      "type": "retire",
+      "old": {
+        "file": "references/v2/30-playbooks/spec.md",
+        "line": 12,
+        "text": "成熟度（示例非必须）"
+      },
+      "new": {
+        "file": "references/30-playbooks/new-spec.md",
+        "section": "## 二、拆分评估与交付物地图",
+        "anchor": "按可验收成果拆"
+      },
+      "disposition": "merge",
+      "evidence": "原 spec.md 成熟度/拆分/DoR 正文并入 new-spec.md 后退役旧文件",
+      "status": "done"
+    },
+    {
+      "id": "R-012",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/direct.md",
+        "line": 6,
+        "text": "直接干只免方案期，不免交付与合并闸"
+      },
+      "new": {
+        "file": "references/30-playbooks/direct.md",
+        "section": "# Playbook: 直接干（无 spec / 无 issue）",
+        "anchor": "直接干免方案期与 D1"
+      },
+      "disposition": "replace",
+      "evidence": "精简 direct.md 并与 D1 边界对齐（仅走 L0-6 + D4）",
+      "status": "done"
+    },
+    {
+      "id": "R-013",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/issue.md",
+        "line": 28,
+        "text": "同窗口入口三条件"
+      },
+      "new": {
+        "file": "references/30-playbooks/issue.md",
+        "section": "## 二、参考走法",
+        "anchor": "同窗口入口闭集或接管授权"
+      },
+      "disposition": "replace",
+      "evidence": "精简 issue.md 并将 D0 同窗口闭集规范归位至 20-decisions.md",
+      "status": "done"
+    },
+    {
+      "id": "R-014",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/change-protocol.md",
+        "line": 37,
+        "text": "合并卡必须写具体 head SHA"
+      },
+      "new": {
+        "file": "references/30-playbooks/change-protocol.md",
+        "section": "## 二、manifest 字段与钉扎规范（规范性）",
+        "anchor": "head 钉扎与防死循环（时序）"
+      },
+      "disposition": "replace",
+      "evidence": "保留 #193 跨项目能力，补齐 conclusion 枚举、--draft 与 manifest-only 钉扎提交时序",
+      "status": "done"
+    },
+    {
+      "id": "R-015",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/release.md",
+        "line": 49,
+        "text": "发布安全不变式"
+      },
+      "new": {
+        "file": "references/30-playbooks/release.md",
+        "section": "## 一、发布安全不变式",
+        "anchor": "违反以下任一条均属 L0-1 不可逆"
+      },
+      "disposition": "merge",
+      "evidence": "合并 release + batch-fix + main-snapshot，并确立 release.md §一 为发布安全不变式唯一正文",
+      "status": "done"
+    },
+    {
+      "id": "R-016",
+      "type": "retire",
+      "old": {
+        "file": "references/v2/30-playbooks/batch-fix.md",
+        "line": 1,
+        "text": "批次测试失败 → fix"
+      },
+      "new": {
+        "file": "references/30-playbooks/release.md",
+        "section": "## 三、批次测试失败修复（fix）",
+        "anchor": "从当前候选切 `fix/<N>-<slug>`"
+      },
+      "disposition": "merge",
+      "evidence": "原 batch-fix.md 并入 release.md §三 后退役旧文件",
+      "status": "done"
+    },
+    {
+      "id": "R-017",
+      "type": "retire",
+      "old": {
+        "file": "references/v2/30-playbooks/main-snapshot.md",
+        "line": 1,
+        "text": "main 分叉 / 生产分支快照"
+      },
+      "new": {
+        "file": "references/30-playbooks/release.md",
+        "section": "## 四、生产分支快照（main 分叉处理）",
+        "anchor": "以成功 tag 的树为内容"
+      },
+      "disposition": "merge",
+      "evidence": "原 main-snapshot.md 并入 release.md §四 后退役旧文件",
+      "status": "done"
+    },
+    {
+      "id": "R-018",
+      "type": "retire",
+      "old": {
+        "file": "references/v2/30-playbooks/hotfix.md",
+        "line": 14,
+        "text": "从最近的真实生产 tag 切"
+      },
+      "new": {
+        "file": "references/30-playbooks/incident.md",
+        "section": "## 一、热修（hotfix）",
+        "anchor": "从最近真实生产 tag 切"
+      },
+      "disposition": "merge",
+      "evidence": "原 hotfix.md 切断 v1 引用并并入 incident.md §一",
+      "status": "done"
+    },
+    {
+      "id": "R-019",
+      "type": "retire",
+      "old": {
+        "file": "references/v2/30-playbooks/rollback.md",
+        "line": 17,
+        "text": "重新部署上一个生产 tag"
+      },
+      "new": {
+        "file": "references/30-playbooks/incident.md",
+        "section": "## 二、回滚（rollback）",
+        "anchor": "从获批上一生产 tag 或可用产物重新部署"
+      },
+      "disposition": "merge",
+      "evidence": "原 rollback.md 并入 incident.md §二 后退役旧文件",
+      "status": "done"
+    },
+    {
+      "id": "R-020",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/labels.md",
+        "line": 61,
+        "text": "按 v1 迁移映射覆盖"
+      },
+      "new": {
+        "file": "references/30-playbooks/labels.md",
+        "section": "## 二、类型标签与迁移（`issue-type`）",
+        "anchor": "首次采用迁移与回填口径"
+      },
+      "disposition": "replace",
+      "evidence": "labels.md 内聚 8 类类型定义与完整迁移映射，切断对 v1 issue-type-labels.md 的依赖",
+      "status": "done"
+    },
+    {
+      "id": "R-021",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/worktree.md",
+        "line": 66,
+        "text": "分支命名可以自由，但锁键不能自由"
+      },
+      "new": {
+        "file": "references/30-playbooks/worktree.md",
+        "section": "## 二、撞锁、接管与分支命名",
+        "anchor": "分支名（锁键）"
+      },
+      "disposition": "replace",
+      "evidence": "精简 worktree.md 去掉五遍复读模板，闸口改为单点指针",
+      "status": "done"
+    },
+    {
+      "id": "R-022",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/adr.md",
+        "line": 18,
+        "text": "用户明确要求项目启用"
+      },
+      "new": {
+        "file": "references/30-playbooks/adr.md",
+        "section": "## 二、参考走法",
+        "anchor": "spec 决定索引引用同一活动 ID"
+      },
+      "disposition": "replace",
+      "evidence": "精简 adr.md，决定索引与活动 ID 规则改引 25-spec-governance.md §一",
+      "status": "done"
+    },
+    {
+      "id": "R-023",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/50-adapters/README.md",
+        "line": 3,
+        "text": "只借用 [v1 接入说明]"
+      },
+      "new": {
+        "file": "references/50-adapters/README.md",
+        "section": "## 二、只指向式契约、目标文件判定树与显式升级",
+        "anchor": "显式升级（「更新本项目的 spec-flow 接入」）"
+      },
+      "disposition": "replace",
+      "evidence": "50-adapters/README.md 内聚接入检查、显式升级、ADR 断链保护、待验收防重名与 5 选修模板命令，切断 v1 依赖",
+      "status": "done"
+    },
+    {
+      "id": "R-024",
+      "type": "retire",
+      "old": {
+        "file": "references/v2/README.md",
+        "line": 1,
+        "text": "spec-flow v2 目录导航"
+      },
+      "new": {
+        "file": "references/README.md",
+        "section": "# spec-flow 目录导航",
+        "anchor": "已废弃的 v1 文档已归档至"
+      },
+      "disposition": "replace",
+      "evidence": "原 references/v2/README.md 扶正为 references/README.md",
+      "status": "done"
+    },
+    {
+      "id": "R-025",
+      "type": "replace",
+      "old": {
+        "file": "scripts/check-change.py",
+        "line": 32,
+        "text": "NON_RULE_ALLOW"
+      },
+      "new": {
+        "file": "scripts/check-change.py",
+        "section": "is_hex_commit_sha()",
+        "anchor": "正式模式仅接受 7–40 位十六进制提交 SHA"
+      },
+      "disposition": "replace",
+      "evidence": "check-change.py 正式模式严禁符号引用与 JSON null 绕过、校验提交树一致、输出 mode=from-disk、收紧 NON_RULE_ALLOW 与容器类型守卫",
+      "status": "done"
+    },
+    {
+      "id": "R-026",
+      "type": "replace",
+      "old": {
+        "file": "scripts/check-docs.sh",
+        "line": 9,
+        "text": "BUDGET_CHARS=4700"
+      },
+      "new": {
+        "file": "scripts/check-docs.sh",
+        "section": "check-docs",
+        "anchor": "现行规则正文单行可见字数均"
+      },
+      "disposition": "replace",
+      "evidence": "check-docs.sh 改为守卫现行单轨体系（字数/单行上限、精确 GitHub 锚点、禁归档外链、全目录孤儿与双语同步）",
+      "status": "done"
+    },
+    {
+      "id": "R-027",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "docs/archive/v1/README.md",
+        "section": "# spec-flow v1 历史归档",
+        "anchor": "已废弃，本目录仅供历史追溯"
+      },
+      "disposition": "not-applicable",
+      "evidence": "为 17 份归档的 v1 历史文档补历史快照头与现行真身指针",
+      "status": "done",
+      "same_trigger_search": "检视 docs/archive/ 与 references/ 确认无既有 v1 历史归档总说明页"
+    }
+  ],
+  "whitelist": [],
+  "scans": [
+    {
+      "query": "apply-to-project\\.md|issue-type-labels\\.md|release-discipline\\.md|spec-revision-sync\\.md",
+      "scope": [
+        "SKILL.md",
+        "AGENTS.md",
+        "references/",
+        "docs/changes/README.md",
+        "docs/archive/v1/README.md"
+      ],
+      "scope_reason": "仅扫现行运行规则、案例索引与归档说明；docs/specs、docs/rebuild、docs/archive/v1/*.md 与历史 manifest 为冻结历史记录，按载体表原样保留",
+      "hits": [
+        {
+          "file": "references/40-cases/2026-10-15-adoption-contract.md",
+          "text": "apply-to-project.md",
+          "conclusion": "whitelist",
+          "reason": "L4 历史案例叙述（回顾 v1 apply-to-project.md 历史背景，非运行规则）",
+          "reviewer": "review-agent",
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+        }
+      ],
+      "conclusion": "whitelist",
+      "note": "核查现行规则零残留 v1 外部依赖链接"
+    },
+    {
+      "query": "30-playbooks/(?:review|spec|batch-fix|hotfix|rollback|main-snapshot)\\.md",
+      "scope": [
+        "SKILL.md",
+        "AGENTS.md",
+        "references/",
+        "docs/changes/README.md",
+        "docs/archive/v1/README.md"
+      ],
+      "scope_reason": "仅扫现行运行规则、案例索引与归档说明；docs/specs、docs/rebuild、docs/archive/v1/*.md 与历史 manifest 为冻结历史记录，按载体表原样保留",
+      "hits": [],
+      "conclusion": "changed",
+      "note": "核查现行规则与案例零残留已合并/退役的 6 份旧 playbook 路径"
+    },
+    {
+      "query": "references/v2/",
+      "scope": [
+        "SKILL.md",
+        "AGENTS.md",
+        "references/",
+        "docs/changes/README.md",
+        "docs/archive/v1/README.md"
+      ],
+      "scope_reason": "仅扫现行运行规则、案例索引与归档说明；docs/specs、docs/rebuild、docs/archive/v1/*.md 与历史 manifest 为冻结历史记录，按载体表原样保留",
+      "hits": [
+        {
+          "file": "references/README.md",
+          "text": "references/v2/",
+          "conclusion": "whitelist",
+          "reason": "保留为兼容旧外链的过渡指针说明，不含运行规则",
+          "reviewer": "review-agent",
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+        },
+        {
+          "file": "references/v2/SKILL.md",
+          "text": "references/v2/",
+          "conclusion": "whitelist",
+          "reason": "保留为兼容旧外链的过渡指针说明，不含运行规则",
+          "reviewer": "review-agent",
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+        }
+      ],
+      "conclusion": "whitelist",
+      "note": "核查现行目录中 references/v2/ 残留仅限于兼容过渡说明"
+    },
+    {
+      "query": "唯一例外：v2 设计总纲|不用修（引 ID 关闭）|重复已拍板（引决定 ID",
+      "scope": [
+        "SKILL.md",
+        "AGENTS.md",
+        "references/",
+        "docs/changes/README.md",
+        "docs/archive/v1/README.md"
+      ],
+      "scope_reason": "仅扫现行运行规则、案例索引与归档说明；docs/specs、docs/rebuild、docs/archive/v1/*.md 与历史 manifest 为冻结历史记录，按载体表原样保留",
+      "hits": [],
+      "conclusion": "changed",
+      "note": "核查已裁决冲突旧口径（总纲唯一例外、关闭项混入发现）零残留"
+    }
+  ],
+  "semantic_checks": [
+    {
+      "item": "L0-6 执行段细则迁出是否保持 8 条铁律条文不变且符合 L0-8",
+      "conclusion": "changed",
+      "evidence": "references/00-constitution.md:41,57 已留用户批准变更记录，8 条条文零删改"
+    },
+    {
+      "item": "直接干不走 D1 在 10-stages / 20-decisions / direct.md 三处是否一致无反话",
+      "conclusion": "changed",
+      "evidence": "10-stages.md:34、20-decisions.md:14-16、direct.md:3 统一为直接干走 L0-6 + D4"
+    },
+    {
+      "item": "引决定 ID 覆盖项是否从发现处置类型与能不能不修中彻底剥离至关闭清单",
+      "conclusion": "changed",
+      "evidence": "26-review-contract.md:39,77-80 与 Lane A 契约一致，旧口径扫描 0 命中"
+    },
+    {
+      "item": "manifest-only 钉扎提交与派生条机械回填是否与 D3/D4 失效及 L0-5 闭环无冲突",
+      "conclusion": "changed",
+      "evidence": "20-decisions.md:33,40 与 26-review-contract.md:86-94 及 change-protocol.md §二 时序一致"
+    },
+    {
+      "item": "发布安全不变式迁至 release.md §一 后与 L0-1 / L1 / L3 定位声明是否无冲突",
+      "conclusion": "changed",
+      "evidence": "SKILL.md:37、references/README.md:27、10-stages.md:68,78 与 release.md §一 一致"
+    },
+    {
+      "item": "50-adapters/README.md 切断 v1 后是否保留显式升级、ADR 断链、待验收防重名与 5 选修模板",
+      "conclusion": "changed",
+      "evidence": "50-adapters/README.md §二–§四 全部内聚且 v1 依赖扫描 0 命中"
+    },
+    {
+      "item": "非决定原则（文档检查三态、交互卡片契约、worktree 豁免、Lane A/B 报告分流）是否各单一 owner",
+      "conclusion": "changed",
+      "evidence": "分别唯一归属 26-review-contract §四/§五.2、20-decisions 交互卡片契约、10-stages §三"
+    },
+    {
+      "item": "check-change.py 收紧 NON_RULE_ALLOW 与正式模式禁 HEAD 是否破坏历史 manifest 回归",
+      "conclusion": "changed",
+      "evidence": "test-check-change.py 对 PR #192(2daa47c) 与 PR #193(d06ae65) 提交树一致性实测双绿"
+    }
+  ],
+  "rebuild": {
+    "triggered": true,
+    "reason": "v1 废弃后单轨扶正，抽出 25-spec-governance 与 26-review-contract 两份单一权威总纲，并将 14 份重复 playbook 整合为 9 份，无法一行换一行",
+    "old_behaviors": [
+      "L0 8 条铁律条文与不可逆动作清单 → 完整保留于 references/00-constitution.md（L0-6 状态机细则迁至 25-spec-governance.md）",
+      "4 段阶段合同、11 项核心术语与独立 worktree 锁键（含不主动建议/真并行锁仍执行） → 完整保留于 references/10-stages.md",
+      "15 类记录、D0 8 字段、D1-D7 只追加记录、4 载体读序（含不据此取消获批目标或改现行 ADR）、替换载体表、关单、观察式例外与 #158 三判据 → 完整保留于 references/15-records.md",
+      "D0–D7 硬闸（含 D0 同窗口闭集）、计划卡 3 触发与模板、业务选项卡与未答收尾、标签三确认 → 统一收口于 references/20-decisions.md",
+      "决定索引与唯一活动 ID、跨切面范围盘点表（seed/对账/冻结/路由）、摘要视图权威顺序、规范性句子、owner 5 字段对账、草案替换与重开三条件、一般同步 → 单一归口 references/25-spec-governance.md",
+      "审核 4 档派发、R1–R3 轮次与整案例外、#158 五机制、严重度、文档检查三态、文档组织四项前置检查（区分阻断与 D2 前 spec bug）、无 PR 摆审核卡、批次逐成员检查、Lane A/B 契约 → 单一归口 references/26-review-contract.md",
+      "原 spec.md 成熟度/拆分评估/交付物地图/有向依赖边/三种就绪/DoR 非格式闸 → 完整并入 references/30-playbooks/new-spec.md",
+      "原 batch-fix.md 与 main-snapshot.md 及发布安全不变式 5 条 → 完整并入 references/30-playbooks/release.md",
+      "原 hotfix.md 与 rollback.md → 完整并入 references/30-playbooks/incident.md",
+      "原 v1 issue-type-labels.md 8 类定义与机械迁移/open 回填 → 完整内聚于 references/30-playbooks/labels.md",
+      "原 v1 apply-to-project.md 目标文件判定树、显式升级、ADR 断链、普通任务零补写、待验收防重名、gh 采纳命令、5 选修模板、可执行资产拒绝回落 → 完整内聚于 references/50-adapters/README.md",
+      "PR #193 跨项目 check-change.py 全部能力（--root、§X.Y 标题校验与删章反扫、count_checks、view_files、.md/.tsv/.txt） → 完整保留于 scripts/check-change.py 并新增 --draft 与 manifest-only 尾提交钉扎"
+    ]
+  },
+  "non_rule_changes": [
+    {
+      "file": "references/40-cases/INDEX.md",
+      "reason": "案例索引视图，同步归档路径与铁律变更口径"
+    },
+    {
+      "file": "docs/changes/README.md",
+      "reason": "manifest 命令与模板视图，修复最小长度示例与正式模式说明"
+    },
+    {
+      "file": "scripts/test-check-change.py",
+      "reason": "校验器正负例回归单测（由脚本实跑统计项数，非规则正文）"
+    }
+  ],
+  "view_files": [
+    {
+      "file": ".gitignore",
+      "reason": "忽略 Python 缓存目录 __pycache__/ 与 *.pyc，非规则文件",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "README.md",
+      "reason": "对外双语说明视图，同步单轨架构与文件表，非运行规则正文",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "README.zh-CN.md",
+      "reason": "对外双语说明视图，同步单轨架构与文件表，非运行规则正文",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/adoption-model.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/adr-decision-records.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/apply-to-project.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/code-map.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/documentation-lifecycle.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/done-criteria.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/gate-details.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/issue-status-labels.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/issue-type-labels.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/one-path.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/phase-handoff.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/rationale.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/release-discipline.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/spec-maturity.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/spec-revision-sync.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/split-large-spec.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/archive/v1/worktree-lock.md",
+      "reason": "v1 已废弃历史文档纯 rename 归档（0 行改动，Lane B 机械核对已确认）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "docs/maintainer-notes.md",
+      "reason": "维护者接线说明视图，更新迁移后的仓库 clone URL",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-09-11-criterion-sync.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-09-16-claim-race.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-09-22-copy-drift.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-09-22-split-semantic-deps.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-09-26-rule-bloat.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-10-04-merged-spec-edit.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-10-06-long-tail-close.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-10-15-adoption-contract.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-10-17-code-map.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-10-17-false-green.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-10-24-no-delegation.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-11-03-release-unclear.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-11-03-spec-order.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-11-07-review-scope-explosion.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "file": "references/40-cases/2026-11-11-staging-drill.md",
+      "reason": "L4 历史案例目录随 v2 扶正迁移并修正指向新总纲的相对链接（非授权法条）",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    }
+  ],
+  "section_ref_whitelist": [
+    {
+      "ref": "§0",
+      "reason": "历史案例 2026-09-11 与归档 v1 rationale 引用的外部/旧文档 §0",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§1.1",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§1.3",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§3.4",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§3.5",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§4.4",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§5.2",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§5.3",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§7",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§8",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§9.1",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§9.7",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§9.8",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§11",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§12",
+      "reason": "纯 rename 归档的 docs/archive/v1/rationale.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§八",
+      "reason": "纯 rename 归档的 docs/archive/v1/*.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§九",
+      "reason": "纯 rename 归档的 docs/archive/v1/*.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§十",
+      "reason": "纯 rename 归档的 docs/archive/v1/*.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    },
+    {
+      "ref": "§十二",
+      "reason": "纯 rename 归档的 docs/archive/v1/release-discipline.md 历史章节引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7160561051"
+    }
+  ]
+}

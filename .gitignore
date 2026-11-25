@@ -2,3 +2,5 @@
 *.bak
 .backup/
 .idea/
+__pycache__/
+*.pyc

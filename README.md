@@ -5,83 +5,78 @@
   </picture>
 </p>
 
-**Two phases for AI coding agents: strict gates, flexible work inside them.** Agree on goals, scope and acceptance, then implement and deliver under an explicit delegation. The user decides what review, revision, merging and production actions are authorized.
+**A decision environment for AI coding agents — not a process compiler.** Agree on goals, scope and acceptance, then implement and deliver under explicit delegation. Hard gates stay strict; paths inside them stay flexible.
 
-There is no runtime or service: these are Markdown instructions an agent reads. The spec path preserves an approved specification, an execution issue and traceable sources. Direct implementation creates no mandatory spec or execution issue, but still has delivery and merge gates. Code mapping remains off by default; source, the actual diff and relevant tests establish impact.
+There is no runtime or service: these are Markdown rules an agent reads. Spec-driven work preserves an approved specification, an execution issue and traceable sources. Direct implementation skips the spec phase without skipping delivery or merge gates. Code mapping stays off by default; source code, real diffs and relevant tests establish impact.
 
-`SKILL.md` is the entry point for [v2](references/v2/SKILL.md), the default. Ask explicitly to use v1 when needed. [`scripts/check-docs.sh`](scripts/check-docs.sh) checks the existing limits of **4,700 characters** for the body, **500** for frontmatter and **5,200** overall, including newlines.
-
-Every rule has a recorded origin: **37 entries** in [`references/rationale.md`](references/rationale.md) retain cases, decisions, costs and verification limits. History is not a second set of operating rules.
+[`SKILL.md`](SKILL.md) is the single entry point (under 3,200 chars), backed by a compact always-read core (L0–L2), two on-demand governance specs, nine playbooks and a 15-case library. [`scripts/check-docs.sh`](scripts/check-docs.sh) enforces budgets, single-line length caps, link/anchor integrity and bilingual README sync. Legacy v1 documents are archived in `docs/archive/v1/`.
 
 **English** · [中文](README.zh-CN.md)
 
 <!-- s:shape -->
 ## What using it looks like
 
-With a request like “add avatar uploads,” an agent without a shared understanding can deliver an unwanted database table and a size limit it invented.
+With a request like “add avatar uploads,” an agent without shared understanding can deliver an unwanted table and invented size limits.
 
-Spec-flow v2 checks for existing answers and asks only about gaps that affect scope, acceptance or authorization. It can make a clear, small change directly. For a complex request, it clarifies against existing project facts or approved requirements and records the decisions and their sources.
+`spec-flow` checks existing facts first and asks only about gaps affecting scope, acceptance or authorization. Clear, small changes can go straight to direct implementation after stating the change surface. Complex requests clarify against real project facts and record decisions with verifiable sources.
 
-When a spec is needed, keep the outline, design comparison and final version in one draft. For a page, use the user's design to analyze interactions and APIs. Other work uses verifiable inputs and outputs to define acceptance.
-
-An implementable spec and consent to send it for review lead to that deliverable's review choice, chosen revisions and a separate merge confirmation. After the spec merges and execution issues are handed off, implementation waits for explicit delegation. Implementation delivery gets a fresh review choice. Exceptions and edits to merged specs are conditional, not questions on every run.
+When a spec is needed, the outline, design comparison and final draft stay in one document and one PR. Pages wait for user designs; non-UI work uses verifiable inputs, outputs and a falsifiable business example. Review choices, revisions, merging and implementation delegation are separate user decisions.
 
 <!-- s:problem -->
 ## The problem
 
-Failures happen at seams: unconfirmed understanding, missing upstream deliverables, duplicate claims, review mistaken for merge approval, or a merged implementation described as done while documentation or deployment is still missing.
+Failures happen at seams: unconfirmed understanding, duplicate claims on the same issue, review mistaken for merge approval, conflicting copies of the same decision across documents, or merged code declared “done” while docs or deployment are missing.
 
-The answer is not more ceremony inside every step. It is a clear home for **decisions, authority, deliverables and evidence**: investigate facts first and ask only what the user must decide.
+The answer is not more ceremony inside every step. It is a **single canonical owner** for every rule, decision, deliverable and piece of evidence: investigate facts first and stop only where the user must decide.
 
 <!-- s:scars -->
 ## Where the rules came from
 
-The rationale keeps the original evidence and its limits; old cases do not expand a new task's scope:
+Real incidents are preserved in [`references/40-cases/`](references/40-cases/) (narrative + proposals, never authority on their own):
 
-- **R1**: an IDC criterion expanded to CIDR ∪ ASN, while implementation, acceptance and the parent stayed stale. A changed criterion needs its current landing points checked.
-- **R7**: two agents treated an open issue as unclaimed. The actual claim is Git successfully creating the worktree.
-- **R15**: file boundaries were mapped, but two owners defined the same “enabled” decision differently. Dependencies and shared decisions need ownership too.
-- **R12**: one spec's body changed across 17 commits. Editing a merged specification needs the user's new-spec-or-edit decision.
-- **R37**: responsibilities were reorganized, the common outline/Draft moved earlier, and format, example counts and reporting style stopped acting as approval gates.
+- **Criterion drift**: expanding an IDC rule to CIDR ∪ ASN while implementation and parent docs stayed stale → single-owner replacement protocol and dual scans.
+- **Claim race**: two agents reading an `open` issue as unclaimed → real claim is Git creating the isolated `issue/<N>` worktree.
+- **Review scope explosion**: six review rounds adding rules that contradicted each other → cause classification, “can we cut instead of adding rules?”, and a strict R1–R3 cap.
+- **Merged-spec edits**: 17 commits rewriting a merged spec body → merged specs freeze; scope changes open a new spec via D3.
+- **No delegation**: starting implementation right after spec merge without explicit authorization → explicit D0 delegation gate.
 
 <!-- s:what -->
 ## How it solves them
 
-**Still two phases, not a third management workflow.**
+Externally still **two phases** (Design & Implementation); internally structured in **clean layers**:
 
-- **Design**: clarification and proposal confirmation → common outline/Draft → page or rule analysis → common gap confirmation → one split decision → final spec → review/separate merge → execution handoff.
-- **Implementation**: explicit delegation → isolated claim, implementation/tests/supporting docs → fresh review/separate merge → all actual sources and evidence → necessary acceptance and applicable release → close-out.
+- **Always-read core**: L0 Constitution (8 iron rules) → L1 Stage Contracts & Records (4 stages, 15 record groups) → L2 Decision Catalog (D0–D7 hard gates + interaction card contract).
+- **On-demand governance specs**: Spec Governance (decision index, single active ID, cross-cutting scope inventory, view authority order) & Review Contract (tiers, R1–R3 rounds, #158 mechanisms, Lane A/B prompts).
+- **On-demand playbooks & cases**: 9 concise playbooks under [`references/30-playbooks/`](references/30-playbooks/) and 15 cases under [`references/40-cases/`](references/40-cases/).
 
-See the [v2 file map](references/v2/README.md) for the current rules. The file table below also keeps the original paths for explicit v1 work and historical references.
+See [`references/README.md`](references/README.md) for the full file map.
 
 <!-- s:self-review -->
 ## The one rule worth stealing: a subagent is not a second opinion
 
-A spawned agent is still the agent's execution delegate. A different model, name or prompt does not automatically make its opinion independent. Testing and drafting must not masquerade as review.
+A spawned subagent is still the main agent's execution delegate. Changing models, names or prompts does not make its opinion independent; self-testing and drafting never substitute for review.
 
-The user chooses whether and how to review each deliverable. Where a genuinely different party must decide, prepare the material and stop for that party; do not substitute another self-dispatched agent. Markdown is not platform access control.
+The user chooses whether and how to review each deliverable (none / light / heavy / heavy+mutation). Where another party must truly decide, prepare the evidence and stop for that party. Markdown rules are not platform access control.
 
 <!-- s:smooth -->
 ## Why it doesn't feel heavy
 
-Necessary decisions use a choice tool, with a recommendation, major costs and room to add information. Without a tool, present equivalent explicit options; missing tools and silence do not imply approval. Valid decisions survive method changes, and spontaneous explicit instructions are not erased by card formalities.
+Decisions use the client's choice tool (or equivalent explicit text options) with facts, differences and a recommendation. Only 8 fixed decision types (D0–D7) plus irreversible actions (L0-1) and load-bearing gaps (L0-7) stop the agent; non-load-bearing methods are chosen autonomously and reported.
 
-Review still offers none/light/heavy/heavy+mutation; revision still offers all/blockers+high/none; merging remains separate. Defaults, rounds, costs and stopping rules live only in the gate owner. Wording and synchronization mistakes can be corrected; authority violations, missing deliverables and real safety gaps do not disappear under “flexibility.”
+Heavy governance (cross-cutting inventory tables, decision-index audits, change manifests) loads only on demand instead of taxing every small task.
 
 <!-- s:longrun -->
 ## Why it survives long work
 
-Git retains the claim lock; the original handoff retains the current phase; the spec retains approved scope; the original task retains all implementation sources and passing evidence. A new session need not guess who is working or assume the last PR represents the entire delivery.
-
-Promotion reads expected deliverables before checking the design PR and all implementation/supplementary sources. Archived specs are checked at their actual contents, existing content is verified rather than duplicated, shared files are not overwritten from moving dev, and unready tasks do not ride along. Repair the original record or missing deliverable, not a second ledger.
+Git holds the claim lock (`issue/<N>` worktree); the issue handoff holds current phase and all merged PR sources; the frozen spec holds approved scope; append-only records hold D0–D7 approvals. A new session never relies on private chat memory to guess what shipped or who owns the work.
 
 <!-- s:limits -->
 ## What it doesn't do
 
-- It does not schedule or resume agents, or provide platform authorization isolation. Git locks and this repository's static checks have limited, specific guarantees.
-- It does not promise zero future bugs. Done means the agreed delivery exists, necessary tests/acceptance pass, no known blocker remains and evidence is available.
-- It does not equate an implementation merge, label or tag with deployment success. A successful snapshot does not mean every service is currently on the same version.
-- It does not silently install tools, upgrade adopting repositories, create long-lived branches, CI/hooks or a release platform. The issue/PR path assumes GitHub; unavailable platform capabilities must be reported.
+- It does not schedule agents, auto-resume sessions or provide platform permission isolation.
+- It does not promise zero future bugs; “done” means agreed deliverables exist, required checks pass, no known blockers remain and evidence is verifiable.
+- It does not equate a merged PR, label or tag with verified production deployment.
+- It does not silently install external skills, create long-lived branches, CI/hooks or release platforms; issue/PR workflows assume GitHub.
 
 <!-- s:install -->
 ## Install
@@ -90,64 +85,50 @@ Promotion reads expected deliverables before checking the design PR and all impl
 git clone --branch rebuild/v2 https://github.com/nano-sun99/spec-flow.git ~/.claude/skills/spec-flow
 ```
 
-Alternatively, clone into a code directory and symlink it into the client's skill location. The example is Claude Code's personal skill path; other clients use their own discovery locations. Installing a skill is not project adoption, configuration readiness or verified client behavior.
-
-V2 handles clarification using the client's existing choice tool or equivalent text options. For project adoption, see the [v2 adoption instructions](references/v2/50-adapters/README.md).
+Or clone into a workspace directory and symlink it into your client's skill path. `spec-flow` handles clarification natively using your client's choice tool or text options — no external clarification skills required. For project adoption, see [`references/50-adapters/README.md`](references/50-adapters/README.md).
 
 <!-- s:usage -->
 ## Using it
 
-Describe a request or invoke spec-flow. For an existing task, say “do #12.” Continue from the current valid phase. See the [v2 decision catalog](references/v2/20-decisions.md) for the evidence required to establish delegation.
+Describe a request or invoke `spec-flow`. For an existing issue, say “do #12.” Follow [`references/20-decisions.md`](references/20-decisions.md) for delegation evidence and interaction cards.
 
-Choose useful working methods: examples, diagrams, prose and tables should clarify rules, APIs and verifiable acceptance. Honor explicitly agreed project formats, and do not use replaceable guides to omit necessary contracts. Within-scope implementation methods need no approval at every internal step; stop the affected portion at actual declared stopping points.
+Say “apply spec-flow to this project” to adopt (or “update this project's spec-flow integration” for an explicit upgrade). Adoption writes only pointer-only references — never copies workflow rules or turns on optional modules unasked.
 
-Say “apply spec-flow to this project” to adopt, or “update this project's spec-flow integration” for an explicit upgrade. Only authorized pointers and project locations are written. Repeat runs are idempotent; no copied workflow, surprise optional adoption or automatic migration of existing projects.
-
-The options remain `adr`, `doc-lifecycle`, `issue-status`, `issue-type` and `release`, all off by default. `release` covers **Git branching and release** together: adoption chooses single-mainline or three-layer operation and real branch mappings, not a separate Git switch. Three-layer projects may use the staging line: issue integration branches are tested before a whole-issue merge; a pre-merge rehearsal against current staging and the four-class check move to the merge gate. In three layers, ordinary documentation also enters staging by task. With no deployment obligation and required branch delivery/acceptance complete, it can finish and wait for the next normal snapshot; no documentation hotfix/tag ceremony. Code still requiring deployment cannot finish early.
-
-Code mapping remains disabled unless explicitly requested for a trial/restoration; see [code-map](references/code-map.md). Already adopted ADR and document-reading rules apply at their existing moments. Read the current approved construction spec; do not redesign these systems merely for structural symmetry.
+The five optional modules (`adr`, `doc-lifecycle`, `issue-status`, `issue-type`, `release`) remain **off by default**. `release` covers Git branching shapes (single-mainline, three-layer, staging-line), release safety invariants, batch fixes and production incidents together.
 
 <!-- s:evidence -->
 ## This repo is its own case study
 
-Specifications, issues, PRs and the rationale preserve design and delivery evidence. Old specs and decisions are not rewritten into new operating rules. Each delivery's verification distinguishes input, expectation, actual behavior and limits: static green is not client compliance, and a fake repository or limited client run is not production or all-model certification.
-
-This reorganization follows merged design PR #164 and execution issue #165. Implementation review and merging still need the current user's choices; specification review is not implementation acceptance.
+Specifications, change manifests, cases and verification scripts live in this repository. Static green is necessary, never sufficient for client or production verification: `scripts/check-docs.sh` guards budgets, single-line limits, links/anchors and bilingual sync; `scripts/check-change.py` (with `scripts/test-check-change.py`) validates replacement change manifests across this repo and external projects (`--root <project>`).
 
 <!-- s:docs -->
 ## Files
 
-| File | Responsibility |
+| File / Directory | Responsibility |
 |---|---|
-| `SKILL.md` | Version selection, with v2 as the default |
-| `references/v2/` | Default workflow, evidence and project adoption |
-| `AGENTS.md`, `CLAUDE.md` | Repository maintenance rules; the latter imports the former |
-| `references/one-path.md` | Sole flow/final diagram/state and transition owner |
-| `references/gate-details.md` | Sole choices, approval scope, release/stop, review and merge owner |
-| `references/phase-handoff.md` | Sole delivery information, all sources and update responsibilities |
-| `references/done-criteria.md` | Sole finite completion, evidence and approved-exception criteria |
-| `references/spec-maturity.md` | Replaceable outline/counterpart/final working guide |
-| `references/split-large-spec.md` | Replaceable deliverable/dependency/splitting guide |
-| `references/spec-revision-sync.md` | Replaceable method for synchronizing current landing points |
-| `references/worktree-lock.md` | Git workspace, locks, takeovers and safety boundaries |
-| `references/apply-to-project.md` | Adoption intent, pointers, locations and asset/install boundaries |
-| `references/release-discipline.md` | Optional release: Git mappings, complete candidates and necessary release |
-| `references/adr-decision-records.md` | Optional ADR, retaining its existing responsibilities |
-| `references/documentation-lifecycle.md` | Optional document lifecycle and reading order |
-| `references/issue-status-labels.md` | Optional phase/blocker labels and sorting |
-| `references/issue-type-labels.md` | Optional type labels and authorized migrations |
-| `references/code-map.md` | Boundaries for disabled-by-default map trials/restoration |
-| `references/adoption-model.md` | Historical adoption explanation, not additional obligations |
-| `references/rationale.md` | R1–R37: evidence, tradeoffs and verification limits |
-| `docs/maintainer-notes.md` | Local wiring and history |
-| `scripts/check-docs.sh` | Existing budgets/links/bilingual/adoption checks plus necessary owner/delivery presence; no literal guide-format enforcement |
+| `SKILL.md` | Single entry point, execution loop, 1-hop navigation and exception protocol |
+| `AGENTS.md`, `CLAUDE.md` | Repository maintenance rules; `CLAUDE.md` imports `AGENTS.md` |
+| `references/README.md` | Layer overview and reading-order map |
+| `references/00-constitution.md` | L0: 8 iron rules (user-only edits via L0-8) |
+| `references/10-stages.md` | L1: 4 stage contracts, core glossary and delivery preconditions |
+| `references/15-records.md` | L1: 15 record groups, D0–D7 logs, document carriers, close-out and exceptions |
+| `references/20-decisions.md` | L2: D0–D7 hard gates, interaction card contract and label confirmations |
+| `references/25-spec-governance.md` | Sole owner for decision index / unique ID, scope inventory, view authority and reopen bounds |
+| `references/26-review-contract.md` | Sole owner for review tiers, R1–R3 rounds, #158 mechanisms, doc checks and Lane A/B prompts |
+| `references/30-playbooks/` | 9 on-demand playbooks (`new-spec`, `direct`, `issue`, `change-protocol`, `release`, `incident`, `labels`, `worktree`, `adr`) |
+| `references/40-cases/` | L4: 15 incident & drill cases (narrative + proposals, not authority) |
+| `references/50-adapters/` | Self-contained pointer-only adoption contract and 5 optional modules |
+| `docs/archive/v1/` | Archived v1 documents & frozen `rationale.md` (historical reference only) |
+| `docs/maintainer-notes.md` | Local symlink wiring and repo history |
+| `scripts/check-docs.sh` | Guards budgets, single-line length limits, links/anchors, owners and bilingual README sync |
+| `scripts/check-change.py` | Portable replacement-change manifest validator (`--root`, `--draft`, manifest-only head pinning) |
 
-The README introduces the system. Follow entry navigation to the corresponding sole operating owner; do not use the README as an alternative rulebook.
+The README introduces the system; follow `SKILL.md` to each sole canonical owner.
 
 <!-- s:contributing -->
 ## Contributing
 
-Open an issue or PR. Record real evidence for rule changes under a new rationale number; keep the entrypoint to navigation and short reason pointers. Update both READMEs in the same delivery and run the existing documentation check.
+Open an issue or PR. Keep every rule in one canonical owner, record new lessons in `references/40-cases/`, run `scripts/check-change.py` for replacement changes, update both READMEs together, and pass `bash scripts/check-docs.sh`.
 
 <!-- s:license -->
 ## License
