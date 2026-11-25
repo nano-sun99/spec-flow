@@ -13,7 +13,7 @@
 | L1 | [10-stages.md](10-stages.md) | 4 段阶段合同：澄清 → 设计 → 交付 → 发布；每段的目标、完成条件、证据、出口 | 每次先读；出段前对照 |
 | L1 | [15-records.md](15-records.md) | 交付/授权记录 15 类、D0 授权 8 字段、D1-D7 拍板记录、关单收尾、观察式例外 | 认领、交接、审核、关单时 |
 | L2 | [20-decisions.md](20-decisions.md) | D0-D7 八类用户决定：触发、证据、选项、默认、失效；标签规则；观察式例外 | 每次先读；到硬闸时对照 |
-| L3 | [30-playbooks/](30-playbooks/) | 13 条走法：新需求、规格、直接干、issue、审核、发布、hotfix、回滚、批次修复、main 快照、标签、工作区、ADR | 按任务形态选读 |
+| L3 | [30-playbooks/](30-playbooks/) | 14 条走法：新需求、规格、直接干、issue、审核、替换式变更、发布、hotfix、回滚、批次修复、main 快照、标签、工作区、ADR | 按任务形态选读 |
 | L4 | [40-cases/INDEX.md](40-cases/INDEX.md) · [目录](40-cases/) | 15 条案例：情况、预期、实际、意外、学到什么、影响提议 | L0-L2 无落点或异常时检索 |
 | 接入 | [50-adapters/README.md](50-adapters/README.md) | 5 个选修模块（adr / doc-lifecycle / issue-status / issue-type / release）与只指向式契约 | 项目采用时 |
 
