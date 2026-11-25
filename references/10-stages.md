@@ -72,7 +72,7 @@
 
 ## 三、交付前置条件
 
-- **独立 worktree**：文件变更在独立 worktree 完成，不在共享主检出上改；仅用户当场明示「直接改 / 不开 worktree」除外，须记理由。
+- **独立 worktree**：文件变更在独立 worktree 完成，不在共享主检出上改；仅用户当场明示「直接改 / 不开 worktree」豁免，须记理由（agent 不自判、不主动建议；真并行仓的认领锁仍执行）。
 - **锁键与命名**：issue 锁键 = 精确分支名 `issue/<N>`，目录 `issue-<N>`；已检出即撞锁，停且不双写。直接干 `task/<slug>`；批次修复 `fix/<N>-<slug>`（直接干 `fix/<slug>`）；hotfix `hotfix/<tag>-<slug>`。
 - **分支起点与 PR 目标**：staging 线从 `origin/staging` 开 `issue/<N>`，实现 PR 回 `issue/<N>`；三层从 `origin/<集成>` 开分支、PR 回集成；单主线从 `origin/<主线>` 开分支、PR 回主线。实际映射以项目指令为准，不明按 L0-7 问。
 - **发布安全不变式**：已采用 `release` 的项目必须遵守 [release playbook](30-playbooks/release.md#一发布安全不变式)，违反任一条属 L0-1 不可逆动作。

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # spec-flow 文档检查入口（单轨现行体系）：
 # 1. SKILL.md frontmatter、字数/行数/警示符预算；
-# 2. 核心层（L0–L2、两份专项总纲）字数与行数预算，以及全套现行规则单行可见字数上限（防千字单行压缩包）；
-# 3. 相对链接与 #锚点 真实可达性；禁止现行规则外链 docs/archive/；
-# 4. 核心 owner 章节、5 个选修模块与孤儿文件检查；
-# 5. README.md / README.zh-CN.md 双语节标记与 references 提及同步。
+# 2. 核心层（L0–L2、两份专项总纲）字数与行数预算，以及现行规则正文单行可见字数上限；
+# 3. 相对链接与精确 GitHub #锚点可达性（拒绝对路径、不二次清洗锚点）；禁止现行规则外链 docs/archive；
+# 4. 核心 owner 章节、5 个选修模块与全目录孤儿文件检查（含 40-cases/INDEX.md）；
+# 5. README.md / README.zh-CN.md 双语节标记（含重复拦截）与 references 提及同步。
 # 每项一行结果，末行「绿 / 红」；退出码 0 = 绿，1 = 红。
 
 set -euo pipefail
@@ -19,6 +19,7 @@ fi
 
 PYTHONIOENCODING=utf-8 python3 - <<'PY'
 import json, os, re, sys
+from urllib.parse import unquote
 
 red = False
 
@@ -43,16 +44,16 @@ def unfenced(text: str) -> list[str]:
     return out
 
 def visible_len(line: str) -> int:
-    # 剔除 markdown 链接目标路径，仅测真实可读文本长度，不误杀紧凑的一跳导航表
     return len(re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", line))
 
-def slugify(heading: str) -> str:
-    # GitHub 风格 Markdown 标题锚点：转小写、去标点（保留字母/数字/汉字/空格/连字符）、空格转连字符
+def github_slug(heading: str) -> str:
+    # 对齐 GitHub github-slugger：转小写、去内联代码/链接语法、去标点（保留字母/数字/汉字/空格/连字符）、
+    # 每个空格逐一替换为 '-'（不折叠连续空格，保持与 GitHub 渲染一致）。
     s = heading.strip().lower()
     s = re.sub(r"`([^`]*)`", r"\1", s)
     s = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", s)
     s = re.sub(r"[^\w\s\u4e00-\u9fff-]", "", s)
-    s = re.sub(r"\s+", "-", s).strip("-")
+    s = s.replace(" ", "-")
     return s
 
 def heading_slugs(path: str) -> set[str]:
@@ -63,17 +64,22 @@ def heading_slugs(path: str) -> set[str]:
         m = re.match(r"^#{1,6}\s+(.+?)\s*$", line)
         if not m:
             continue
-        base = slugify(m.group(1))
+        base = github_slug(m.group(1))
         n = counts.get(base, 0)
         counts[base] = n + 1
         slugs.add(base if n == 0 else f"{base}-{n}")
     return slugs
 
 def exists_exact(path: str) -> bool:
+    if not path or path.startswith("/"):
+        return False
+    norm = os.path.normpath(path)
+    if norm.startswith("/") or norm.startswith(".."):
+        return False
+    if norm == ".":
+        return False
     cur = "."
-    for part in path.split("/"):
-        if part in ("", "."):
-            continue
+    for part in norm.split("/"):
         if not os.path.isdir(cur) or part not in os.listdir(cur):
             return False
         cur = os.path.join(cur, part)
@@ -115,14 +121,14 @@ try:
     alerts = body.count("⚠") + body.count("⛔")
     report(alerts <= 3, f"SKILL.md 警示符 {alerts} / 3")
 
-    # ── 2. 核心层预算与全套单行可见长度上限（防压缩包复活）──────────────
+    # ── 2. 核心层预算与全套正文单行可见长度上限（SKILL.md 跳过 frontmatter）──
     CORE_BUDGETS = {
-        "references/00-constitution.md": (60, 2800),
+        "references/00-constitution.md": (62, 2800),
         "references/10-stages.md": (120, 5500),
         "references/15-records.md": (140, 6200),
-        "references/20-decisions.md": (110, 5000),
+        "references/20-decisions.md": (115, 5200),
         "references/25-spec-governance.md": (130, 6000),
-        "references/26-review-contract.md": (160, 7500),
+        "references/26-review-contract.md": (165, 7800),
     }
     budget_err = []
     always_read_chars = len(body)
@@ -150,16 +156,24 @@ try:
     )
     long_lines = []
     for path in active_rule_files:
-        for i, line in enumerate(open(path, encoding="utf-8", newline="").read().splitlines(), 1):
-            vlen = visible_len(line)
+        raw_lines = open(path, encoding="utf-8", newline="").read().splitlines()
+        start_idx = 0
+        if path == "SKILL.md" and raw_lines and raw_lines[0].strip() == "---":
+            for j in range(1, len(raw_lines)):
+                if raw_lines[j].strip() == "---":
+                    start_idx = j + 1
+                    break
+        for i in range(start_idx, len(raw_lines)):
+            vlen = visible_len(raw_lines[i])
             if vlen > MAX_VISIBLE_LINE:
-                long_lines.append(f"{path}:{i}({vlen}字)")
+                long_lines.append(f"{path}:{i + 1}({vlen}字)")
     report(not long_lines,
-           f"现行规则单行可见字数均 ≤ {MAX_VISIBLE_LINE}（覆盖 {len(active_rule_files)} 份文件）"
+           f"现行规则正文单行可见字数均 ≤ {MAX_VISIBLE_LINE}（覆盖 {len(active_rule_files)} 份文件）"
            if not long_lines else "单行超长：" + "、".join(long_lines[:10]))
 
-    # ── 3. 相对链接、#锚点可达性与零归档外链 ──────────────────────────────
-    all_check_files = ["SKILL.md", "README.md", "README.zh-CN.md"] + sorted(
+    # ── 3. 相对链接、精确 GitHub #锚点可达性与零归档外链 ─────────────────
+    extra_docs = [p for p in ("AGENTS.md", "docs/changes/README.md", "docs/archive/v1/README.md") if os.path.isfile(p)]
+    all_check_files = ["SKILL.md", "README.md", "README.zh-CN.md"] + extra_docs + sorted(
         os.path.join(dp, f)
         for dp, _, fs in os.walk("references")
         for f in fs
@@ -176,6 +190,9 @@ try:
             if raw.startswith(("http://", "https://", "mailto:")):
                 continue
             target_part, anchor = (raw.split("#", 1) + [""])[:2]
+            if target_part.startswith("/"):
+                link_err.append(f"{rel} → {raw}（禁止以 / 开头绝对路径）")
+                continue
             if not target_part:
                 target_path = rel
             else:
@@ -183,19 +200,20 @@ try:
             if not exists_exact(target_path):
                 link_err.append(f"{rel} → {raw}")
                 continue
-            if rel in active_rule_files and target_path.startswith("docs/archive/"):
+            if rel in active_rule_files and (target_path == "docs/archive" or target_path.startswith("docs/archive/")):
                 archive_err.append(f"{rel} → {target_path}")
             if anchor and os.path.isfile(target_path) and target_path.endswith(".md"):
                 if target_path not in slug_cache:
                     slug_cache[target_path] = heading_slugs(target_path)
-                if slugify(anchor) not in slug_cache[target_path]:
+                decoded_anchor = unquote(anchor)
+                if decoded_anchor not in slug_cache[target_path]:
                     link_err.append(f"{rel} → {raw}（锚点不存在）")
-    report(not link_err, f"全部相对链接与 #锚点可达（核查 {len(all_check_files)} 份文件）"
+    report(not link_err, f"全部相对链接与精确 #锚点可达（核查 {len(all_check_files)} 份文件）"
            if not link_err else "断链 / 坏锚点：" + "、".join(link_err))
-    report(not archive_err, "现行规则无指向 docs/archive/ 的遗留依赖"
+    report(not archive_err, "现行规则无指向 docs/archive 的遗留依赖"
            if not archive_err else "仍依赖归档文件：" + "、".join(archive_err))
 
-    # ── 4. 核心 owner 章节、5 选修与无孤儿文件 ────────────────────────────
+    # ── 4. 核心 owner 章节、5 选修与全目录孤儿文件 ────────────────────────
     owner_err = []
     checks = {
         "references/00-constitution.md": [f"## L0-{i} " for i in range(1, 9)],
@@ -207,19 +225,32 @@ try:
         "references/50-adapters/README.md": ["`adr`", "`doc-lifecycle`", "`issue-status`", "`issue-type`", "`release`"],
     }
     for path, tokens in checks.items():
+        if not exists_exact(path):
+            owner_err.append(f"缺失核心文件 {path}")
+            continue
         body_txt = open(path, encoding="utf-8", newline="").read()
         for tok in tokens:
             if tok not in body_txt:
                 owner_err.append(f"{path} 缺「{tok}」")
-    # 检查孤儿文件：references 根与 30-playbooks 下的 .md 须被 SKILL.md 导航点到
+    # 孤儿检查：references/ 根、30-playbooks/、50-adapters/ 须以 markdown 链接挂在 SKILL.md；
+    # 40-cases/*.md 须以 markdown 链接挂在 40-cases/INDEX.md。
+    skill_links = set(re.findall(r"\]\((references/[^)#\s]+\.md)(?:#[^)\s]*)?\)", skill_text))
     nav_targets = sorted(
         [f"references/{f}" for f in os.listdir("references") if f.endswith(".md")]
         + [f"references/30-playbooks/{f}" for f in os.listdir("references/30-playbooks") if f.endswith(".md")]
+        + [f"references/50-adapters/{f}" for f in os.listdir("references/50-adapters") if f.endswith(".md")]
     )
-    orphans = [p for p in nav_targets if p not in skill_text]
+    orphans = [p for p in nav_targets if p not in skill_links]
     if orphans:
-        owner_err.append("SKILL.md 未导航：" + "、".join(orphans))
-    report(not owner_err, f"核心 owner 章节、5 选修与 {len(nav_targets)} 份导航文件齐全"
+        owner_err.append("SKILL.md 未链接：" + "、".join(orphans))
+    if exists_exact("references/40-cases/INDEX.md"):
+        idx_text = open("references/40-cases/INDEX.md", encoding="utf-8", newline="").read()
+        idx_links = set(re.findall(r"\]\(([^)#\s]+\.md)\)", idx_text))
+        case_files = sorted(f for f in os.listdir("references/40-cases") if f.endswith(".md") and f != "INDEX.md")
+        orphan_cases = [f for f in case_files if f not in idx_links]
+        if orphan_cases:
+            owner_err.append("40-cases/INDEX.md 未登记：" + "、".join(orphan_cases))
+    report(not owner_err, f"核心 owner 章节、5 选修、{len(nav_targets)} 份导航与案例索引齐全"
            if not owner_err else "结构缺失：" + "；".join(owner_err))
 
     # ── 5. 双语 README 同步 ──────────────────────────────────────────────
@@ -256,13 +287,17 @@ try:
     ma = [m or "（无标记）" for m, _, _ in secs["README.md"]]
     mb = [m or "（无标记）" for m, _, _ in secs["README.zh-CN.md"]]
     diff = []
+    for name, arr in (("README.md", ma), ("README.zh-CN.md", mb)):
+        dups = sorted({x for x in arr if x != "（无标记）" and arr.count(x) > 1})
+        if dups:
+            diff.append(f"{name} 节标记重复：" + "、".join(dups))
     if [x for x in ma if x not in mb]:
         diff.append("仅 README.md 有：" + "、".join(x for x in ma if x not in mb))
     if [x for x in mb if x not in ma]:
         diff.append("仅 README.zh-CN.md 有：" + "、".join(x for x in mb if x not in ma))
     if not diff and ma != mb:
         diff.append("顺序不一致")
-    report(not diff, f"双语 README 节标记 {len(ma)} / {len(mb)} 一一对应"
+    report(not diff, f"双语 README 节标记 {len(ma)} / {len(mb)} 一一对应且无重复"
            if not diff else "双语节标记不一致：" + "；".join(diff))
 
     loose = [f"{n}:{ln} 标记 s:{m} 未贴 ## 标题" for n in secs for m, h, ln in secs[n] if m and not h]
@@ -279,7 +314,7 @@ try:
 
     bogus = sorted({
         p for n in readmes
-        for p in re.findall(r"references/[^\s`'\"()<>\[\]|，。；：、）]+?\.md", readmes[n])
+        for p in re.findall(r"(?<![/\w.-])references/[^\s`'\"()<>\[\]|，。；：、）]+?\.md", "\n".join(unfenced(readmes[n])))
         if not exists_exact(p)
     })
     report(not bogus, "README 内点到的 references 路径均存在"

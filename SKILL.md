@@ -34,7 +34,7 @@ description: "Use when 用户提出值得先设计的复杂需求、要求实施
 | L1 记录 | [15-records](references/15-records.md) | 15 类记录、授权拍板、载体读序、关单与例外 |
 | L2 决策目录 | [20-decisions](references/20-decisions.md) | D0–D7 硬闸、交互卡片契约与标签确认 |
 | 专项总纲 | [25-spec-governance](references/25-spec-governance.md) · [26-review-contract](references/26-review-contract.md) | 规格文档治理（索引 / 盘点表 / 权威顺序）与审核契约（Lane A/B） |
-| L3 Playbook | [new-spec](references/30-playbooks/new-spec.md) · [direct](references/30-playbooks/direct.md) · [issue](references/30-playbooks/issue.md) · [change-protocol](references/30-playbooks/change-protocol.md) · [release](references/30-playbooks/release.md) · [incident](references/30-playbooks/incident.md) · [labels](references/30-playbooks/labels.md) · [worktree](references/30-playbooks/worktree.md) · [adr](references/30-playbooks/adr.md) | 9 条按需走法（示例非必须） |
+| L3 Playbook | [new-spec](references/30-playbooks/new-spec.md) · [direct](references/30-playbooks/direct.md) · [issue](references/30-playbooks/issue.md) · [change-protocol](references/30-playbooks/change-protocol.md) · [release](references/30-playbooks/release.md) · [incident](references/30-playbooks/incident.md) · [labels](references/30-playbooks/labels.md) · [worktree](references/30-playbooks/worktree.md) · [adr](references/30-playbooks/adr.md) | 9 条按需走法（走法示例非必须；标「规范性」的章节为该领域唯一正文） |
 | L4 案例 | [40-cases/INDEX](references/40-cases/INDEX.md) | 15 条事故与演练案例（非授权依据） |
 | 项目接入 | [50-adapters/README](references/50-adapters/README.md) | 5 个选修模块与只指向式接入契约 |
 

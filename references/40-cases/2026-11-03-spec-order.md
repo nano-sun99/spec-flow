@@ -7,6 +7,6 @@
 - **实际**：#608 的差别不在细度，在顺序——spec 在还没有设计靶子时被反复细化，未定稿的 spec 被当成合同；#159 先把设计稿当靶子，spec 写成合同，代码最后。
 - **意外**：#608 的主 spec 链有 39 个 ADR 文件、窗口内相关 decision 约 35 个，仍未收敛；#159 的 spec 更短，反而在实施期只剩 8 条发现。
 - **学到什么**：同一份 spec 的成熟度路径是骨架 → 对照 → 实施版；有页面时设计稿先当靶子，agent 不代画；无页面时用真实样例或决策表对照；四列表、三个例子、3–5 条岔路不是格式闸。审核的停止规则是 R1 全量、R2 只核闭合与新增阻断 / 高、R3 停，不派第 4 轮。
-- **影响提议**：无。已进 [new-spec playbook](../30-playbooks/new-spec.md)、[new-spec playbook](../30-playbooks/new-spec.md) 与 [审核契约](../26-review-contract.md) 轮次。
+- **影响提议**：无。已进 [new-spec playbook](../30-playbooks/new-spec.md) 与 [审核契约](../26-review-contract.md) 轮次。
 - **用户是否批准偏离**：是。owner 原话「先出主要流程框架 spec，然后出设计稿，两相对照，再来细化 spec，最终实施」。
 - **被哪条规则覆盖 / superseded_by**：覆盖于 `30-playbooks/new-spec.md` 成熟度、`26-review-contract.md` 轮次；superseded_by：无。

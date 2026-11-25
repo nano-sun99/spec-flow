@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """check-change.py 的正负例测试。
 
-覆盖：真实历史 manifest、manifest-only 尾部钉扎提交、非 manifest 尾改拦截、
---draft 草案期校验，以及各类结构 / 扫描 / 章节引用负例。
+覆盖：真实历史 manifest 提交树一致性校验、manifest-only 尾部钉扎、非 manifest 尾改拦截、
+正式模式禁字面 HEAD、祖先下界、--draft 正负例、NON_RULE_ALLOW 收紧与 review_ref 格式统一。
 """
 from __future__ import annotations
 
@@ -31,6 +31,7 @@ def run(
     base: str | None = None,
     head: str | None = None,
     draft: bool = False,
+    from_disk: bool = True,
 ) -> subprocess.CompletedProcess:
     cmd = [
         sys.executable,
@@ -46,6 +47,8 @@ def run(
     ]
     if draft:
         cmd.append("--draft")
+    if from_disk and not draft:
+        cmd.append("--from-disk")
     return subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True, check=False)
 
 
@@ -74,15 +77,30 @@ def main() -> int:
     HEAD = str(original.get("head", "HEAD"))
     results: list[bool] = []
 
-    results.append(expect(True, "真实 manifest 绿", run(MANIFEST)))
-
-    # manifest-only 钉扎尾提交测试（PR #193: 内容钉在 be0f6f7，尾提交 d06ae65 只改 manifest）
+    # 正式提交树一致性校验（不传 --from-disk）：PR #192 与 PR #193 真实合并顶提交均绿
     results.append(
         expect(
             True,
-            "manifest-only 尾部钉扎提交绿",
-            run(MANIFEST_193, base="d5e2842", head="d06ae65"),
+            "真实 manifest（PR #192 顶提交 2daa47c 提交树一致）绿",
+            run(MANIFEST, base=BASE, head="2daa47c", from_disk=False),
+            "content_pinned=07c8665",
+        )
+    )
+    results.append(
+        expect(
+            True,
+            "manifest-only 尾部钉扎提交（PR #193 顶提交 d06ae65）绿",
+            run(MANIFEST_193, base="d5e2842", head="d06ae65", from_disk=False),
             "content_pinned=be0f6f7",
+        )
+    )
+    # B-02 场景 1：磁盘已钉扎 manifest 对着旧提交 be0f6f7（提交树内仍为 HEAD）必须拦红
+    results.append(
+        expect(
+            False,
+            "磁盘 manifest 与 --head 提交树不一致红",
+            run(MANIFEST_193, base="d5e2842", head="be0f6f7", from_disk=False),
+            "提交内",
         )
     )
     # 钉扎后若改动非 manifest 文件仍须拦红
@@ -94,7 +112,51 @@ def main() -> int:
             "钉扎提交之后存在非 manifest 文件改动",
         )
     )
-    # --draft 跳过 approval 但仍检查其余字段（临时文件名通过 view_files 覆盖原 manifest.json）
+    # B-01：正式模式禁止字面 HEAD
+    data = copy.deepcopy(original)
+    data["head"] = "HEAD"
+    path = with_manifest(data)
+    results.append(expect(False, "正式模式 manifest.head='HEAD' 红", run(path), "正式模式禁止 manifest.head"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["approval"]["head"] = "HEAD"
+    path = with_manifest(data)
+    results.append(expect(False, "正式模式 approval.head='HEAD' 红", run(path), "正式模式禁止 approval.head"))
+    path.unlink(missing_ok=True)
+
+    # B-02 场景 2：pinned == base 必须拦红
+    data = copy.deepcopy(original)
+    data["base"] = "be0f6f7"
+    data["head"] = "be0f6f7"
+    data["approval"]["base"] = "be0f6f7"
+    data["approval"]["head"] = "be0f6f7"
+    path = with_manifest(data)
+    results.append(
+        expect(
+            False,
+            "manifest.head 等于 base 红",
+            run(path, base="be0f6f7", head="d06ae65"),
+            "严格后代提交",
+        )
+    )
+    path.unlink(missing_ok=True)
+
+    # B-09：tail_pinned 下 approval.head 指错提交红
+    data = copy.deepcopy(original)
+    data["approval"]["head"] = "aaac33c"
+    path = with_manifest(data)
+    results.append(
+        expect(
+            False,
+            "tail_pinned 下 approval.head 不一致红",
+            run(path, base=BASE, head="2daa47c"),
+            "approval.head 解析后与 --head 不一致",
+        )
+    )
+    path.unlink(missing_ok=True)
+
+    # --draft 正负例 + 正式模式缺 approval 红
     draft_data = copy.deepcopy(original)
     draft_data.pop("approval", None)
     draft_data.setdefault("view_files", []).append(
@@ -107,6 +169,26 @@ def main() -> int:
     )
     path = with_manifest(draft_data)
     results.append(expect(True, "--draft 缺 approval 绿", run(path, draft=True), "mode=draft"))
+    results.append(expect(False, "正式模式缺 approval 红", run(path, draft=False), "顶层缺字段"))
+    path.unlink(missing_ok=True)
+
+    draft_bad = copy.deepcopy(draft_data)
+    draft_bad["rules"] = []
+    path = with_manifest(draft_bad)
+    results.append(expect(False, "--draft 空 rules 仍红", run(path, draft=True), "rules 为空"))
+    path.unlink(missing_ok=True)
+
+    draft_malformed = copy.deepcopy(draft_data)
+    draft_malformed["approval"] = "not-an-object"
+    path = with_manifest(draft_malformed)
+    results.append(expect(False, "--draft 畸形 approval 红", run(path, draft=True), "approval 必须是对象"))
+    path.unlink(missing_ok=True)
+
+    # B-08：坏 base 报结构化错误而非崩溃
+    data = copy.deepcopy(original)
+    data["base"] = "<base commit>"
+    path = with_manifest(data)
+    results.append(expect(False, "坏 manifest.base 结构化报红", run(path), "manifest.base 解析不了"))
     path.unlink(missing_ok=True)
 
     data = copy.deepcopy(original)
@@ -115,13 +197,13 @@ def main() -> int:
     results.append(expect(False, "空 rules 红", run(path), "rules 为空"))
     path.unlink(missing_ok=True)
 
-    data = copy.deepcopy(original)
-    data.setdefault("non_rule_changes", []).append(
-        {"file": "references/v2/10-stages.md", "reason": "试图用 non_rule 盖规则文件"}
-    )
-    path = with_manifest(data)
-    results.append(expect(False, "non_rule 盖规则文件红", run(path), "non_rule_changes 不允许覆盖规则文件"))
-    path.unlink(missing_ok=True)
+    # B-06 & B-09：收紧 NON_RULE_ALLOW，禁止盖规则文件 / SKILL / README
+    for bad_file in ("references/v2/10-stages.md", "references/10-stages.md", "SKILL.md", "references/v2/SKILL.md", "README.md"):
+        data = copy.deepcopy(original)
+        data.setdefault("non_rule_changes", []).append({"file": bad_file, "reason": "试图免审覆盖"})
+        path = with_manifest(data)
+        results.append(expect(False, f"non_rule 盖 {bad_file} 红", run(path), "non_rule_changes 不允许覆盖规则文件"))
+        path.unlink(missing_ok=True)
 
     data = copy.deepcopy(original)
     data["scans"][0]["hits"].append(
@@ -173,6 +255,13 @@ def main() -> int:
     results.append(expect(False, "scan whitelist 缺 reason 红", run(path), "whitelist hit 缺 reason"))
     path.unlink(missing_ok=True)
 
+    # B-06：scans[].hits[] 统一校验 review_ref 格式
+    data = copy.deepcopy(original)
+    data["scans"][0]["hits"][0]["review_ref"] = "x"
+    path = with_manifest(data)
+    results.append(expect(False, "scan whitelist review_ref 格式红", run(path), "whitelist hit review_ref 需为链接"))
+    path.unlink(missing_ok=True)
+
     data = copy.deepcopy(original)
     data["rules"][12]["new"]["anchor"] = "change manifest 与校验输出（rules"
     path = with_manifest(data)
@@ -212,7 +301,7 @@ def main() -> int:
     path.unlink(missing_ok=True)
 
     data = copy.deepcopy(original)
-    data["head"] = BASE
+    data["head"] = "aaac33c"
     path = with_manifest(data)
     results.append(expect(False, "head 与 --head 不一致红", run(path), "manifest.head 解析后与 --head 不一致"))
     path.unlink(missing_ok=True)

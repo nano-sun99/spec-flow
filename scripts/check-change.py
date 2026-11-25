@@ -3,7 +3,7 @@
 
 用法：
     python3 scripts/check-change.py --manifest docs/changes/<slug>/manifest.json \
-        --base <git-rev> [--head <git-rev>] [--root .] [--draft]
+        --base <git-rev> [--head <git-rev>] [--root .] [--draft] [--from-disk]
 
 只做机器可判的结构/证据检查，不判断规则语义。退出码 0 = 全部通过；1 = 有违规。
 """
@@ -29,13 +29,11 @@ REQUIRED_TOP = {
     "change", "title", "base", "head", "classification", "rules", "scans",
     "semantic_checks", "approval", "rebuild",
 }
-# 只有这些视图 / 索引 / 测试文件可以用 non_rule_changes 覆盖；规则文件不能靠它躲开规则行。
+# 仅纯索引 / 模板 / 单测文件允许用 non_rule_changes 免审覆盖；
+# 规则文件、SKILL 入口与项目 README 必须落入 rules[] 或经审核的 view_files[]。
 NON_RULE_ALLOW = {
     "references/README.md",
     "references/40-cases/INDEX.md",
-    "references/v2/SKILL.md",
-    "README.md",
-    "README.zh-CN.md",
     "docs/changes/README.md",
     "scripts/test-check-change.py",
     # 保留旧路径以兼容历史 manifest 回归测试
@@ -54,6 +52,10 @@ MIN_SEMANTIC = 4
 MIN_ANCHOR = 4
 MIN_EVIDENCE = 6
 DEFAULT_SCOPES = {"references/", "docs/"}
+
+
+def valid_review_ref(ref: str) -> bool:
+    return ref.startswith("http") or ref.startswith("PR #") or ref.startswith("review:")
 
 
 def git(root: Path, *args: str) -> str:
@@ -172,12 +174,15 @@ def lint(
     base_arg: str,
     head_arg: str,
     draft: bool = False,
+    from_disk: bool = False,
 ) -> list[str]:
     errors: list[str] = []
     try:
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
     except Exception as exc:  # noqa: BLE001
         return [f"manifest 读不了 / 不是合法 JSON：{exc}"]
+    if not isinstance(data, dict):
+        return ["manifest 顶层必须是 JSON 对象"]
 
     try:
         base = resolve(root, base_arg)
@@ -190,6 +195,22 @@ def lint(
     except ValueError:
         manifest_rel = None
 
+    # 正式模式默认核对 --head 提交树中的 manifest 与被检文件完全一致，防止磁盘假绿绕过；
+    # 仅 --draft 或显式 --from-disk（本地预检 / 单测）跳过提交树一致性比对。
+    if not draft and not from_disk:
+        if not manifest_rel:
+            errors.append("正式模式要求 manifest 位于仓库根目录内并已提交到 --head")
+        else:
+            try:
+                committed_data = json.loads(read_at(root, head, manifest_rel))
+            except Exception as exc:  # noqa: BLE001
+                errors.append(f"--head 提交中不存在或无法解析 manifest（{manifest_rel}）：{exc}")
+            else:
+                if committed_data != data:
+                    errors.append(
+                        f"磁盘 manifest 与 --head({head[:12]}) 提交内 {manifest_rel} 不一致（请先提交或加 --draft）"
+                    )
+
     required_top = REQUIRED_TOP - ({"approval"} if draft else set())
     missing = required_top - set(data)
     if missing:
@@ -197,34 +218,46 @@ def lint(
     for key in ("change", "title", "base", "head", "classification"):
         if not str(data.get(key, "")).strip():
             errors.append(f"{key} 为空")
-    if data.get("base") and resolve(root, str(data["base"])) != base:
-        errors.append(f"manifest.base 解析后与 --base 不一致：{data.get('base')!r}")
+    if data.get("base"):
+        try:
+            if resolve(root, str(data["base"])) != base:
+                errors.append(f"manifest.base 解析后与 --base 不一致：{data.get('base')!r}")
+        except RuntimeError:
+            errors.append(f"manifest.base 解析不了：{data.get('base')!r}")
 
-    # 支持 manifest-only 尾部钉扎提交，解除 manifest.head 钉扎后的 SHA 自指死循环：
-    # 若 manifest.head 是 --head 的祖先且两者间只改动了该 manifest 本身，则放行并按内容树校验。
+    # 正式模式禁止字面 "HEAD"；支持 manifest-only 尾部钉扎提交，且强制 pinned 严格晚于 base。
     content_head = head
     tail_pinned = False
-    if data.get("head") and str(data["head"]) != "HEAD":
-        try:
-            pinned = resolve(root, str(data["head"]))
-        except RuntimeError:
-            errors.append(f"manifest.head 解析不了：{data.get('head')!r}")
+    raw_head = str(data.get("head", "")).strip()
+    if raw_head:
+        if raw_head == "HEAD":
+            if not draft:
+                errors.append("正式模式禁止 manifest.head 使用字面 'HEAD'（须钉扎具体内容提交 SHA，开发期加 --draft）")
         else:
-            if pinned != head:
-                if manifest_rel and is_ancestor(root, pinned, head):
-                    tail_diff = changed_files(root, pinned, head) - {manifest_rel}
-                    if not tail_diff:
-                        content_head = pinned
-                        tail_pinned = True
+            try:
+                pinned = resolve(root, raw_head)
+            except RuntimeError:
+                errors.append(f"manifest.head 解析不了：{data.get('head')!r}")
+            else:
+                if pinned == base or not is_ancestor(root, base, pinned):
+                    errors.append(
+                        f"manifest.head 必须是 --base 的严格后代提交：{data.get('head')!r}"
+                    )
+                elif pinned != head:
+                    if manifest_rel and is_ancestor(root, pinned, head):
+                        tail_diff = changed_files(root, pinned, head) - {manifest_rel}
+                        if not tail_diff:
+                            content_head = pinned
+                            tail_pinned = True
+                        else:
+                            errors.append(
+                                f"manifest.head 解析后与 --head 不一致：{data.get('head')!r}"
+                                "（钉扎提交之后存在非 manifest 文件改动："
+                                + "、".join(sorted(tail_diff))
+                                + "）"
+                            )
                     else:
-                        errors.append(
-                            f"manifest.head 解析后与 --head 不一致：{data.get('head')!r}"
-                            "（钉扎提交之后存在非 manifest 文件改动："
-                            + "、".join(sorted(tail_diff))
-                            + "）"
-                        )
-                else:
-                    errors.append(f"manifest.head 解析后与 --head 不一致：{data.get('head')!r}")
+                        errors.append(f"manifest.head 解析后与 --head 不一致：{data.get('head')!r}")
 
     if data.get("classification") not in TYPES:
         errors.append(f"classification 不在 {sorted(TYPES)}：{data.get('classification')!r}")
@@ -329,7 +362,7 @@ def lint(
         ref = str(w.get("review_ref", "")).strip()
         if not ref:
             errors.append(f"{where} 缺 review_ref")
-        elif not (ref.startswith("http") or ref.startswith("PR #") or ref.startswith("review:")):
+        elif not valid_review_ref(ref):
             errors.append(f"{where} review_ref 需为链接 / PR # / review: 记录：{ref!r}")
     for rule in rules:
         if rule.get("status") == "whitelist" and rule.get("id") not in white_ids:
@@ -390,8 +423,11 @@ def lint(
                     errors.append(f"{where} whitelist hit 缺 reason：{h.get('file')!r}")
                 if h.get("reviewer") not in REVIEWERS:
                     errors.append(f"{where} whitelist hit reviewer 不合法：{h.get('reviewer')!r}")
-                if not str(h.get("review_ref", "")).strip():
+                href = str(h.get("review_ref", "")).strip()
+                if not href:
                     errors.append(f"{where} whitelist hit 缺 review_ref：{h.get('file')!r}")
+                elif not valid_review_ref(href):
+                    errors.append(f"{where} whitelist hit review_ref 需为链接 / PR # / review: 记录：{href!r}")
             file = h.get("file")
             text = str(h.get("text", ""))
             if not file or not text:
@@ -447,11 +483,7 @@ def lint(
         review_ref = str(item.get("review_ref", "")).strip()
         if not review_ref:
             errors.append(f"{where} 缺 review_ref")
-        elif not (
-            review_ref.startswith("http")
-            or review_ref.startswith("PR #")
-            or review_ref.startswith("review:")
-        ):
+        elif not valid_review_ref(review_ref):
             errors.append(f"{where} review_ref 需为链接 / PR # / review: 记录：{review_ref!r}")
     for path, token in dangling_section_refs(added_texts, corpus_texts):
         if token in white_refs:
@@ -483,16 +515,42 @@ def lint(
         if len(str(item.get("evidence", "")).strip()) < MIN_SEMANTIC:
             errors.append(f"{where} evidence 太短（<{MIN_SEMANTIC}）")
 
-    if not draft:
-        approval = data.get("approval") or {}
+    raw_approval = data.get("approval")
+    if raw_approval is not None and not isinstance(raw_approval, dict):
+        errors.append("approval 必须是对象")
+    elif not draft:
+        approval = raw_approval or {}
         for key in ("user_quote", "timestamp", "scope", "base", "head", "link"):
             if not str(approval.get(key, "")).strip():
                 errors.append(f"approval 缺 {key}")
-        if approval.get("base") and resolve(root, str(approval["base"])) != base:
-            errors.append("approval.base 解析后与 --base 不一致")
-        if approval.get("head") and str(approval["head"]) != "HEAD":
+        if approval.get("base"):
             try:
-                app_head = resolve(root, str(approval["head"]))
+                if resolve(root, str(approval["base"])) != base:
+                    errors.append("approval.base 解析后与 --base 不一致")
+            except RuntimeError:
+                errors.append(f"approval.base 解析不了：{approval.get('base')!r}")
+        app_head_raw = str(approval.get("head", "")).strip()
+        if app_head_raw == "HEAD":
+            errors.append("正式模式禁止 approval.head 使用字面 'HEAD'（须钉扎具体内容提交 SHA）")
+        elif app_head_raw:
+            try:
+                app_head = resolve(root, app_head_raw)
+                if app_head not in {head, content_head}:
+                    errors.append("approval.head 解析后与 --head 不一致")
+            except RuntimeError:
+                errors.append("approval.head 解析不了")
+    elif isinstance(raw_approval, dict):
+        # draft 模式下若已填 approval.base / approval.head（非 HEAD），仍校验其可解析且一致
+        if raw_approval.get("base"):
+            try:
+                if resolve(root, str(raw_approval["base"])) != base:
+                    errors.append("approval.base 解析后与 --base 不一致")
+            except RuntimeError:
+                errors.append(f"approval.base 解析不了：{raw_approval.get('base')!r}")
+        app_head_raw = str(raw_approval.get("head", "")).strip()
+        if app_head_raw and app_head_raw != "HEAD":
+            try:
+                app_head = resolve(root, app_head_raw)
                 if app_head not in {head, content_head}:
                     errors.append("approval.head 解析后与 --head 不一致")
             except RuntimeError:
@@ -534,11 +592,7 @@ def lint(
         review_ref = str(item.get("review_ref", "")).strip()
         if not review_ref:
             errors.append(f"{where} 缺 review_ref")
-        elif not (
-            review_ref.startswith("http")
-            or review_ref.startswith("PR #")
-            or review_ref.startswith("review:")
-        ):
+        elif not valid_review_ref(review_ref):
             errors.append(f"{where} review_ref 需为链接 / PR # / review: 记录：{review_ref!r}")
         try:
             read_at(root, content_head, file)
@@ -603,7 +657,12 @@ def main() -> int:
     parser.add_argument(
         "--draft",
         action="store_true",
-        help="开发 / 审核期模式：跳过 approval 完整性校验，其余规则与扫描照常执行",
+        help="开发 / 审核期模式：允许本地未提交 manifest 与字面 HEAD，跳过 approval 完整性校验",
+    )
+    parser.add_argument(
+        "--from-disk",
+        action="store_true",
+        help="本地预检 / 单测模式：从磁盘读取未提交 manifest，不要求与 --head 提交树一致（正式合并门禁不得使用）",
     )
     args = parser.parse_args()
     root = Path(args.root).resolve()
@@ -612,7 +671,9 @@ def main() -> int:
         print(f"红：manifest 不存在：{manifest}")
         return 1
     try:
-        errors = lint(root, manifest, args.base, args.head, draft=args.draft)
+        errors = lint(
+            root, manifest, args.base, args.head, draft=args.draft, from_disk=args.from_disk
+        )
     except Exception as exc:  # noqa: BLE001
         print(f"红：校验器自身报错：{exc}")
         return 1
