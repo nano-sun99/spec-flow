@@ -7,7 +7,7 @@
   "approval": {
     "user_quote": "那请你为我开wt优化spec-flow 然后给spec-flow开pr",
     "timestamp": "2026-11-25",
-    "scope": "change-protocol 补章节引用校验、计数规则、外部项目分发；校验器与测试同步",
+    "scope": "change-protocol 补章节引用校验、计数规则、外部项目分发；章节引用改按标题解析 + 删除反扫；10-stages 分发口径同步；校验器与测试同步",
     "base": "d5e28429059ac2015f8d6bcdfe38efe57b9e66f5",
     "head": "HEAD",
     "link": "conversation:2026-11-25"
@@ -41,7 +41,7 @@
       },
       "same_trigger_search": "全仓 grep §\\s*[0-9]；此前只有 new.anchor 存在性校验，没有章节引用落点校验",
       "disposition": "not-applicable",
-      "evidence": "diff；tests 新增无落点红 / 有落点绿",
+      "evidence": "diff；按 Markdown 标题解析新增 / 改动引用；tests 补前缀、正文数字、中文序号正负例",
       "status": "done"
     },
     {
@@ -127,6 +127,79 @@
       "disposition": "not-applicable",
       "evidence": "diff；见 change-protocol 对应段落",
       "status": "done"
+    },
+    {
+      "id": "R-009",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/10-stages.md",
+        "line": 63,
+        "text": "提交 change manifest 并跑 `scripts/check-change.py` 绿"
+      },
+      "new": {
+        "file": "references/v2/10-stages.md",
+        "section": "设计段 完成条件",
+        "anchor": "外部项目从 skill 路径带 `--root` 调用"
+      },
+      "disposition": "replace",
+      "evidence": "diff；完成条件不再写死仓内路径，改指 change-protocol §一 分发",
+      "status": "done"
+    },
+    {
+      "id": "R-010",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "scripts/check-change.py",
+        "section": "章节标题解析",
+        "anchor": "def defined_section_ids("
+      },
+      "same_trigger_search": "grep dangling_section_refs / SECTION_REF_RE；此前只查数字在语料任意出现，不查标题",
+      "disposition": "not-applicable",
+      "evidence": "diff；按 Markdown 标题解析数字 / 中文序号，前缀与正文数字不再冒充落点",
+      "status": "done"
+    },
+    {
+      "id": "R-011",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "scripts/check-change.py",
+        "section": "删除章节反扫",
+        "anchor": "def stale_section_refs("
+      },
+      "same_trigger_search": "grep removed_section_ids / stale_section_refs；此前只查改动行，删章后未改的引用漏检",
+      "disposition": "not-applicable",
+      "evidence": "diff；删 / 改号标题后全语料反扫，TSV / TXT 兼查裸章号",
+      "status": "done"
+    },
+    {
+      "id": "R-012",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/change-protocol.md",
+        "section": "§三 双扫描",
+        "anchor": "非决定原则（gate"
+      },
+      "same_trigger_search": "grep 非决定 / gate / 单 owner；15-records 只管决定，非决定原则无单 owner 规则",
+      "disposition": "not-applicable",
+      "evidence": "diff；§三.3 补非决定原则逐条查单 owner",
+      "status": "done"
+    },
+    {
+      "id": "R-013",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/change-protocol.md",
+        "section": "§一 校验器",
+        "anchor": "本次删 / 改号的章节会反扫全语料"
+      },
+      "same_trigger_search": "grep 章节引用 / 标题解析；此前 §一 只写非引用落点，未写标题解析与删除反扫",
+      "disposition": "not-applicable",
+      "evidence": "diff；§一 校验器描述同步新行为",
+      "status": "done"
     }
   ],
   "scans": [
@@ -138,6 +211,15 @@
         "scripts/"
       ],
       "scope_reason": "scripts/ 是校验器实现；实际扫描按 .md / .tsv / .txt 后缀",
+      "hits": [],
+      "conclusion": "changed"
+    },
+    {
+      "query": "非引用落点",
+      "scope": [
+        "references/",
+        "docs/"
+      ],
       "hits": [],
       "conclusion": "changed"
     }
@@ -156,7 +238,22 @@
     {
       "item": "章节引用是否可解析",
       "conclusion": "changed",
-      "evidence": "check-change.py 新增 dangling_section_refs；改动文件中的 §X.Y 必须在语料有非引用落点"
+      "evidence": "check-change.py 按标题解析新增 / 改动引用；删 / 改号标题后全语料反扫，TSV / TXT 兼查裸章号"
+    },
+    {
+      "item": "外部项目章节语料是否可配置",
+      "conclusion": "changed",
+      "evidence": "语料范围取 scans[].scope 并集，不再固定 references/ + docs/"
+    },
+    {
+      "item": "10-stages 完成条件与分发口径是否一致",
+      "conclusion": "changed",
+      "evidence": "10-stages:63/81 改指 change-protocol §一 分发，不再写死仓内路径"
+    },
+    {
+      "item": "计数复核命令是否机器执行",
+      "conclusion": "match",
+      "evidence": "规则写明 command 供人复核、校验器不执行；校验器只验 source 存在与 command 长度"
     }
   ],
   "rebuild": {

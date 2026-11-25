@@ -10,8 +10,8 @@
 ## 一、三个工件（规范性）
 
 1. **change manifest**：一次变更一个 JSON，默认 `docs/changes/<slug>/manifest.json`。它是唯一台账；PR 正文只放摘要。字段见 §二，模板见 [docs/changes/README](../../../docs/changes/README.md)。
-2. **校验器**：`python3 scripts/check-change.py --manifest <path> --base <base> --head <rev>`；退出码 0 才算绿。它检查：必填字段、rules / scans / semantic_checks 非空、枚举、base 行号与 old.text（≥6 字）、new.anchor 在 head 文件中、add 的 same_trigger_search（≥6 字）、白名单 reviewer / review_ref、扫描 scope 非空且命中正反双向、未处置 0、改动文件覆盖（non_rule / view_files 只允许非规则文件）。同时：扫描覆盖 `.md` / `.tsv` / `.txt`；改动文件里的 `§X.Y` 引用必须在语料里有非引用落点（外部引用走 `section_ref_whitelist`）；`count_checks[]` 的 source 必须存在、command ≥6 字。它不判断语义冲突。
-> **分发**：校验器随 skill 分发。外部项目从 skill 路径调用并传 `--root <project>`，项目只需建 `docs/changes/`；项目自己的非规则视图用 manifest `view_files[]` 声明（reason / reviewer / review_ref），不改校验器硬编码。
+2. **校验器**：`python3 scripts/check-change.py --manifest <path> --base <base> --head <rev>`；退出码 0 才算绿。它检查：必填字段、rules / scans / semantic_checks 非空、枚举、base 行号与 old.text（≥6 字）、new.anchor 在 head 文件中、add 的 same_trigger_search（≥6 字）、白名单 reviewer / review_ref、扫描 scope 非空且命中正反双向、未处置 0、改动文件覆盖（non_rule / view_files 只允许非规则文件）。同时：扫描覆盖 `.md` / `.tsv` / `.txt`；新增 / 改动的 `§X.Y` 引用必须解析到语料里现存的 Markdown 标题（数字或中文序号），本次删 / 改号的章节会反扫全语料，旧引用未清即红（外部引用走 `section_ref_whitelist`）；`count_checks[]` 的 source 必须存在、command ≥6 字，command 供人复核、校验器不执行。它不判断语义冲突。
+> **分发**：校验器随 skill 分发。外部项目从 skill 路径调用并传 `--root <project>`，项目只需建 `docs/changes/`；项目自己的非规则视图用 manifest `view_files[]` 声明（reason / reviewer / review_ref），不改校验器硬编码。`scans[].scope` 的并集同时是章节语料范围；项目文档不在 `references/` / `docs/` 时在 scope 里声明并给 `scope_reason`。
 3. **载体表**：[15-records](../15-records.md) §四 是载体处置的唯一正文；manifest 只引用。
 
 ## 二、manifest 字段（规范性）
@@ -27,8 +27,8 @@
 | `rebuild` | 是 | `triggered` / `reason` / `old_behaviors[]`；触发时必须给旧行为清单 |
 | `non_rule_changes[]` | 有视图 / 计数改动时 | `file` / `reason`；让校验器能覆盖非规则文件 |
 | `view_files[]` | 项目自定义非规则视图时 | `file` / `reason` / `reviewer` / `review_ref`；替代校验器硬编码 |
-| `count_checks[]` | 正文出现行数 / 端点数 / 页数时 | `name` / `value` / `source` / `command`；source 必须在 head 存在 |
-| `section_ref_whitelist[]` | 引用外部章节号时 | `ref` / `reason` / `reviewer` / `review_ref` |
+| `count_checks[]` | 正文出现行数 / 端点数 / 页数时 | `name` / `value` / `source` / `command`；source 必须在 head 存在；command 供人复核，校验器不执行 |
+| `section_ref_whitelist[]` | 引用语料外章节号时 | `ref` / `reason` / `reviewer` / `review_ref` |
 
 - `type`：`add` / `replace` / `retire`。
 - `disposition`：`replace` / `delete` / `merge` / `alias` / `keep-history` / `keep-scoped` / `not-applicable`。
@@ -42,8 +42,8 @@
 ## 三、双扫描（规范性）
 
 1. **活跃残留**：manifest 的 `scans[]` 写 query 与 scope（默认 `references/`、`docs/`）；校验器复跑 query，未登记的命中即红。白名单命中逐条写理由与 reviewer；作者自证标签不能单独成立。删 / 移章节时，`scans[]` 必须包含旧章节号的正则（如 `§旧章` / `A.旧节`），覆盖 Markdown 与 TSV。
-2. **计数**：行数 / 端点数 / 页数只由 registry / 表 / 脚本输出持有；spec、ADR、摘要不手抄数字，只引用。正文必须写数字时，`count_checks[]` 给 name / value / source / command，并在同一变更里改唯一来源。
-3. **反向冲突**：语义读同层 / 相邻层，找五类（同触发不同行为、旧 owner 仍现行、多 owner、验收 / 范围 / 默认不一致、权限 / 载体错配）。结果写进 `rules[]` / `scans[]`；关键词只作线索，不能单独作为「无冲突」证据。
+2. **计数**：行数 / 端点数 / 页数只由 registry / 表 / 脚本输出持有；spec、ADR、摘要不手抄数字，只引用。正文必须写数字时，`count_checks[]` 给 name / value / source / command，并在同一变更里改唯一来源；`command` 供人复核，校验器不执行。
+3. **反向冲突**：语义读同层 / 相邻层，找五类（同触发不同行为、旧 owner 仍现行、多 owner、验收 / 范围 / 默认不一致、权限 / 载体错配）。结果写进 `rules[]` / `scans[]`；关键词只作线索，不能单独作为「无冲突」证据。非决定原则（gate、字段白名单、校验开关等）同样逐条查单 owner，不能只查「决定」。
 
 ## 四、载体分流（非规范性指针）
 

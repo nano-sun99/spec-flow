@@ -215,6 +215,42 @@ def main() -> int:
     results.append(not dangling)
     print(("PASS " if results[-1] else "FAIL ") + "章节引用有落点绿")
 
+    dangling = check_change.dangling_section_refs(
+        {"a.md": "见 §3.7"}, {"b.md": "### 3.7.1 Foo"}
+    )
+    results.append(dangling == [("a.md", "3.7")])
+    print(("PASS " if results[-1] else "FAIL ") + "章节号前缀不算落点红")
+
+    dangling = check_change.dangling_section_refs(
+        {"a.md": "见 §9.9.9"}, {"b.md": "历史版本 9.9.9 说明"}
+    )
+    results.append(dangling == [("a.md", "9.9.9")])
+    print(("PASS " if results[-1] else "FAIL ") + "正文数字不算标题红")
+
+    dangling = check_change.dangling_section_refs(
+        {"a.md": "见 §三"}, {"b.md": "## 三、双扫描"}
+    )
+    results.append(not dangling)
+    print(("PASS " if results[-1] else "FAIL ") + "中文序号标题绿")
+
+    removed = check_change.removed_section_ids(
+        {"a.md": "### 3.7.1 Foo\n## 三、Bar"}, {"a.md": "## 三、Bar"}
+    )
+    results.append(removed == {"3.7.1"})
+    print(("PASS " if results[-1] else "FAIL ") + "删章节识别")
+
+    stale = check_change.stale_section_refs(
+        {"3.7.1"}, {"docs/reg.tsv": "ep-1\tspec.md#3.7.1", "docs/a.md": "见 §3.7.1"}
+    )
+    results.append(
+        stale == [("docs/reg.tsv", 1, "3.7.1"), ("docs/a.md", 1, "3.7.1")]
+    )
+    print(("PASS " if results[-1] else "FAIL ") + "反扫仍引用旧章节红")
+
+    stale = check_change.stale_section_refs({"3.7.1"}, {"docs/a.md": "见 §3.8"})
+    results.append(not stale)
+    print(("PASS " if results[-1] else "FAIL ") + "反扫无旧引用绿")
+
     print(f"{sum(results)}/{len(results)} 通过")
     return 0 if all(results) else 1
 

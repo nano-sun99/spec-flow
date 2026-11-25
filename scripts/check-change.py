@@ -36,7 +36,11 @@ NON_RULE_ALLOW = {
     "scripts/test-check-change.py",
 }
 TEXT_SUFFIXES = (".md", ".tsv", ".txt")
-SECTION_REF_RE = re.compile(r"§\s*([0-9]+(?:\.[0-9]+)*)")
+SECTION_REF_RE = re.compile(r"§\s*(\d+(?:\.\d+)*|[一二三四五六七八九十百]+)")
+HEADING_ID_RES = (
+    re.compile(r"^#{1,6}\s+(\d+(?:\.\d+)*)(?=$|[\s、.．：:）)])"),
+    re.compile(r"^#{1,6}\s+([一二三四五六七八九十百]+)(?=$|[\s、.．：:）)])"),
+)
 MIN_OLD_TEXT = 6
 MIN_SEARCH = 6
 MIN_SEMANTIC = 4
@@ -85,17 +89,62 @@ def find_lines(root: Path, head: str, path: str, needle: str) -> list[tuple[int,
     return hits
 
 
+def added_text(root: Path, base: str, head: str, path: str) -> str:
+    """head 相对 base 的新增行；只查新引入的引用，不追旧账。"""
+    diff = git(root, "diff", "--unified=0", base, head, "--", path)
+    return "\n".join(
+        line[1:]
+        for line in diff.splitlines()
+        if line.startswith("+") and not line.startswith("+++")
+    )
+
+
+def defined_section_ids(texts: dict[str, str]) -> set[str]:
+    """从 Markdown 标题提取章节号（数字或中文序号）。"""
+    ids: set[str] = set()
+    for text in texts.values():
+        for line in text.splitlines():
+            for pattern in HEADING_ID_RES:
+                match = pattern.match(line)
+                if match:
+                    ids.add(match.group(1))
+    return ids
+
+
 def dangling_section_refs(
-    changed_texts: dict[str, str], corpus_texts: dict[str, str]
+    added_texts: dict[str, str], corpus_texts: dict[str, str]
 ) -> list[tuple[str, str]]:
-    """§X.Y 引用必须在语料里有一个「非引用」落点（标题 / 标签）。"""
-    corpus = "\n".join(corpus_texts.values())
-    without_refs = SECTION_REF_RE.sub("", corpus)
+    """新增 / 改动的 §ref 必须解析到语料里现存的章节标题。"""
+    defined = defined_section_ids(corpus_texts)
     out: list[tuple[str, str]] = []
-    for path, text in changed_texts.items():
+    for path, text in added_texts.items():
         for token in sorted(set(SECTION_REF_RE.findall(text))):
-            if token not in without_refs:
+            if token not in defined:
                 out.append((path, token))
+    return out
+
+
+def removed_section_ids(
+    base_texts: dict[str, str], head_texts: dict[str, str]
+) -> set[str]:
+    """base 有、head 语料里没有的章节号：删标题或改号。"""
+    return defined_section_ids(base_texts) - defined_section_ids(head_texts)
+
+
+def stale_section_refs(
+    removed: set[str], corpus_texts: dict[str, str]
+) -> list[tuple[str, int, str]]:
+    """全语料反扫仍指向被删 / 改号章节的引用；TSV / TXT 兼查裸章号。"""
+    out: list[tuple[str, int, str]] = []
+    bare = {token: re.compile(rf"(?<![\d.]){re.escape(token)}(?![\d.])") for token in removed}
+    for path, text in corpus_texts.items():
+        check_bare = not path.endswith(".md")
+        for no, line in enumerate(text.splitlines(), 1):
+            hits = set(SECTION_REF_RE.findall(line)) & removed
+            if check_bare:
+                hits |= {token for token, pattern in bare.items() if pattern.search(line)}
+            for token in sorted(hits):
+                out.append((path, no, token))
     return out
 
 
@@ -261,7 +310,7 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
             continue
         files = head_text_files(root, head, scope)
         if not files:
-            errors.append(f"{where} scope 在 head 中没有 .md 文件：{scope}")
+            errors.append(f"{where} scope 在 head 中没有 .md / .tsv / .txt 文件：{scope}")
             continue
         found: list[tuple[str, int, str]] = []
         for path in files:
@@ -309,14 +358,28 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
                 errors.append(f"{where} {file} 命中登记数 {listed_by_file[file]} < 实际 {n}")
 
     changed = changed_files(root, base, head)
-    changed_texts: dict[str, str] = {}
+    added_texts: dict[str, str] = {}
+    base_texts: dict[str, str] = {}
     for path in sorted(changed):
-        if path.endswith(TEXT_SUFFIXES):
-            try:
-                changed_texts[path] = read_at(root, head, path)
-            except RuntimeError:
-                continue
-    corpus_files = head_text_files(root, head, sorted(DEFAULT_SCOPES))
+        if not path.endswith(TEXT_SUFFIXES):
+            continue
+        try:
+            base_texts[path] = read_at(root, base, path)
+        except RuntimeError:
+            pass
+        try:
+            added_texts[path] = added_text(root, base, head, path)
+        except RuntimeError:
+            continue
+    corpus_scope = sorted(
+        {
+            scope
+            for scan in (data.get("scans") or [])
+            for scope in (scan.get("scope") or [])
+            if isinstance(scope, str) and scope.strip()
+        }
+    ) or sorted(DEFAULT_SCOPES)
+    corpus_files = head_text_files(root, head, corpus_scope)
     corpus_texts = {p: read_at(root, head, p) for p in corpus_files}
     section_whitelist = data.get("section_ref_whitelist") or []
     white_refs: set[str] = set()
@@ -340,12 +403,20 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
             or review_ref.startswith("review:")
         ):
             errors.append(f"{where} review_ref 需为链接 / PR # / review: 记录：{review_ref!r}")
-    for path, token in dangling_section_refs(changed_texts, corpus_texts):
+    for path, token in dangling_section_refs(added_texts, corpus_texts):
         if token in white_refs:
             continue
         errors.append(
             f"章节引用解析不到：{path} §{token}"
-            "（语料里没有非引用落点；标题被删 / 移动时同步改引用，外部引用加 section_ref_whitelist）"
+            "（语料里没有对应标题；外部引用加 section_ref_whitelist）"
+        )
+    removed = removed_section_ids(base_texts, corpus_texts)
+    for path, no, token in stale_section_refs(removed, corpus_texts):
+        if token in white_refs:
+            continue
+        errors.append(
+            f"章节已删 / 改号但仍被引用：{path}:{no} §{token}"
+            "（同步改引用，或加 section_ref_whitelist 说明保留原因）"
         )
 
     semantic = data.get("semantic_checks") or []
