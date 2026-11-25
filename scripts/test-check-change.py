@@ -102,6 +102,36 @@ def main() -> int:
     path.unlink(missing_ok=True)
 
     data = copy.deepcopy(original)
+    data["scans"] = []
+    path = with_manifest(data)
+    results.append(expect(False, "空 scans 红", run(path), "scans 为空"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["rules"][0]["new"]["anchor"] = "审核档位"
+    path = with_manifest(data)
+    results.append(expect(False, "重复 anchor 红", run(path), "new.anchor 不唯一"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["rules"][0]["evidence"] = "x"
+    path = with_manifest(data)
+    results.append(expect(False, "短 evidence 红", run(path), "evidence 太短"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["whitelist"][0]["review_ref"] = ""
+    path = with_manifest(data)
+    results.append(expect(False, "缺 review_ref 红", run(path), "缺 review_ref"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["scans"][0]["hits"][0]["reason"] = ""
+    path = with_manifest(data)
+    results.append(expect(False, "scan whitelist 缺 reason 红", run(path), "whitelist hit 缺 reason"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
     data.pop("title", None)
     path = with_manifest(data)
     results.append(expect(False, "缺 title 红", run(path), "顶层缺字段"))

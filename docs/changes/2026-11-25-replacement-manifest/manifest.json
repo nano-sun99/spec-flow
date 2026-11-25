@@ -215,7 +215,7 @@
       "new": {
         "file": "references/v2/10-stages.md",
         "section": "§二 设计-证据",
-        "anchor": "### 设计"
+        "anchor": "提交 change manifest 并跑"
       },
       "disposition": "replace",
       "evidence": "设计证据行加 manifest 与校验输出",
@@ -232,7 +232,7 @@
       "new": {
         "file": "references/v2/10-stages.md",
         "section": "§二 交付-证据",
-        "anchor": "### 交付"
+        "anchor": "交 manifest 并跑"
       },
       "disposition": "replace",
       "evidence": "交付证据行加 manifest 与校验输出",
@@ -542,7 +542,7 @@
       "new": {
         "file": "references/v2/10-stages.md",
         "section": "§二 设计-完成",
-        "anchor": "### 设计"
+        "anchor": "提交 change manifest 并跑"
       },
       "disposition": "not-applicable",
       "evidence": "diff base:? -> head:### 设计",
@@ -556,7 +556,7 @@
       "new": {
         "file": "references/v2/10-stages.md",
         "section": "§二 交付-完成",
-        "anchor": "### 交付"
+        "anchor": "交 manifest 并跑"
       },
       "disposition": "not-applicable",
       "evidence": "diff base:? -> head:### 交付",
@@ -701,7 +701,7 @@
       },
       "same_trigger_search": "scripts/ 下无 check-change 的正负例测试；现有 check-docs 只测文档结构",
       "disposition": "not-applicable",
-      "evidence": "正负例 8 组",
+      "evidence": "正负例 13 组",
       "status": "done"
     },
     {
@@ -946,6 +946,20 @@
       "disposition": "replace",
       "evidence": "README:24 加 manifest 例外",
       "status": "done"
+    },
+    {
+      "id": "R-060",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "section": "§九 支撑注记",
+        "anchor": "项目接入在 `50-adapters/`"
+      },
+      "same_trigger_search": "master §九 支撑列表原无「项目接入不属于 4 条支撑」说明",
+      "disposition": "not-applicable",
+      "evidence": "master:251 新增注记",
+      "status": "done"
     }
   ],
   "whitelist": [
@@ -1171,6 +1185,11 @@
       "item": "测试判别性",
       "conclusion": "changed",
       "evidence": "temp manifest 在 repo 内 + 错误信息断言"
+    },
+    {
+      "item": "anchor 指向新规则句",
+      "conclusion": "changed",
+      "evidence": "R-012/013/032/033 anchor 改为条件句，不再用节标题"
     }
   ],
   "rebuild": {

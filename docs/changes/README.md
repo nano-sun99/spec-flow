@@ -79,7 +79,7 @@ python3 scripts/check-change.py \
 
 ## 规则
 
-- 一行一条规则；`old` 给 `file:line` 与 `text`（≥6 字）；`new` 给 `file` + `section` + `anchor`（head 中唯一）。
+- 一行一条规则；`old` 给 `file:line` 与 `text`（≥6 字）；`new` 给 `file` + `section` + `anchor`（head 中唯一，且落在新规则句上）。
 - `type` / `disposition` / `status` 的枚举以 [change-protocol](../../references/v2/30-playbooks/change-protocol.md) §二 为准；本页不复述。
 - 白名单逐条写 `reason` / `reviewer` / `review_ref`；作者贴标签不能单独成立。
 - `scans[]` 的 query 由校验器复跑；未登记的命中即红；whitelist 命中逐条写 `reason` / `reviewer` / `review_ref`。
