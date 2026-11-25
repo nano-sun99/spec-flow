@@ -2,15 +2,15 @@
   "change": "change-protocol-portability",
   "title": "补齐替换式变更协议的章节引用、计数与外部项目分发",
   "base": "d5e28429059ac2015f8d6bcdfe38efe57b9e66f5",
-  "head": "HEAD",
+  "head": "be0f6f7ca13291b33b45589022d643e650d60a13",
   "classification": "replace",
   "approval": {
-    "user_quote": "那请你为我开wt优化spec-flow 然后给spec-flow开pr",
+    "user_quote": "那请你优化；你为我留言",
     "timestamp": "2026-11-25",
     "scope": "change-protocol 补章节引用校验、计数规则、外部项目分发；章节引用改按标题解析 + 删除反扫；10-stages 分发口径同步；校验器与测试同步",
     "base": "d5e28429059ac2015f8d6bcdfe38efe57b9e66f5",
-    "head": "HEAD",
-    "link": "conversation:2026-11-25"
+    "head": "be0f6f7ca13291b33b45589022d643e650d60a13",
+    "link": "https://github.com/nano-sun99/spec-flow/pull/193#issuecomment-7158440491"
   },
   "rules": [
     {
