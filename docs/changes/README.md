@@ -51,14 +51,14 @@ python3 scripts/check-change.py \
     }
   ],
   "whitelist": [
-    {"rule_id": "R-001", "reason": "为什么可以保留", "reviewer": "user / review-agent", "review_ref": "PR # / 轮次"}
+    {"rule_id": "R-001", "reason": "为什么可以保留", "reviewer": "review-agent", "review_ref": "PR # / 轮次"}
   ],
   "scans": [
     {
       "query": "旧词|旧 ID",
       "scope": ["references/", "docs/"],
       "hits": [
-        {"file": "references/v2/example.md", "text": "旧词", "conclusion": "whitelist"}
+        {"file": "references/v2/example.md", "text": "旧词", "conclusion": "whitelist", "reason": "为什么可以留", "reviewer": "review-agent", "review_ref": "<PR 评论链接>"}
       ],
       "conclusion": "whitelist"
     }

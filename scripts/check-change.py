@@ -38,6 +38,7 @@ MIN_SEARCH = 6
 MIN_SEMANTIC = 4
 MIN_ANCHOR = 4
 MIN_EVIDENCE = 6
+DEFAULT_SCOPES = {"references/", "docs/"}
 
 
 def git(root: Path, *args: str) -> str:
@@ -188,6 +189,15 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
                     f"{where} base:{old['file']}:{line} 不含 old.text；实际：{lines[line - 1][:120]!r}"
                 )
 
+    anchor_map: dict[tuple[str, str], str] = {}
+    for rule in rules:
+        new = rule.get("new") or {}
+        key = (new.get("file", ""), str(new.get("anchor", "")))
+        section = str(new.get("section", ""))
+        if key in anchor_map and anchor_map[key] != section:
+            errors.append(f"{rule.get('id')} anchor 跨规则重复且 section 不同：{key}")
+        anchor_map.setdefault(key, section)
+
     whitelist = data.get("whitelist") or []
     white_ids = {w.get("rule_id") for w in whitelist}
     for i, w in enumerate(whitelist, 1):
@@ -198,8 +208,11 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
             errors.append(f"{where} 缺 reason")
         if w.get("reviewer") not in REVIEWERS:
             errors.append(f"{where} reviewer 不在 {sorted(REVIEWERS)}：{w.get('reviewer')!r}")
-        if not str(w.get("review_ref", "")).strip():
+        ref = str(w.get("review_ref", "")).strip()
+        if not ref:
             errors.append(f"{where} 缺 review_ref")
+        elif not (ref.startswith("http") or ref.startswith("PR #") or ref.startswith("review:")):
+            errors.append(f"{where} review_ref 需为链接 / PR # / review: 记录：{ref!r}")
     for rule in rules:
         if rule.get("status") == "whitelist" and rule.get("id") not in white_ids:
             errors.append(f"{rule.get('id')} 状态=whitelist 但 whitelist 表无对应条目")
@@ -217,6 +230,8 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
         if not scope:
             errors.append(f"{where} 缺 scope")
             continue
+        if not DEFAULT_SCOPES.issubset(set(scope)) and not str(scan.get("scope_reason", "")).strip():
+            errors.append(f"{where} scope 未覆盖默认 {sorted(DEFAULT_SCOPES)} 且缺 scope_reason")
         if scan.get("conclusion") not in CONCLUSIONS:
             errors.append(f"{where} conclusion 不在 {sorted(CONCLUSIONS)}：{scan.get('conclusion')!r}")
         if scan.get("conclusion") == "unresolved":
@@ -236,6 +251,8 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
                 for m in pattern.finditer(line):
                     found.append((path, no, m.group(0)))
         listed = scan.get("hits") or []
+        if not listed and scan.get("conclusion") == "match":
+            errors.append(f"{where} 零命中 scan 不能 conclusion=match；给 note 或改 conclusion")
         for rel, no, hit in found:
             match = any(
                 h.get("file") == rel and hit in str(h.get("text", ""))
@@ -248,6 +265,8 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
                 errors.append(f"{where} hit 的 conclusion 不合法：{h.get('conclusion')!r}")
             if h.get("conclusion") == "unresolved":
                 errors.append(f"{where} hit conclusion=unresolved：{h.get('file')!r}")
+            if h.get("conclusion") == "match" and not str(h.get("evidence", "")).strip():
+                errors.append(f"{where} hit conclusion=match 缺 evidence：{h.get('file')!r}")
             if h.get("conclusion") == "whitelist":
                 if not str(h.get("reason", "")).strip():
                     errors.append(f"{where} whitelist hit 缺 reason：{h.get('file')!r}")
@@ -264,6 +283,12 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
                 errors.append(f"{where} hit 文件不在 scope：{file}")
             elif not find_lines(root, head, file, text):
                 errors.append(f"{where} 登记的命中在 head:{file} 中不存在：{text!r}")
+        from collections import Counter
+        found_by_file = Counter(rel for rel, _, _ in found)
+        listed_by_file = Counter(h.get("file") for h in listed if h.get("file"))
+        for file, n in found_by_file.items():
+            if listed_by_file[file] < n:
+                errors.append(f"{where} {file} 命中登记数 {listed_by_file[file]} < 实际 {n}")
 
     semantic = data.get("semantic_checks") or []
     if not semantic:

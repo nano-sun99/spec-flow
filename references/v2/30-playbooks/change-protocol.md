@@ -31,6 +31,8 @@
 - `status`：`done` / `whitelist` / `unresolved`；校验器遇到 `unresolved` 直接红。
 - 一行一条规则；旧 owner 给 `file:line` 与 `text`（≥6 字），校验器按 base 核；新 owner 给 `file` + `section` + `anchor`（head 文件中唯一出现的字面片段）。`section` 是给人看的标签，机器校验靠 `anchor`。
 - `manifest.head` / `approval.head` 写 `HEAD` 只用于开发期；合并卡必须写具体 head SHA。
+- `scans[].scope` 默认覆盖 `references/` + `docs/`；收窄需写 `scope_reason`；零命中不能写 `conclusion=match`。
+- `review_ref` 必须是链接 / `PR #` / `review:` 记录；`anchor` 跨规则同 section 可复用，不同 section 拒绝。
 - `non_rule_changes` 只允许视图 / 计数文件；规则文件必须落在 `rules[]`。
 
 ## 三、双扫描（规范性）

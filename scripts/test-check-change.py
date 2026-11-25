@@ -29,7 +29,7 @@ def run(manifest_path: Path) -> subprocess.CompletedProcess:
             "--base",
             BASE,
             "--head",
-            "HEAD",
+            HEAD,
             "--root",
             str(ROOT),
         ],
@@ -63,6 +63,7 @@ def expect(ok: bool, name: str, proc: subprocess.CompletedProcess, needle: str =
 
 def main() -> int:
     original = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    HEAD = str(original.get("head", "HEAD"))
     results: list[bool] = []
 
     results.append(expect(True, "真实 manifest 绿", run(MANIFEST)))
@@ -129,6 +130,38 @@ def main() -> int:
     data["scans"][0]["hits"][0]["reason"] = ""
     path = with_manifest(data)
     results.append(expect(False, "scan whitelist 缺 reason 红", run(path), "whitelist hit 缺 reason"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["rules"][12]["new"]["anchor"] = "change manifest 与校验输出（rules"
+    path = with_manifest(data)
+    results.append(expect(False, "跨规则重复 anchor 红", run(path), "anchor 跨规则重复"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["scans"][0]["scope"] = ["references/v2/README.md"]
+    path = with_manifest(data)
+    results.append(expect(False, "窄 scope 红", run(path), "scope 未覆盖默认"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["scans"][0]["query"] = "根本不存在的正则"
+    data["scans"][0]["hits"] = []
+    data["scans"][0]["conclusion"] = "match"
+    path = with_manifest(data)
+    results.append(expect(False, "零命中 scan 红", run(path), "零命中 scan"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["whitelist"][0]["review_ref"] = "x"
+    path = with_manifest(data)
+    results.append(expect(False, "review_ref 格式红", run(path), "review_ref 需为链接"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["scans"][0]["hits"] = [h for h in data["scans"][0]["hits"] if "2026-09-11" not in h["file"]]
+    path = with_manifest(data)
+    results.append(expect(False, "命中登记数不足红", run(path), "命中登记数"))
     path.unlink(missing_ok=True)
 
     data = copy.deepcopy(original)

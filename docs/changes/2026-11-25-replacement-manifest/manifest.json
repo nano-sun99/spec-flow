@@ -28,7 +28,7 @@
       "new": {
         "file": "references/v2/30-playbooks/review.md",
         "section": "§修订同步 + change-protocol §一",
-        "anchor": "修订同步（示例非必须）"
+        "anchor": "本节只保留一般同步"
       },
       "disposition": "keep-scoped",
       "evidence": "review §修订同步 保留一般同步；替换式转 change-protocol",
@@ -79,7 +79,7 @@
       "new": {
         "file": "references/v2/15-records.md",
         "section": "§四 载体表 + D3",
-        "anchor": "替换式变更的载体处置"
+        "anchor": "默认不改正文；用户明确确认"
       },
       "disposition": "keep-scoped",
       "evidence": "默认不改；用户明确确认「改旧的」按 D3",
@@ -147,7 +147,7 @@
       "new": {
         "file": "references/v2/20-decisions.md",
         "section": "D3",
-        "anchor": "D3 spec 合并"
+        "anchor": "用户明确确认；默认不动冻结正文"
       },
       "disposition": "keep-scoped",
       "evidence": "默认不改 + 用户明确确认",
@@ -215,7 +215,7 @@
       "new": {
         "file": "references/v2/10-stages.md",
         "section": "§二 设计-证据",
-        "anchor": "提交 change manifest 并跑"
+        "anchor": "change manifest 与校验输出（rules"
       },
       "disposition": "replace",
       "evidence": "设计证据行加 manifest 与校验输出",
@@ -232,7 +232,7 @@
       "new": {
         "file": "references/v2/10-stages.md",
         "section": "§二 交付-证据",
-        "anchor": "交 manifest 并跑"
+        "anchor": "change manifest 与校验输出（如适用）"
       },
       "disposition": "replace",
       "evidence": "交付证据行加 manifest 与校验输出",
@@ -584,7 +584,7 @@
       "new": {
         "file": "references/v2/30-playbooks/review.md",
         "section": "§给材料/报告字段",
-        "anchor": "给材料（规范性）"
+        "anchor": "替换式变更另附 change manifest"
       },
       "disposition": "not-applicable",
       "evidence": "diff base:? -> head:给材料（规范性）",
@@ -701,7 +701,7 @@
       },
       "same_trigger_search": "scripts/ 下无 check-change 的正负例测试；现有 check-docs 只测文档结构",
       "disposition": "not-applicable",
-      "evidence": "正负例 13 组",
+      "evidence": "正负例 18 组",
       "status": "done"
     },
     {
