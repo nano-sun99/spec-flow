@@ -1,9 +1,17 @@
 {
   "change": "2026-11-25-streamline-v2",
   "title": "精简重构 spec-flow（单轨扶正、抽两份总纲、裁决冲突、升级双校验）",
-  "base": "8c4edbe",
-  "head": "HEAD",
+  "base": "8c4edbe02a4664f5c8fb96e897f289bb95a9e2ca",
+  "head": "ed9081ae464b02b6f1ca9a128043df8085b8d434",
   "classification": "replace",
+  "approval": {
+    "user_quote": "全部采纳你的建议，请你为我改；R3 0阻断/0高闭合后不重开修订，授权代留批准记录并执行 manifest-only 正式钉扎",
+    "timestamp": "2026-11-25",
+    "scope": "单轨扶正 v2 为根 SKILL.md + references/；17 份 v1 归档 docs/archive/v1/；抽出 25-spec-governance 与 26-review-contract；瘦身 L0-L2（含经批准的 L0-6 迁出与 L0-8 记录）与合并 Playbook 14->9；裁决 4 处冲突；升级 check-docs.sh 与 check-change.py（61 项单测）并同步 AGENTS.md 与双语 README",
+    "base": "8c4edbe02a4664f5c8fb96e897f289bb95a9e2ca",
+    "head": "ed9081ae464b02b6f1ca9a128043df8085b8d434",
+    "link": "https://github.com/nano-sun99/spec-flow/pull/194#issuecomment-7161250084"
+  },
   "rules": [
     {
       "id": "R-001",
@@ -423,7 +431,7 @@
       },
       "new": {
         "file": "scripts/check-change.py",
-        "section": "lint()",
+        "section": "is_hex_commit_sha()",
         "anchor": "正式模式仅接受 7–40 位十六进制提交 SHA"
       },
       "disposition": "replace",
