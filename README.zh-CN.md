@@ -5,83 +5,78 @@
   </picture>
 </p>
 
-**给 AI 编码 agent 用的两段流程：必要闸口严格，闸内方法灵活。** 先谈清目标、范围和验收，再按明确委托实现与交付；哪些审核、修订、合并和生产动作获准，由用户决定。
+**给 AI 编码 agent 用的决策环境——不是流程编译器。** 先谈清目标、范围和验收，再按明确委托实现与交付；硬闸严格，闸内路径灵活。
 
-它没有运行时或服务，是 agent 读取的 Markdown。开 spec 的路径保留获批规格、执行 issue 和可追溯来源；直接干不补造 spec 或执行单，但不免实施交付与合并确认。代码地图仍默认停用，影响判断靠源码、实际 diff 和相关测试。
+它没有运行时或服务，是 agent 读取的 Markdown 规则。开 spec 路径保留获批规格、执行 issue 与可追溯来源；直接干跳过方案期，但不免独立 worktree、验收与合并闸。代码地图默认停用，影响判断靠源码、真实 diff 与相关测试。
 
-`SKILL.md` **只做入口和导航**，默认加载 [v2](references/v2/SKILL.md)。需要 v1 时可明确说「按 v1 走」。正文预算仍为 **4,700 字符**、frontmatter **500**、整份 **5,200**，含换行；见 [`scripts/check-docs.sh`](scripts/check-docs.sh)。
-
-每条规则有可回溯来源：[`references/rationale.md`](references/rationale.md) 的 **37 条记录**保留案例、决定、代价和验证边界，历史不是另一套运行规则。
+[`SKILL.md`](SKILL.md) 是唯一入口（≤ 3,200 字），背后是极简的必读内核（L0–L2）、两份按需专项总纲、9 条精简 Playbook 与 15 条案例库。[`scripts/check-docs.sh`](scripts/check-docs.sh) 守卫字数预算、单行长度上限、链接 / 锚点可达性与双语 README 同步。已废弃的 v1 文档归档于 `docs/archive/v1/`。
 
 [English](README.md) · **中文**
 
 <!-- s:shape -->
 ## 用起来是什么样
 
-同一句“给个人资料页加头像上传”，没有共同理解时，agent 可能直接交来你没要的数据库表和自定上传上限。
+同一句“给个人资料页加头像上传”，没有共识时 agent 可能直接交来你没要的数据库表和自定上限。
 
-spec-flow v2 先查已有答案，只把影响范围、验收或授权的缺口交给你选。明确的小改可以直接做。有复杂需求时，按现有规格或项目事实澄清，记录决定及其来源。
+`spec-flow` 先核现有事实，只把影响范围、验收或授权的缺口交给你选。边界清晰的小改一句话说明改动面后即可直接干；复杂需求先按项目事实澄清，记录决定与可核来源。
 
-需要规格时，骨架、设计对照和终稿沿用同一份稿。有页面从你给的设计分析交互与接口，无页面用可判对错的输入输出补齐验收。
-
-可实施且你同意送审才进入本份审核；按选择修订，单独确认合并。规格合并、执行单交接后停等明确实施委托；实施交付重新选档，不继承方案期审核。例外和改旧规格只在触发时问。
+需要规格时，骨架、设计对照和终稿沿用同一份文件与同一个 PR。有页面等你的设计稿，无页面用可判对错的输入输出与能推翻方案的业务例子核对。审核档位、修订范围、合并与实施委托各自独立确认。
 
 <!-- s:problem -->
 ## 它解决什么
 
-失误常在接缝：需求理解没有确认、下一份交付漏了上游、两人认领同号任务、审核被当成合并同意，或代码合并后文档/部署还没交就宣称完成。
+失误常在接缝：需求没对齐、多人撞车认领同号任务、审核被当成合并同意、同一决定在多份文档里互相打架，或代码刚合并就漏掉文档与部署宣称完成。
 
-解决办法不是让每一步更啰嗦，而是让**决定、授权、交付和证据各有归属**：查得清的事实先查，只有用户能定的事才问。
+解法不是让每一步更啰嗦，而是让每条规则、决定、交付物与证据**各有唯一 owner**：查得清的事实先查，只在用户必须拍板的硬闸停下。
 
 <!-- s:scars -->
 ## 这些规矩是从哪来的
 
-案例与原始边界见 rationale，不拿旧案例扩大新任务范围：
+真实事故保存在 [`references/40-cases/`](references/40-cases/)（只叙述与提议，本身不构成授权）：
 
-- **R1**：IDC 判据扩成 CIDR ∪ ASN，却漏改实现、验收与父文档；改一句要核所有现行落点。
-- **R7**：两个 agent 都把 issue open 当无人认领；真正的认领证据是 Git worktree 建成。
-- **R15**：拆分只划文件地盘，却让同一“是否启用”判定有两个 owner；依赖与共享决定同样需要归属。
-- **R12**：一份规格跨 17 个提交反复改正文；动已合并规格要先让用户决定新开还是改旧。
-- **R37**：整体按职责归位，公共骨架/Draft 前置，去掉把格式、样例数量和汇报口吻当审批的做法。
+- **判据漂移**：IDC 判据扩成 CIDR ∪ ASN，实现与父文档却停在旧口径 → 单一 owner 替换式变更与双扫描。
+- **并发认领**：两个 agent 都把 `open` issue 当无人认领 → 真实认领锁是 Git 建出独立 `issue/<N>` worktree。
+- **审核范围扩散**：连续六轮审核不断加规则导致互殴 → 成因分类、「能不能不修 / 砍路径」与 R1–R3 轮次上限。
+- **改已合并 spec**：17 个提交反复改已合并规格正文 → 合并即冻结，范围变化走 D3 新开 spec。
+- **无委托开工**：spec 刚合就自动动手写代码 → 明确的 D0 实施委托闸。
 
 <!-- s:what -->
 ## 它怎么解决
 
-**两段主线不变，不增加第三套管理流程。**
+对外仍是**两段主线**（方案期与实施期），对内按清晰层次组织：
 
-- **方案期**：澄清与方案确认 → 公共骨架/Draft → 页面或规则分析 → 公共缺口确认 → 统一拆分 → 终稿 → 审核/独立合并 → 执行任务交接。
-- **实施期**：明确委托 → 隔离认领、实现/测试/配套文档 → 本份审核/独立合并 → 实际来源及证据回填 → 必要验收与适用发布 → 完成收尾。
+- **每次必读内核**：L0 铁律（8 条）→ L1 阶段合同与记录（4 段完成条件、15 类记录）→ L2 决策目录（D0–D7 硬闸 + 交互卡片契约）。
+- **按需专项总纲**：规格文档治理（决定索引、唯一活动 ID、跨切面范围盘点表、摘要视图权威顺序）与审核契约（档位、R1–R3、#158 机制、Lane A/B 模板）。
+- **按需 Playbook 与案例**：[`references/30-playbooks/`](references/30-playbooks/) 下 9 条精简走法与 [`references/40-cases/`](references/40-cases/) 下 15 条案例。
 
-当前职责与正文见 [v2 文件地图](references/v2/README.md)。下方文件表也保留 v1 的原路径，供明确走 v1 或追溯历史时使用。
+完整文件地图见 [`references/README.md`](references/README.md)。
 
 <!-- s:self-review -->
 ## 唯一值得直接拿走的一条：分身不是第二个人
 
-agent 派出去的仍是它自己的执行分身。换模型、名字或 prompt 不自动变独立意见；自测、草拟也不能冒充审核。
+agent 派出的子 agent 仍是它自己的执行分身。换模型、名字或 prompt 不会自动变成独立意见；自测和草拟也不能冒充审核。
 
-审不审、审哪档由用户当份选择；真正需要“我以外的一方”裁决时，材料备好后停等指定方，不自己派分身顶替。规则不把纯 Markdown 说成权限隔离。
+每份交付审不审、审哪档由用户当场选（不审 / 轻审 / 重审 / 重审+变异）。真正需要另一方裁决时，材料备好后停等指定方。Markdown 规则不等于平台权限隔离。
 
 <!-- s:smooth -->
 ## 为什么它不累赘
 
-必要用户决定用选项工具，说明推荐、主要代价并允许补充；客户端没工具就列等价选项，不把缺工具或沉默当同意。已有效确认不因换方法重复问，用户自发明确指令也不被卡片形式抹掉。
+必要决定优先用客户端选项卡（无工具列等价文字选项），给出事实、差别与推荐。只有 D0–D7 八类固定决策加上 L0-1 不可逆动作与 L0-7 承重缺口会停住 agent；非承重写法由 agent 自主决定并报告。
 
-审核仍有不审/轻审/重审/重审+变异，修订仍有全改/只改阻断+高/不改，合并仍独立确认；具体默认、轮次、成本与停止只在闸口正文。表达/同步瑕疵可修，越权、漏交付和真正安全缺口不能借“灵活”放过。
+重型治理机制（跨切面盘点表、决定索引对账、替换式变更 manifest）按需加载，不让普通小改背负极端场景的认知税。
 
 <!-- s:longrun -->
 ## 它凭什么扛得住长活
 
-认领锁由 Git 保存；当前阶段在原交接区，获批范围在规格，全部实现来源与通过证据在原任务。换会话不需要靠私有记忆猜谁在做或最后一份 PR 是否代表全部交付。
-
-分拣先读预期交付，再核方案 PR 和全部实现/补充来源。规格归档核真实正文，已有内容只核验，共享文件不整体取移动 dev，未就绪任务不搭车；缺记录补原记录，缺产物补交付，不另建账。
+Git 持有认领锁（`issue/<N>` worktree）；原 issue 交接区记录当前阶段与全部合入 PR 来源；冻结 spec 锁定获批范围；只追加记录保存 D0–D7 拍板。换会话不用靠私有聊天记忆猜谁在做或上线带了什么。
 
 <!-- s:limits -->
 ## 它不做什么
 
-- 不调度 agent、不自动续跑、不提供平台授权隔离；Git 锁和本仓静态检查只覆盖各自有限范围。
-- 不保证永不出错；完成是本次约定已实现、必要测试/验收通过、无已知阻断、证据齐全。
-- 不把实现合并、标签或 tag 当作部署成功；成功快照也不表示所有服务实时同版。
-- 不自动安装工具、升级采用仓、建长期分支、造 CI/Hook 或发布平台；issue/PR 路径假定 GitHub，平台能力不足如实说明。
+- 不调度 agent、不自动续跑，也不提供平台级权限隔离。
+- 不保证永不出错；完成意味着约定交付存在、必要检查通过、无已知阻断且证据可核。
+- 不把实现合并、标签或 tag 等同于线上部署验证成功。
+- 不静默安装外部技能、建长期分支、造 CI/Hook 或发布平台；issue/PR 流程假定 GitHub。
 
 <!-- s:install -->
 ## 装
@@ -90,64 +85,50 @@ agent 派出去的仍是它自己的执行分身。换模型、名字或 prompt 
 git clone --branch rebuild/v2 https://github.com/nano-sun99/spec-flow.git ~/.claude/skills/spec-flow
 ```
 
-也可 clone 到自己的代码目录，再软链进客户端技能目录。Claude Code 的个人技能路径如上；其他客户端使用各自发现路径。安装技能不等于项目接入、配置就绪或客户端已经验证。
-
-v2 自己完成需求澄清，用客户端现有的选项卡或等价文字。接入项目时按 [v2 接入说明](references/v2/50-adapters/README.md) 处理。
+也可 clone 到工作目录再软链进客户端技能目录。`spec-flow` 用客户端自带选项卡或文字选项自主完成需求澄清，不依赖任何外部澄清技能。项目接入见 [`references/50-adapters/README.md`](references/50-adapters/README.md)。
 
 <!-- s:usage -->
 ## 怎么用
 
-描述需求或点名 spec-flow；实施已有单直接说“做 #12”。既有任务从当前有效阶段接，不重新访谈。委托的证据要求见 [v2 决策目录](references/v2/20-decisions.md)。
+描述需求或点名 `spec-flow`；实施既有单直接说“做 `#12`”。委托证据与交互卡片口径见 [`references/20-decisions.md`](references/20-decisions.md)。
 
-方案指南可按需选用：样例、图、段落和表格都服务于可判定规则/接口/验收。项目明确格式仍遵守，不因指南可替换省必要合同。范围内改实现方法不逐内部阶段求许可，真正触发停止点才停受影响部分。
+说“把 spec-flow 应用到本项目”接入，说“更新本项目的 spec-flow 接入”做显式升级。接入只写只指向式指针——绝不复制流程正文，也不顺手开启选修模块。
 
-接入说“把 spec-flow 应用到本项目”，显式升级说“更新本项目的 spec-flow 接入”：只写获准指针和项目落点，重复执行幂等，不复制流程、不顺手开启选修或迁移旧项目。
-
-选修仍是 `adr`、`doc-lifecycle`、`issue-status`、`issue-type`、`release`，默认关闭。`release` 同时管 **Git 分支流程与发布**：采用时明确单主线/三层及实际分支映射，不新增独立 Git 开关。三层可采用 staging 线：issue 集成分支先测后整条合入；合入前对当前 staging 做合入预演，四类核对前移到合入闸。三层普通文档也按任务进入 staging；无部署义务且分支交付/验收完成可结束，等下次正常快照，不另造文档热修/tag；仍需部署的代码不能提前完成。
-
-代码地图默认停用，仅明确试用/恢复才读 [code-map](references/code-map.md)。已采用 ADR、文档读序等按其真实时点执行；当前获批施工规格仍必读，不为结构对称重做这些制度。
+5 个选修模块（`adr`、`doc-lifecycle`、`issue-status`、`issue-type`、`release`）均**默认关闭**。其中 `release` 统一覆盖 Git 分支形态（单主线 / 三层 / staging 线）、发布安全不变式、批次失败修复与生产应急。
 
 <!-- s:evidence -->
 ## 本仓自己就是样板
 
-规格、issue、PR 与 rationale 保留设计及交付依据；旧规格和裁决不重写成新运行规则。每次交付的测试记录说明输入、预期、实际及边界：静态绿不证明客户端遵守，假仓/有限客户端不证明真实生产或全模型认证。
-
-本次整体重组依据已合并方案 PR #164 和执行单 #165；实施审核与合并仍等本次用户选择，规格审核不能充作实施验收。
+规格、变更清单、案例与校验脚本均留在本仓。静态绿是必要条件，不代替客户端或生产实测：`scripts/check-docs.sh` 守卫预算、单行长度、链接锚点与双语同步；`scripts/check-change.py`（配 `scripts/test-check-change.py`）支持本仓与外部项目（`--root <project>`）的替换式变更校验。
 
 <!-- s:docs -->
 ## 文件
 
-| 文件 | 职责 |
+| 文件 / 目录 | 职责 |
 |---|---|
-| `SKILL.md` | 选择版本，默认加载 v2 |
-| `references/v2/` | 当前默认流程、证据与项目接入 |
-| `AGENTS.md`、`CLAUDE.md` | 本仓维护规矩，后者导入前者 |
-| `references/one-path.md` | 流程/定稿图/状态与衔接唯一正文 |
-| `references/gate-details.md` | 选项、批准范围、放行/停止、审核与合并唯一正文 |
-| `references/phase-handoff.md` | 交付信息、全部来源与更新责任唯一正文 |
-| `references/done-criteria.md` | 有限完成、必要证据与已批准例外唯一判据 |
-| `references/spec-maturity.md` | 可替换的骨架/对照/终稿工作指南 |
-| `references/split-large-spec.md` | 可替换的交付物/依赖/拆分指南 |
-| `references/spec-revision-sync.md` | 可替换的现行落点同步方法 |
-| `references/worktree-lock.md` | Git 工作区、锁、接管和安全边界 |
-| `references/apply-to-project.md` | 采用意图、指针、落点与资产/安装边界 |
-| `references/release-discipline.md` | 选修 release：Git 映射、完整候选与必要发布 |
-| `references/adr-decision-records.md` | 选修 ADR，保留原制度职责 |
-| `references/documentation-lifecycle.md` | 选修文档生命周期和读序 |
-| `references/issue-status-labels.md` | 选修阶段/卡点标签与分拣 |
-| `references/issue-type-labels.md` | 选修类型标签及获准迁移 |
-| `references/code-map.md` | 默认停用的地图试用/恢复边界 |
-| `references/adoption-model.md` | 历史采纳解释，不增加义务 |
-| `references/rationale.md` | R1–R37：依据、取舍及验证边界 |
-| `docs/maintainer-notes.md` | 本仓接线与历史说明 |
-| `scripts/check-docs.sh` | 原预算/链接/双语/采用契约及必要 owner/交付信息存在性；不强制指南字面写法 |
+| `SKILL.md` | 唯一入口、运行循环、一跳导航与异常协议 |
+| `AGENTS.md`、`CLAUDE.md` | 本仓维护规矩；`CLAUDE.md` 导入 `AGENTS.md` |
+| `references/README.md` | 分层说明与阅读顺序地图 |
+| `references/00-constitution.md` | L0：8 条铁律（仅用户按 L0-8 修改） |
+| `references/10-stages.md` | L1：4 段阶段合同、核心术语与交付前置 |
+| `references/15-records.md` | L1：15 类记录、D0–D7 留痕、文档载体、关单与观察式例外 |
+| `references/20-decisions.md` | L2：D0–D7 硬闸、交互卡片契约与标签确认 |
+| `references/25-spec-governance.md` | 规格文档治理唯一正文（决定索引 / 唯一 ID、范围盘点表、视图权威顺序、重开边界） |
+| `references/26-review-contract.md` | 审核契约唯一正文（档位、R1–R3、#158 五机制、文档检查与 Lane A/B 模板） |
+| `references/30-playbooks/` | 9 条按需 Playbook（`new-spec`、`direct`、`issue`、`change-protocol`、`release`、`incident`、`labels`、`worktree`、`adr`） |
+| `references/40-cases/` | L4：15 条事故与演练案例（叙述 + 提议，不是授权） |
+| `references/50-adapters/` | 自足的只指向式项目接入契约与 5 个选修模块 |
+| `docs/archive/v1/` | 已废弃的 v1 文档与冻结的 `rationale.md`（历史档案） |
+| `docs/maintainer-notes.md` | 本机软链接线与仓库历史 |
+| `scripts/check-docs.sh` | 守卫核心层预算、单行上限、链接与锚点、owner 章节与双语 README 同步 |
+| `scripts/check-change.py` | 跨项目替换式变更校验器（`--root`、`--draft`、manifest-only 尾提交钉扎） |
 
-README 是介绍，入口导航到各唯一正文；冲突核相应 owner，不拿 README 另立规则。
+README 是介绍，实际执行请从 `SKILL.md` 进入各唯一正文 owner。
 
 <!-- s:contributing -->
 ## 参与
 
-开 issue 或 PR。新增/修改规则，把真实依据记 rationale 并编新 R 号；主入口只留导航与必要理由指针。两份 README 同批同步并运行现有文档检查。
+开 issue 或 PR。每条规则保持单一 owner，新教训记入 `references/40-cases/`，替换式变更跑 `scripts/check-change.py`，两份 README 同批同步并通过 `bash scripts/check-docs.sh`。
 
 <!-- s:license -->
 ## 许可

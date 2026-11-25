@@ -3,13 +3,14 @@
 
 用法：
     python3 scripts/check-change.py --manifest docs/changes/<slug>/manifest.json \
-        --base <git-rev> [--head <git-rev>] [--root .]
+        --base <git-rev> [--head <git-rev>] [--root .] [--draft]
 
 只做机器可判的结构/证据检查，不判断规则语义。退出码 0 = 全部通过；1 = 有违规。
 """
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import json
 import re
 import subprocess
@@ -28,12 +29,18 @@ REQUIRED_TOP = {
     "change", "title", "base", "head", "classification", "rules", "scans",
     "semantic_checks", "approval", "rebuild",
 }
-# 只有这些视图文件可以用 non_rule_changes 覆盖；规则文件不能靠它躲开规则行。
+# 只有这些视图 / 索引 / 测试文件可以用 non_rule_changes 覆盖；规则文件不能靠它躲开规则行。
 NON_RULE_ALLOW = {
-    "references/v2/README.md",
-    "references/v2/40-cases/INDEX.md",
+    "references/README.md",
+    "references/40-cases/INDEX.md",
+    "references/v2/SKILL.md",
+    "README.md",
+    "README.zh-CN.md",
     "docs/changes/README.md",
     "scripts/test-check-change.py",
+    # 保留旧路径以兼容历史 manifest 回归测试
+    "references/v2/README.md",
+    "references/v2/40-cases/INDEX.md",
 }
 TEXT_SUFFIXES = (".md", ".tsv", ".txt")
 SECTION_REF_RE = re.compile(r"§\s*(\d+(?:\.\d+)*|[一二三四五六七八九十百]+)")
@@ -60,6 +67,17 @@ def git(root: Path, *args: str) -> str:
 
 def resolve(root: Path, rev: str) -> str:
     return git(root, "rev-parse", "--verify", rev).strip()
+
+
+def is_ancestor(root: Path, ancestor: str, descendant: str) -> bool:
+    proc = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", ancestor, descendant],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return proc.returncode == 0
 
 
 def read_at(root: Path, rev: str, path: str) -> str:
@@ -148,7 +166,13 @@ def stale_section_refs(
     return out
 
 
-def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[str]:
+def lint(
+    root: Path,
+    manifest_path: Path,
+    base_arg: str,
+    head_arg: str,
+    draft: bool = False,
+) -> list[str]:
     errors: list[str] = []
     try:
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -161,7 +185,13 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
     except RuntimeError as exc:
         return [f"base/head 解析失败：{exc}"]
 
-    missing = REQUIRED_TOP - set(data)
+    try:
+        manifest_rel: str | None = manifest_path.relative_to(root).as_posix()
+    except ValueError:
+        manifest_rel = None
+
+    required_top = REQUIRED_TOP - ({"approval"} if draft else set())
+    missing = required_top - set(data)
     if missing:
         errors.append(f"顶层缺字段：{', '.join(sorted(missing))}")
     for key in ("change", "title", "base", "head", "classification"):
@@ -169,12 +199,33 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
             errors.append(f"{key} 为空")
     if data.get("base") and resolve(root, str(data["base"])) != base:
         errors.append(f"manifest.base 解析后与 --base 不一致：{data.get('base')!r}")
+
+    # 支持 manifest-only 尾部钉扎提交，解除 manifest.head 钉扎后的 SHA 自指死循环：
+    # 若 manifest.head 是 --head 的祖先且两者间只改动了该 manifest 本身，则放行并按内容树校验。
+    content_head = head
+    tail_pinned = False
     if data.get("head") and str(data["head"]) != "HEAD":
         try:
-            if resolve(root, str(data["head"])) != head:
-                errors.append(f"manifest.head 解析后与 --head 不一致：{data.get('head')!r}")
+            pinned = resolve(root, str(data["head"]))
         except RuntimeError:
             errors.append(f"manifest.head 解析不了：{data.get('head')!r}")
+        else:
+            if pinned != head:
+                if manifest_rel and is_ancestor(root, pinned, head):
+                    tail_diff = changed_files(root, pinned, head) - {manifest_rel}
+                    if not tail_diff:
+                        content_head = pinned
+                        tail_pinned = True
+                    else:
+                        errors.append(
+                            f"manifest.head 解析后与 --head 不一致：{data.get('head')!r}"
+                            "（钉扎提交之后存在非 manifest 文件改动："
+                            + "、".join(sorted(tail_diff))
+                            + "）"
+                        )
+                else:
+                    errors.append(f"manifest.head 解析后与 --head 不一致：{data.get('head')!r}")
+
     if data.get("classification") not in TYPES:
         errors.append(f"classification 不在 {sorted(TYPES)}：{data.get('classification')!r}")
 
@@ -209,7 +260,7 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
             errors.append(f"{where} 缺 new.file")
         else:
             try:
-                content = read_at(root, head, new_file)
+                content = read_at(root, content_head, new_file)
             except RuntimeError:
                 errors.append(f"{where} head 中不存在 new.file：{new_file}")
                 content = ""
@@ -308,13 +359,13 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
         except re.error as exc:
             errors.append(f"{where} query 不是合法正则：{exc}")
             continue
-        files = head_text_files(root, head, scope)
+        files = head_text_files(root, content_head, scope)
         if not files:
             errors.append(f"{where} scope 在 head 中没有 .md / .tsv / .txt 文件：{scope}")
             continue
         found: list[tuple[str, int, str]] = []
         for path in files:
-            for no, line in enumerate(read_at(root, head, path).splitlines(), 1):
+            for no, line in enumerate(read_at(root, content_head, path).splitlines(), 1):
                 for m in pattern.finditer(line):
                     found.append((path, no, m.group(0)))
         listed = scan.get("hits") or []
@@ -348,9 +399,8 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
                 continue
             if file not in files:
                 errors.append(f"{where} hit 文件不在 scope：{file}")
-            elif not find_lines(root, head, file, text):
+            elif not find_lines(root, content_head, file, text):
                 errors.append(f"{where} 登记的命中在 head:{file} 中不存在：{text!r}")
-        from collections import Counter
         found_by_file = Counter(rel for rel, _, _ in found)
         listed_by_file = Counter(h.get("file") for h in listed if h.get("file"))
         for file, n in found_by_file.items():
@@ -368,7 +418,7 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
         except RuntimeError:
             pass
         try:
-            added_texts[path] = added_text(root, base, head, path)
+            added_texts[path] = added_text(root, base, content_head, path)
         except RuntimeError:
             continue
     corpus_scope = sorted(
@@ -379,8 +429,8 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
             if isinstance(scope, str) and scope.strip()
         }
     ) or sorted(DEFAULT_SCOPES)
-    corpus_files = head_text_files(root, head, corpus_scope)
-    corpus_texts = {p: read_at(root, head, p) for p in corpus_files}
+    corpus_files = head_text_files(root, content_head, corpus_scope)
+    corpus_texts = {p: read_at(root, content_head, p) for p in corpus_files}
     section_whitelist = data.get("section_ref_whitelist") or []
     white_refs: set[str] = set()
     for i, item in enumerate(section_whitelist, 1):
@@ -433,18 +483,20 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
         if len(str(item.get("evidence", "")).strip()) < MIN_SEMANTIC:
             errors.append(f"{where} evidence 太短（<{MIN_SEMANTIC}）")
 
-    approval = data.get("approval") or {}
-    for key in ("user_quote", "timestamp", "scope", "base", "head", "link"):
-        if not str(approval.get(key, "")).strip():
-            errors.append(f"approval 缺 {key}")
-    if approval.get("base") and resolve(root, str(approval["base"])) != base:
-        errors.append("approval.base 解析后与 --base 不一致")
-    if approval.get("head") and str(approval["head"]) != "HEAD":
-        try:
-            if resolve(root, str(approval["head"])) != head:
-                errors.append("approval.head 解析后与 --head 不一致")
-        except RuntimeError:
-            errors.append("approval.head 解析不了")
+    if not draft:
+        approval = data.get("approval") or {}
+        for key in ("user_quote", "timestamp", "scope", "base", "head", "link"):
+            if not str(approval.get(key, "")).strip():
+                errors.append(f"approval 缺 {key}")
+        if approval.get("base") and resolve(root, str(approval["base"])) != base:
+            errors.append("approval.base 解析后与 --base 不一致")
+        if approval.get("head") and str(approval["head"]) != "HEAD":
+            try:
+                app_head = resolve(root, str(approval["head"]))
+                if app_head not in {head, content_head}:
+                    errors.append("approval.head 解析后与 --head 不一致")
+            except RuntimeError:
+                errors.append("approval.head 解析不了")
 
     rebuild = data.get("rebuild")
     if not isinstance(rebuild, dict):
@@ -489,7 +541,7 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
         ):
             errors.append(f"{where} review_ref 需为链接 / PR # / review: 记录：{review_ref!r}")
         try:
-            read_at(root, head, file)
+            read_at(root, content_head, file)
         except RuntimeError:
             errors.append(f"{where} head 中不存在 file：{file}")
             continue
@@ -507,16 +559,13 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
             errors.append(f"{where} 缺 source")
         else:
             try:
-                read_at(root, head, source)
+                read_at(root, content_head, source)
             except RuntimeError:
                 errors.append(f"{where} head 中不存在 source：{source}")
         if len(command) < MIN_SEARCH:
             errors.append(f"{where} command 太短（<{MIN_SEARCH}）：{command!r}")
-    try:
-        covered.add(manifest_path.relative_to(root).as_posix())
-    except ValueError:
-        pass
-    changed = changed_files(root, base, head)
+    if manifest_rel:
+        covered.add(manifest_rel)
     uncovered = sorted(changed - covered)
     if uncovered:
         errors.append("有改动文件未被 manifest 覆盖：" + "、".join(uncovered))
@@ -526,8 +575,10 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
 
     by_type = {t: sum(1 for r in rules if r.get("type") == t) for t in sorted(TYPES)}
     by_status = {s: sum(1 for r in rules if r.get("status") == s) for s in sorted(STATUSES)}
+    tail_note = f" (content_pinned={content_head[:12]})" if tail_pinned else ""
+    mode_note = " mode=draft" if draft else ""
     print(
-        f"base={base[:12]} head={head[:12]} rules={len(rules)} "
+        f"base={base[:12]} head={head[:12]}{tail_note}{mode_note} rules={len(rules)} "
         f"add/replace/retire={by_type['add']}/{by_type['replace']}/{by_type['retire']} "
         f"status done/whitelist/unresolved={by_status['done']}/{by_status['whitelist']}/{by_status['unresolved']} "
         f"whitelist_entries={len(whitelist)} scans={len(scans)} "
@@ -549,6 +600,11 @@ def main() -> int:
     parser.add_argument("--base", required=True)
     parser.add_argument("--head", default="HEAD")
     parser.add_argument("--root", default=".")
+    parser.add_argument(
+        "--draft",
+        action="store_true",
+        help="开发 / 审核期模式：跳过 approval 完整性校验，其余规则与扫描照常执行",
+    )
     args = parser.parse_args()
     root = Path(args.root).resolve()
     manifest = (root / args.manifest).resolve()
@@ -556,7 +612,7 @@ def main() -> int:
         print(f"红：manifest 不存在：{manifest}")
         return 1
     try:
-        errors = lint(root, manifest, args.base, args.head)
+        errors = lint(root, manifest, args.base, args.head, draft=args.draft)
     except Exception as exc:  # noqa: BLE001
         print(f"红：校验器自身报错：{exc}")
         return 1

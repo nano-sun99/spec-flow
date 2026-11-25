@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """check-change.py 的正负例测试。
 
-正例：仓库内真实 manifest 必须绿。
-负例：空 rules、non_rule 盖规则文件、phantom 命中、短 old.text、缺 anchor、
-head 不一致，必须红。
+覆盖：真实历史 manifest、manifest-only 尾部钉扎提交、非 manifest 尾改拦截、
+--draft 草案期校验，以及各类结构 / 扫描 / 章节引用负例。
 """
 from __future__ import annotations
 
@@ -17,6 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "docs/changes/2026-11-25-replacement-manifest/manifest.json"
+MANIFEST_193 = ROOT / "docs/changes/2026-11-25-change-protocol-portability/manifest.json"
 BASE = "06814b0"
 HEAD = "HEAD"
 _spec = importlib.util.spec_from_file_location("check_change", ROOT / "scripts/check-change.py")
@@ -25,30 +25,31 @@ assert _spec.loader
 _spec.loader.exec_module(check_change)
 
 
-def run(manifest_path: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts/check-change.py"),
-            "--manifest",
-            str(manifest_path),
-            "--base",
-            BASE,
-            "--head",
-            HEAD,
-            "--root",
-            str(ROOT),
-        ],
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+def run(
+    manifest_path: Path,
+    *,
+    base: str | None = None,
+    head: str | None = None,
+    draft: bool = False,
+) -> subprocess.CompletedProcess:
+    cmd = [
+        sys.executable,
+        str(ROOT / "scripts/check-change.py"),
+        "--manifest",
+        str(manifest_path),
+        "--base",
+        base or BASE,
+        "--head",
+        head or HEAD,
+        "--root",
+        str(ROOT),
+    ]
+    if draft:
+        cmd.append("--draft")
+    return subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True, check=False)
 
 
 def with_manifest(data: dict) -> Path:
-    # 必须放在 repo 内：否则校验器会把「manifest 未覆盖」当成红，
-    # 7 个负例就失去判别性（R2 A3）。
     fd, name = tempfile.mkstemp(
         suffix=".json",
         prefix="manifest.test.",
@@ -74,6 +75,39 @@ def main() -> int:
     results: list[bool] = []
 
     results.append(expect(True, "真实 manifest 绿", run(MANIFEST)))
+
+    # manifest-only 钉扎尾提交测试（PR #193: 内容钉在 be0f6f7，尾提交 d06ae65 只改 manifest）
+    results.append(
+        expect(
+            True,
+            "manifest-only 尾部钉扎提交绿",
+            run(MANIFEST_193, base="d5e2842", head="d06ae65"),
+            "content_pinned=be0f6f7",
+        )
+    )
+    # 钉扎后若改动非 manifest 文件仍须拦红
+    results.append(
+        expect(
+            False,
+            "钉扎提交后有非 manifest 改动红",
+            run(MANIFEST, base=BASE, head="8c4edbe"),
+            "钉扎提交之后存在非 manifest 文件改动",
+        )
+    )
+    # --draft 跳过 approval 但仍检查其余字段（临时文件名通过 view_files 覆盖原 manifest.json）
+    draft_data = copy.deepcopy(original)
+    draft_data.pop("approval", None)
+    draft_data.setdefault("view_files", []).append(
+        {
+            "file": "docs/changes/2026-11-25-replacement-manifest/manifest.json",
+            "reason": "单测临时副本替代原 manifest 路径",
+            "reviewer": "review-agent",
+            "review_ref": "review:test-draft",
+        }
+    )
+    path = with_manifest(draft_data)
+    results.append(expect(True, "--draft 缺 approval 绿", run(path, draft=True), "mode=draft"))
+    path.unlink(missing_ok=True)
 
     data = copy.deepcopy(original)
     data["rules"] = []
