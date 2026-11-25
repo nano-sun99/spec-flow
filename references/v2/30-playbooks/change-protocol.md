@@ -10,17 +10,17 @@
 ## 一、三个工件（规范性）
 
 1. **change manifest**：一次变更一个 JSON，默认 `docs/changes/<slug>/manifest.json`。它是唯一台账；PR 正文只放摘要。字段见 §二，模板见 [docs/changes/README](../../../docs/changes/README.md)。
-2. **校验器**：`python3 scripts/check-change.py --manifest <path> --base <base>`；退出码 0 才算绿。它检查结构、base 行号、新增同触发搜索、白名单理由、扫描命中、未处置 0、改动文件覆盖。
+2. **校验器**：`python3 scripts/check-change.py --manifest <path> --base <base> --head <rev>`；退出码 0 才算绿。它检查：必填字段、rules / scans / semantic_checks 非空、枚举、base 行号与 old.text（≥6 字）、new.anchor 在 head 文件中、add 的 same_trigger_search（≥6 字）、白名单 reviewer / review_ref、扫描 scope 非空且命中正反双向、未处置 0、改动文件覆盖（non_rule 只允许视图文件）。它不判断语义冲突。
 3. **载体表**：[15-records](../15-records.md) §四 是载体处置的唯一正文；manifest 只引用。
 
 ## 二、manifest 字段（规范性）
 
 | 段 | 必填 | 内容 |
 |---|---|---|
-| `change` / `title` / `base` / `head` / `classification` | 是 | 变更标识；base/head 完整 SHA 或 HEAD；classification ∈ add/replace/retire |
-| `approval` | 是 | `user_quote` / `timestamp` / `scope` / `base` / `head`；用户原话，不能只写 agent 转述 |
-| `rules[]` | 是 | `id` / `type` / `old`（add 为 null）/ `new` / `disposition` / `evidence` / `status`；add 另需 `same_trigger_search` |
-| `whitelist[]` | 有白名单时 | `rule_id` / `reason` / `reviewer`；每条白名单规则必须有对应条目 |
+| `change` / `title` / `base` / `head` / `classification` | 是 | 变更标识；base/head 解析为提交；classification ∈ add/replace/retire |
+| `approval` | 是 | `user_quote` / `timestamp` / `scope` / `base` / `head` / `link`；用户原话与可核链接，不能只写 agent 转述 |
+| `rules[]` | 是 | `id` / `type` / `old`（add 为 null）/ `new`（`file` / `section` / `anchor`）/ `disposition` / `evidence` / `status`；add 另需 `same_trigger_search`（≥6 字） |
+| `whitelist[]` | 有白名单时 | `rule_id` / `reason` / `reviewer` / `review_ref`（review-agent 必填）；每条白名单规则必须有对应条目 |
 | `scans[]` | 是 | `query` / `scope` / `hits[]` / `conclusion`；hits 每条给 file/text/conclusion |
 | `semantic_checks[]` | 是 | `item` / `conclusion` / `evidence`；反向冲突逐条结论 |
 | `rebuild` | 是 | `triggered` / `reason` / `old_behaviors[]`；触发时必须给旧行为清单 |
@@ -29,7 +29,7 @@
 - `type`：`add` / `replace` / `retire`。
 - `disposition`：`replace` / `delete` / `merge` / `alias` / `keep-history` / `keep-scoped` / `not-applicable`。
 - `status`：`done` / `whitelist` / `unresolved`；校验器遇到 `unresolved` 直接红。
-- 一行一条规则；旧 owner 给 `file:line` 与 `text`，校验器按 base 核；新 owner 给 `file` + `section`。
+- 一行一条规则；旧 owner 给 `file:line` 与 `text`（≥6 字），校验器按 base 核；新 owner 给 `file` + `section` + `anchor`（head 文件中可反查的字面片段）。
 
 ## 三、双扫描（规范性）
 
