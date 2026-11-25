@@ -3,9 +3,11 @@
 - 日期：2026-11-13
 - 依据：总纲 `docs/specs/2026-11-13-spec-flow-v2-master.md` §五、§十；批次 spec `docs/specs/2026-11-13-v2-b1-inventory-constitution.md`
 - 覆盖范围：`references/*.md` 全部 17 个 + `docs/specs/2026-11-11-branch-release-flow-drill.md`（下称 drill）+ 根 `SKILL.md` 的导航规则
-- 归类词表：**铁律**（`references/v2/00-constitution.md`）、**阶段合同**（`10-stages.md`）、**记录契约**（`15-records.md`，独立 L1）、**决策**（`20-decisions.md`）、**playbook**（`30-playbooks/`，9 条核心 + 4 条支撑）、**案例**（`40-cases/`）、**项目接入**（`50-adapters/`）、**丢弃**（不进入 v2）
+- 归类词表：**铁律**（`references/v2/00-constitution.md`）、**阶段合同**（`10-stages.md`）、**记录契约**（`15-records.md`，独立 L1）、**决策**（`20-decisions.md`）、**playbook**（`30-playbooks/`，10 条核心 + 4 条支撑）、**案例**（`40-cases/`）、**项目接入**（`50-adapters/`）、**丢弃**（不进入 v2）
 - 额外标 **入口**：`references/v2/SKILL.md` 是载体而非规则类别；只用于根 `SKILL.md` 的导航行，其余各行必须落到上面八类之一
 - 判定口径：一条规则一行；「保留」= 原义进入新载体；「合并」= 与别的规则合成一条；「拆解」= 一份文件按职责拆到多个新载体（理由见 §二 逐条行）；「降级」= 从闸口降为工作指南/视图约定；「归档」= 原文留作历史档案、不参与运行；「丢弃」= 不进入 v2，必须能在 §三 drop 列表找到
+
+> 2026-11-25 更新：playbook 现为 10 条核心 + 4 条支撑（新增 `change-protocol.md`）；`spec-revision-sync` 的 v2 替换式方法改由 `change-protocol.md` 承接，`review.md` 只留一般同步。本表其余内容保留 2026-11-13 快照。
 
 ## 一、文件级处置
 
@@ -26,7 +28,7 @@
 | `references/documentation-lifecycle.md` | 合并 | spec 冻结点进 L0-1；四类载体分工与读序进 `15-records.md` |
 | `references/spec-maturity.md` | 降级 | `30-playbooks/spec.md`：成熟度是工作方法，不是阶段闸 |
 | `references/split-large-spec.md` | 拆分 | 拆/不拆决定进 D1；交付物地图与依赖表达进 `30-playbooks/spec.md` |
-| `references/spec-revision-sync.md` | 降级 | `30-playbooks/review.md`：修订同步是推荐方法 |
+| `references/spec-revision-sync.md` | 降级 | `30-playbooks/review.md`：一般同步；替换式变更 → `30-playbooks/change-protocol.md`（2026-11-25 追记） |
 | `references/adr-decision-records.md` | 保留（选修） | `30-playbooks/adr.md` 或 `50-adapters/`，按项目是否采用 ADR 归层；默认关闭不变 |
 | `references/code-map.md` | 降级 | `30-playbooks/`（实施辅助）；默认停用不变；安装/写入授权细则留在旧文件，不搬 |
 | `references/rationale.md`（745 行 / R1-R40） | 归档 + 案例 | 原文保留为历史档案；选材进 `40-cases/`；新案例进案例库，R 号只用于铁律变更 |
@@ -240,7 +242,7 @@
 | G4 | 总纲 §十三 要求 B1 更新 `AGENTS.md` 的 R 号说明，但 B1 交付物清单无此文件 | **已定**：B1 补做。`AGENTS.md` 第 3 条已改为「rationale 冻结为历史档案、R 号只用于铁律变更、新案例进案例库」，记入 `v1-drift.md` | 已落 |
 | G5 | 「盘点」流程（5 条可疑清单）无 v2 明文落点 | 归 `30-playbooks/labels.md`（支撑 4 条之一），不算法条 | B3 |
 | G6 | `rationale.md` R1-R40 的选材标准只有「保留/归档/丢弃」，无条数分配 | B3 按「改变了什么行为 / 教了什么失败」选，首版 ≤15 条 | B3 |
-| G7 | 总纲 §九 写死「9 条 playbook」，§十 迁移映射却要求 labels/worktree/adr/spec 也进 playbook；两处矛盾，导致 4 类规则无交付者 | **已修**：总纲 §九 改为「9 条核心 + 4 条支撑」，§十一 B3 交付物同步加 `30-playbooks/` 13 条与 `50-adapters/` | 已落 |
+| G7 | 总纲 §九 写死「9 条 playbook」，§十 迁移映射却要求 labels/worktree/adr/spec 也进 playbook；两处矛盾，导致 4 类规则无交付者 | **已修**：总纲 §九 改为「9 条核心 + 4 条支撑」，§十一 B3 交付物同步加 `30-playbooks/` 13 条与 `50-adapters/`（2026-11-25 追记：现为 10 条核心 + 4 条支撑，`change-protocol.md` 为第 10 条） | 已落 |
 | G8 | `references/v2/50-adapters/` 在四份批次 spec 里都没有 owner | **已修**：总纲 §十一 把 50-adapters 归入 B3 交付物 | 已落 |
 | G9 | D0 证据列缺「issue 仍 open」「无第二份生效授权」「同窗口相邻性」，授权记录只有 6 字段 | **已修**：总纲 §七 D0 证据列补齐，§八 授权记录恢复 8 字段 | 已落 |
 | G10 | 入口「硬闸只有 D0-D7」与 L0-7 冲突 | **已修**：入口与总纲 §七 均写明「D0-D7 是必须停的固定类型，不是可停的完整清单；八类之外遇 L0-7 承重缺口同样停」 | 已落 |

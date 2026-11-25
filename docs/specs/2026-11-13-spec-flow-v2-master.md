@@ -67,7 +67,7 @@ P8 切换默认入口前，必须同时满足：
 | L0 铁律 | 8 条，上限不增长；不可逆动作、用户确认、证据、失败停住 | 用户批准，agent 只能提议 | 每次先读 | ≤60 行 |
 | L1 阶段合同 | 4 段：澄清 → 设计 → 交付 → 发布；每段写“什么算完成 + 证据” | 用户批准 | 每次先读 | ≤200 行 |
 | L2 决策目录 | 8 类只有用户能拍的决定（D0-D7）；每个写触发、证据、选项、默认 | 用户批准 | 每次先读 | ≤100 行 |
-| L3 Playbook | 9 条常见走法 + 4 条支撑（labels / worktree / adr / 项目接入）；示例，不是必须；闸口相关章节是规范性的 | agent 维护，改闸口证据须用户批准 | 按需读 | 不限 |
+| L3 Playbook | 10 条常见走法 + 4 条支撑（labels / worktree / adr / spec.md）；示例，不是必须；闸口相关章节是规范性的 | agent 维护，改闸口证据须用户批准 | 按需读 | 不限 |
 | L4 案例库 | 演练、事故、项目适配；叙述 + 提议，不是法条 | agent 维护 | 按需查 | 首版 ≤15 条 |
 
 ### 运行循环
@@ -184,7 +184,7 @@ P8 切换默认入口前，必须同时满足：
 | D0 | 实施委托 | spec 合并 + 执行 issue 已建 | spec 版本/合并提交、issue 仍 `open`、范围、当前锁、无第二份生效授权；同窗口入口另核交接报告相邻性 | 委托 / 先不委托 | 不委托 |
 | D1 | 范围与结构 | 需求/变更进入 | 目标、范围、非目标、验收、页面/无页面、拆/不拆、观察式例外（如适用） | 确认 / 调整 / 不做 | 不做 |
 | D2 | 设计与规格确认 | 方案/规格草稿完成 | 方案、备选代价、验收、数据库变更清单、审核档位、修订范围 | 确认 / 改 / 重做；审核档位：不审/轻审/重审/重审+变异；修订范围：全改/只改阻断+高/不改 | 不送审、不合并 |
-| D3 | spec 合并 | 审核/修订完成 | 审核结果、修订记录、最终版本、目标分支 | 合并 / 先不合；改已合并 spec：新开一份 / 改旧的（默认不动冻结正文） | 不合并 |
+| D3 | spec 合并 | 审核/修订完成 | 审核结果、修订记录、最终版本、目标分支 | 合并 / 先不合；改已合并 spec：新开一份 / 改旧的（用户明确确认；默认不动冻结正文） | 不合并 |
 | D4 | 每份 PR（含 hotfix 合回） | ① PR 待审 → 选审核档位与修订范围；② PR 审核/验证完成 → 确认合并 | ① PR、目标分支、完整提交、本次范围；② 审核结论、修订记录、文档检查结果、验证结果、未处理项、修订后完整提交；hotfix 另加：基于生产 tag、修复提交、临时 tag、验证证据 | ① 审核档位：不审 / 轻审 / 重审 / 重审 + 变异；修订范围：全改 / 只改阻断 + 高 / 不改；② 合并 / 先不合。每份、每阶段当场选，不沿用规格期（依据 v1 `gate-details.md` §四） | ① 不审（自查）、不改；② 不合并 |
 | D5 | 整条 issue 合入 staging | issue 分支验收 + 预演 + 四类完成；仅 staging 线 | issue #N、`issue/<N>`、完整提交、预演分支/提交、staging 基线、合并后构建 + 本 issue 验收、四类逐项、未处理项、目标 staging 完整提交 | 合入 / 先不合 | 不合入 |
 | D6 | 生产发布 | 批次 + rc 验收通过；仅采用 release | 批次范围（上一个生产 tag..staging）、排除项、未知搭车项处置、必要依赖、rc tag、最终 tag（同一提交）、产物/部署单元、验证、回滚目标、直接干任务清单 | 发布 / 先不发 | 不发布 |
@@ -224,9 +224,11 @@ P8 切换默认入口前，必须同时满足：
 
 ## 九、Playbook 与案例库
 
-### Playbook（9 条核心 + 4 条支撑）
+### Playbook（10 条核心 + 4 条支撑）
 
-**核心 9 条**：
+> 2026-11-25 更新：新增 `change-protocol.md`，核心 playbook 由 9 条增至 10 条。
+
+**核心 10 条**：
 
 1. 新需求开 spec
 2. 直接干（无 spec/issue）
@@ -237,13 +239,16 @@ P8 切换默认入口前，必须同时满足：
 7. 批次失败 → fix
 8. main 分叉/快照
 9. 审核与修订（含 #158 处置机制）
+10. 替换式变更（`change-protocol.md`）：改判据 / 术语 / 范围 / owner / 边界 / 分类时交 manifest + 跑校验器；双扫描 + 载体分流 + 重建判定
 
 **支撑 4 条**（承接 §十 迁移映射里无处可去、又必须保留的操作知识；同样是示例，不是必须）：
 
-10. 标签（`labels.md`）：阶段标签 / 类型标签是视图，不是状态机；待上线、待验证、关单保留用户确认
-11. 工作区与锁（`worktree.md`）：改文件先独立 worktree；锁以分支名为准；撞锁停；放锁按完成事实
-12. ADR（`adr.md`）：按项目是否采用归层；采用时记录、取代链与误用边界
-13. 项目接入（`50-adapters/`）：5 个选修模块与只指向式契约的形态映射，不改 adopt 行为
+11. 标签（`labels.md`）：阶段标签 / 类型标签是视图，不是状态机；待上线、待验证、关单保留用户确认
+12. 工作区与锁（`worktree.md`）：改文件先独立 worktree；锁以分支名为准；撞锁停；放锁按完成事实
+13. ADR（`adr.md`）：按项目是否采用归层；采用时记录、取代链与误用边界
+14. 规格成熟度与拆分（`spec.md`）：成熟度是工作方法，不是阶段闸；拆分方法见 `20-decisions` D1 + `spec.md`
+
+项目接入在 `50-adapters/`，不属于 4 条支撑 playbook。
 
 每条格式：
 
@@ -302,7 +307,7 @@ P8 切换默认入口前，必须同时满足：
 | `documentation-lifecycle` | `references/v2/00-constitution.md` + `15-records.md` | spec 冻结点进 L0-1；文档生命周期进记录 |
 | `spec-maturity` | `references/v2/30-playbooks/spec.md` | 规格成熟度作为 playbook，不是阶段闸 |
 | `split-large-spec` | `references/v2/20-decisions.md` D1 + `30-playbooks/spec.md` | 拆分决定归 D1；方法进 playbook |
-| `spec-revision-sync` | `references/v2/30-playbooks/review.md` | 修订同步进审核 playbook |
+| `spec-revision-sync` | `references/v2/30-playbooks/change-protocol.md` | 替换式变更进 change-protocol；`review.md` 只留一般同步（2026-11-25 更新） |
 | `adr-decision-records` | `references/v2/30-playbooks/adr.md` 或 `50-adapters/` | 按项目是否采用 ADR 归层 |
 | `code-map` | `references/v2/30-playbooks/` | 代码地图作为实施 playbook 的辅助 |
 | `rationale` + drill + 事故记录 | `references/v2/40-cases/` | 保留“为什么”，变成案例库；`rationale.md` 作为历史档案 |
@@ -319,7 +324,7 @@ P8 切换默认入口前，必须同时满足：
 |---|---|---|---|---|
 | B1 | P0 盘点 + P1 铁律 | `docs/rebuild/inventory.md`、`docs/rebuild/v1-drift.md`、`references/v2/00-constitution.md`、`references/v2/SKILL.md` 骨架 | 盘点覆盖全部旧 `references/*.md` + 核心 3 文件每条规则；每条标保留/合并/丢弃 + 理由；8 条铁律每条有执行方式/证据；drop 列表存在；v2 入口骨架可读 | 无 |
 | B2 | P2 阶段合同 + P3 决策目录 + 记录 | `references/v2/10-stages.md`、`15-records.md`、`20-decisions.md` | 4 段每段有完成/证据/出口；D0-D7 每个有触发/证据/选项/默认/失效；术语“四类/预演/批次/rc/15 分钟”有定义；无步骤语言 | B1 |
-| B3 | P4 playbooks + P5 案例库 | `references/v2/30-playbooks/*.md`（9 条核心 + 4 条支撑）、`references/v2/50-adapters/*.md`、`references/v2/40-cases/*.md`（≤15 条）、`40-cases/INDEX.md` | 9 条核心 + 4 条支撑齐全；每条标“示例非必须”，闸口章节标规范性；50-adapters 覆盖 5 个选修模块与只指向式契约；案例有来源、影响提议、批准偏离、superseded_by；索引可检索；选材按保留/归档/丢弃 | B1、B2 |
+| B3 | P4 playbooks + P5 案例库 | `references/v2/30-playbooks/*.md`（10 条核心 + 4 条支撑）、`references/v2/50-adapters/*.md`、`references/v2/40-cases/*.md`（≤15 条）、`40-cases/INDEX.md` | 10 条核心 + 4 条支撑齐全；每条标“示例非必须”，闸口章节标规范性；50-adapters 覆盖 5 个选修模块与只指向式契约；案例有来源、影响提议、批准偏离、superseded_by；索引可检索；选材按保留/归档/丢弃 | B1、B2 |
 | B4 | P6 入口 + P6.5 覆盖审计 | `references/v2/SKILL.md`、`references/v2/README.md`、`docs/rebuild/coverage-audit.md`、`docs/rebuild/walkthroughs.md` | 入口 ≤60 行；一跳到达全部 v2 文件；v2 内部链接全可达；18 闸口 + 25 步逐条有落点；3 剧本回放（直接干/staging issue/hotfix）通过，确认次数 ≤v1；`check-docs` 绿 + v2 链接检查绿 | B1-B3 |
 
 批次串行执行；B3 的案例资料可在 B2 后半段预研，但 B3 的交付/验收必须等 B2 完成。4 个 issue 按批次建，不按阶段建。

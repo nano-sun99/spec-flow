@@ -1,0 +1,1225 @@
+{
+  "change": "replacement-change-manifest",
+  "title": "替换式变更协议：manifest + 校验脚本",
+  "base": "06814b0898314a477e00abdf7c412aa2a15065b1",
+  "head": "07c86659bb6c3e2c30b46ebc85f72add7c2563c0",
+  "classification": "replace",
+  "supersedes": [
+    "#190",
+    "#191"
+  ],
+  "approval": {
+    "user_quote": "可以采纳你的方案；我授权你为我署名",
+    "timestamp": "2026-11-25",
+    "scope": "manifest + 校验脚本重画；基于 rebuild/v2 新分支；20 文件",
+    "base": "06814b0898314a477e00abdf7c412aa2a15065b1",
+    "head": "07c86659bb6c3e2c30b46ebc85f72add7c2563c0",
+    "link": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157609812"
+  },
+  "rules": [
+    {
+      "id": "R-001",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/review.md",
+        "line": 88,
+        "text": "改判据、定义、常量或术语时"
+      },
+      "new": {
+        "file": "references/v2/30-playbooks/review.md",
+        "section": "§修订同步 + change-protocol §一",
+        "anchor": "本节只保留一般同步"
+      },
+      "disposition": "keep-scoped",
+      "evidence": "review §修订同步 保留一般同步；替换式转 change-protocol",
+      "status": "done"
+    },
+    {
+      "id": "R-002",
+      "type": "replace",
+      "old": {
+        "file": "references/spec-revision-sync.md",
+        "line": 5,
+        "text": "改判据、定义、常量或术语时"
+      },
+      "new": {
+        "file": "references/v2/30-playbooks/change-protocol.md",
+        "section": "§一",
+        "anchor": "三个工件"
+      },
+      "disposition": "keep-scoped",
+      "evidence": "v1 任务仍按该页；v2 指针",
+      "status": "whitelist"
+    },
+    {
+      "id": "R-003",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/15-records.md",
+        "line": 43,
+        "text": "只追加不篡改的写法"
+      },
+      "new": {
+        "file": "references/v2/15-records.md",
+        "section": "§四 载体表",
+        "anchor": "替换式变更的载体处置"
+      },
+      "disposition": "keep-scoped",
+      "evidence": "记录载体规则未替换；载体表限定作用域",
+      "status": "whitelist"
+    },
+    {
+      "id": "R-004",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/15-records.md",
+        "line": 67,
+        "text": "此后只加状态、勘误标记与链接，不改正文"
+      },
+      "new": {
+        "file": "references/v2/15-records.md",
+        "section": "§四 载体表 + D3",
+        "anchor": "默认不改正文；用户明确确认"
+      },
+      "disposition": "keep-scoped",
+      "evidence": "默认不改；用户明确确认「改旧的」按 D3",
+      "status": "done"
+    },
+    {
+      "id": "R-005",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/15-records.md",
+        "line": 73,
+        "text": "旧 ID 只作历史别名"
+      },
+      "new": {
+        "file": "references/v2/15-records.md",
+        "section": "§四 载体表",
+        "anchor": "替换式变更的载体处置"
+      },
+      "disposition": "keep-scoped",
+      "evidence": "迁移别名只保留在「原 X → 新 Y」行；15-records:84 ID 迁移句加 D3 例外",
+      "status": "whitelist"
+    },
+    {
+      "id": "R-006",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/15-records.md",
+        "line": 75,
+        "text": "旧称总览，同义"
+      },
+      "new": {
+        "file": "references/v2/15-records.md",
+        "section": "§四 载体表",
+        "anchor": "替换式变更的载体处置"
+      },
+      "disposition": "keep-scoped",
+      "evidence": "带「旧称」标记的对照句，逐条登记",
+      "status": "whitelist"
+    },
+    {
+      "id": "R-007",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/review.md",
+        "line": 28,
+        "text": "不重写获批正文"
+      },
+      "new": {
+        "file": "references/v2/30-playbooks/review.md",
+        "section": "step 11",
+        "anchor": "不重写已合并 / 冻结正文"
+      },
+      "disposition": "replace",
+      "evidence": "限定已合并/冻结；D2 已批未合按协议；D3 例外",
+      "status": "done"
+    },
+    {
+      "id": "R-008",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/20-decisions.md",
+        "line": 34,
+        "text": "改旧的（默认不动冻结正文）"
+      },
+      "new": {
+        "file": "references/v2/20-decisions.md",
+        "section": "D3",
+        "anchor": "用户明确确认；默认不动冻结正文"
+      },
+      "disposition": "keep-scoped",
+      "evidence": "默认不改 + 用户明确确认",
+      "status": "done"
+    },
+    {
+      "id": "R-009",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/new-spec.md",
+        "line": 47,
+        "text": "默认不动冻结正文"
+      },
+      "new": {
+        "file": "references/v2/30-playbooks/new-spec.md",
+        "section": "D3",
+        "anchor": "D3 spec 合并"
+      },
+      "disposition": "keep-scoped",
+      "evidence": "与 D3 默认一致，未改原文",
+      "status": "whitelist"
+    },
+    {
+      "id": "R-010",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/review.md",
+        "line": 126,
+        "text": "给材料（规范性）"
+      },
+      "new": {
+        "file": "references/v2/30-playbooks/review.md",
+        "section": "§给材料",
+        "anchor": "给材料（规范性）"
+      },
+      "disposition": "replace",
+      "evidence": "给材料加 manifest + 校验输出",
+      "status": "done"
+    },
+    {
+      "id": "R-011",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/review.md",
+        "line": 127,
+        "text": "报告字段（规范性）"
+      },
+      "new": {
+        "file": "references/v2/30-playbooks/review.md",
+        "section": "§报告字段",
+        "anchor": "报告字段（规范性）"
+      },
+      "disposition": "replace",
+      "evidence": "报告字段加 manifest 摘要",
+      "status": "done"
+    },
+    {
+      "id": "R-012",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/10-stages.md",
+        "line": 65,
+        "text": "证据**：spec、范围盘点表"
+      },
+      "new": {
+        "file": "references/v2/10-stages.md",
+        "section": "§二 设计-证据",
+        "anchor": "change manifest 与校验输出（rules"
+      },
+      "disposition": "replace",
+      "evidence": "设计证据行加 manifest 与校验输出",
+      "status": "done"
+    },
+    {
+      "id": "R-013",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/10-stages.md",
+        "line": 80,
+        "text": "证据**：PR 列表"
+      },
+      "new": {
+        "file": "references/v2/10-stages.md",
+        "section": "§二 交付-证据",
+        "anchor": "change manifest 与校验输出（如适用）"
+      },
+      "disposition": "replace",
+      "evidence": "交付证据行加 manifest 与校验输出",
+      "status": "done"
+    },
+    {
+      "id": "R-014",
+      "type": "replace",
+      "old": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "line": 70,
+        "text": "L3 Playbook | 9 条常见走法"
+      },
+      "new": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "section": "§一 L3 表",
+        "anchor": "10 条常见走法"
+      },
+      "disposition": "replace",
+      "evidence": "10 条常见走法 + 4 条支撑",
+      "status": "done"
+    },
+    {
+      "id": "R-015",
+      "type": "replace",
+      "old": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "line": 227,
+        "text": "Playbook（9 条核心 + 4 条支撑）"
+      },
+      "new": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "section": "§九",
+        "anchor": "### Playbook（10 条核心 + 4 条支撑）"
+      },
+      "disposition": "replace",
+      "evidence": "核心 10 条 / 支撑 11-14",
+      "status": "done"
+    },
+    {
+      "id": "R-016",
+      "type": "replace",
+      "old": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "line": 305,
+        "text": "spec-revision-sync"
+      },
+      "new": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "section": "§十",
+        "anchor": "替换式变更进 change-protocol"
+      },
+      "disposition": "replace",
+      "evidence": "映射改指 change-protocol",
+      "status": "done"
+    },
+    {
+      "id": "R-017",
+      "type": "replace",
+      "old": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "line": 322,
+        "text": "9 条核心 + 4 条支撑"
+      },
+      "new": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "section": "§十一 B3",
+        "anchor": "B3 | P4 playbooks"
+      },
+      "disposition": "replace",
+      "evidence": "10 条核心 + 4 条支撑",
+      "status": "done"
+    },
+    {
+      "id": "R-018",
+      "type": "replace",
+      "old": {
+        "file": "docs/specs/2026-11-13-v2-b3-playbooks-cases.md",
+        "line": 12,
+        "text": "9 条 playbook"
+      },
+      "new": {
+        "file": "docs/specs/2026-11-13-v2-b3-playbooks-cases.md",
+        "section": "§一",
+        "anchor": "10 条 playbook"
+      },
+      "disposition": "replace",
+      "evidence": "10 条 playbook",
+      "status": "done"
+    },
+    {
+      "id": "R-019",
+      "type": "replace",
+      "old": {
+        "file": "docs/specs/2026-11-13-v2-b3-playbooks-cases.md",
+        "line": 18,
+        "text": "9 条核心："
+      },
+      "new": {
+        "file": "docs/specs/2026-11-13-v2-b3-playbooks-cases.md",
+        "section": "§二",
+        "anchor": "10 条核心：新需求"
+      },
+      "disposition": "replace",
+      "evidence": "10 条核心",
+      "status": "done"
+    },
+    {
+      "id": "R-020",
+      "type": "replace",
+      "old": {
+        "file": "docs/specs/2026-11-13-v2-b3-playbooks-cases.md",
+        "line": 34,
+        "text": "9 条核心 + 4 条支撑"
+      },
+      "new": {
+        "file": "docs/specs/2026-11-13-v2-b3-playbooks-cases.md",
+        "section": "§四",
+        "anchor": "10 条核心 + 4 条支撑 playbook 齐全"
+      },
+      "disposition": "replace",
+      "evidence": "10 条核心 + 4 条支撑",
+      "status": "done"
+    },
+    {
+      "id": "R-021",
+      "type": "retire",
+      "old": {
+        "file": "docs/rebuild/inventory.md",
+        "line": 29,
+        "text": "spec-revision-sync"
+      },
+      "new": {
+        "file": "docs/rebuild/inventory.md",
+        "section": "顶部注记 + §一 行",
+        "anchor": "2026-11-25 更新"
+      },
+      "disposition": "keep-history",
+      "evidence": "历史快照 + 2026-11-25 追记",
+      "status": "whitelist"
+    },
+    {
+      "id": "R-022",
+      "type": "retire",
+      "old": {
+        "file": "docs/rebuild/inventory.md",
+        "line": 243,
+        "text": "9 条 playbook"
+      },
+      "new": {
+        "file": "docs/rebuild/inventory.md",
+        "section": "§二 G7",
+        "anchor": "G7 | 总纲"
+      },
+      "disposition": "keep-history",
+      "evidence": "历史审计行 + 2026-11-25 追记",
+      "status": "whitelist"
+    },
+    {
+      "id": "R-023",
+      "type": "retire",
+      "old": {
+        "file": "docs/rebuild/coverage-audit.md",
+        "line": 110,
+        "text": "13 条 playbook"
+      },
+      "new": {
+        "file": "docs/rebuild/coverage-audit.md",
+        "section": "§五 结果",
+        "anchor": "2026-11-25 更新"
+      },
+      "disposition": "keep-history",
+      "evidence": "历史结果 + 2026-11-25 追记",
+      "status": "whitelist"
+    },
+    {
+      "id": "R-024",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/40-cases/2026-09-11-criterion-sync.md",
+        "line": 10,
+        "text": "影响提议**：无"
+      },
+      "new": {
+        "file": "references/v2/40-cases/2026-09-11-criterion-sync.md",
+        "section": "§2026-11-25 追记",
+        "anchor": "2026-11-25 追记（追加，不改原结论）"
+      },
+      "disposition": "keep-history",
+      "evidence": "历史快照 + 追记，原结论保留",
+      "status": "done"
+    },
+    {
+      "id": "R-025",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/40-cases/2026-09-11-criterion-sync.md",
+        "line": 12,
+        "text": "覆盖于 `30-playbooks/review.md` 修订同步"
+      },
+      "new": {
+        "file": "references/v2/40-cases/2026-09-11-criterion-sync.md",
+        "section": "§2026-11-25 追记",
+        "anchor": "2026-11-25 追记（追加，不改原结论）"
+      },
+      "disposition": "keep-history",
+      "evidence": "历史快照 + 追记，原结论保留",
+      "status": "done"
+    },
+    {
+      "id": "R-026",
+      "type": "replace",
+      "old": {
+        "file": "references/apply-to-project.md",
+        "line": 240,
+        "text": "旧版 H1**、现行真身"
+      },
+      "new": {
+        "file": "references/apply-to-project.md",
+        "section": "§特征句",
+        "anchor": "刻意留着当**停在旧版的副本**的抓手"
+      },
+      "disposition": "keep-scoped",
+      "evidence": "v1 刻意保留的旧版抓手，文件内已标注",
+      "status": "whitelist"
+    },
+    {
+      "id": "R-027",
+      "type": "replace",
+      "old": {
+        "file": "references/gate-details.md",
+        "line": 106,
+        "text": "不重写获批正文"
+      },
+      "new": {
+        "file": "references/gate-details.md",
+        "section": "§四",
+        "anchor": "不重写获批正文"
+      },
+      "disposition": "keep-scoped",
+      "evidence": "v1 页面保留；v2 以 review step 11 为准",
+      "status": "whitelist"
+    },
+    {
+      "id": "R-028",
+      "type": "retire",
+      "old": {
+        "file": "docs/specs/2026-09-23-two-segments-one-gate.md",
+        "line": 144,
+        "text": "验收「零残留」不可判定"
+      },
+      "new": {
+        "file": "docs/specs/2026-09-23-two-segments-one-gate.md",
+        "section": "§审核修订记录",
+        "anchor": "验收「零残留」不可判定"
+      },
+      "disposition": "keep-history",
+      "evidence": "历史审核记录，证明「零残留」已判不可判定",
+      "status": "whitelist"
+    },
+    {
+      "id": "R-029",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/change-protocol.md",
+        "section": "§一",
+        "anchor": "三个工件"
+      },
+      "disposition": "not-applicable",
+      "evidence": "diff base:? -> head:三个工件",
+      "status": "done",
+      "same_trigger_search": "review §修订同步 / spec-revision-sync / 15-records 载体表；旧方法分散，新页作为替换后的方法 owner"
+    },
+    {
+      "id": "R-030",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "scripts/check-change.py",
+        "section": "validator",
+        "anchor": "def lint"
+      },
+      "disposition": "not-applicable",
+      "evidence": "diff base:? -> head:def lint",
+      "status": "done",
+      "same_trigger_search": "scripts/ 下无变更校验器；check-docs 只查文档结构"
+    },
+    {
+      "id": "R-031",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "docs/changes/README.md",
+        "section": "manifest 模板",
+        "anchor": "最小用法"
+      },
+      "disposition": "not-applicable",
+      "evidence": "diff base:? -> head:最小用法",
+      "status": "done",
+      "same_trigger_search": "docs/ 下无 manifest 模板"
+    },
+    {
+      "id": "R-032",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/10-stages.md",
+        "section": "§二 设计-完成",
+        "anchor": "提交 change manifest 并跑"
+      },
+      "disposition": "not-applicable",
+      "evidence": "diff base:? -> head:### 设计",
+      "status": "done",
+      "same_trigger_search": "设计段完成条件无替换式变更项"
+    },
+    {
+      "id": "R-033",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/10-stages.md",
+        "section": "§二 交付-完成",
+        "anchor": "交 manifest 并跑"
+      },
+      "disposition": "not-applicable",
+      "evidence": "diff base:? -> head:### 交付",
+      "status": "done",
+      "same_trigger_search": "交付段完成条件无替换式变更项"
+    },
+    {
+      "id": "R-034",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/15-records.md",
+        "section": "§四 载体表",
+        "anchor": "替换式变更的载体处置"
+      },
+      "disposition": "not-applicable",
+      "evidence": "diff base:? -> head:替换式变更的载体处置",
+      "status": "done",
+      "same_trigger_search": "载体表原有 4 行；无替换式变更处置行"
+    },
+    {
+      "id": "R-036",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/review.md",
+        "section": "§给材料/报告字段",
+        "anchor": "替换式变更另附 change manifest"
+      },
+      "disposition": "not-applicable",
+      "evidence": "diff base:? -> head:给材料（规范性）",
+      "status": "done",
+      "same_trigger_search": "给材料/报告字段无 manifest"
+    },
+    {
+      "id": "R-038",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/direct.md",
+        "section": "§落点判定",
+        "anchor": "落点判定**：先核是否有 open issue"
+      },
+      "disposition": "not-applicable",
+      "evidence": "diff base:? -> head:落点判定",
+      "status": "done",
+      "same_trigger_search": "direct 落点判定无替换式变更入口"
+    },
+    {
+      "id": "R-039",
+      "type": "replace",
+      "old": {
+        "file": "docs/rebuild/inventory.md",
+        "line": 6,
+        "text": "9 条核心 + 4 条支撑"
+      },
+      "new": {
+        "file": "docs/rebuild/inventory.md",
+        "section": "§头部归类词表",
+        "anchor": "归类词表"
+      },
+      "disposition": "replace",
+      "evidence": "10+4 计数",
+      "status": "done"
+    },
+    {
+      "id": "R-040",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/direct.md",
+        "line": 37,
+        "text": "合并前 | 当份审核结论"
+      },
+      "new": {
+        "file": "references/v2/30-playbooks/direct.md",
+        "section": "§证据-合并前",
+        "anchor": "合并前 | 当份审核结论"
+      },
+      "disposition": "replace",
+      "evidence": "合并前证据加 manifest + 校验输出",
+      "status": "done"
+    },
+    {
+      "id": "R-041",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/10-stages.md",
+        "line": 67,
+        "text": "常见失败**：spec 写步骤"
+      },
+      "new": {
+        "file": "references/v2/10-stages.md",
+        "section": "§二 设计-常见失败",
+        "anchor": "常见失败**：spec 写步骤"
+      },
+      "disposition": "replace",
+      "evidence": "设计常见失败加「只加新句」",
+      "status": "done"
+    },
+    {
+      "id": "R-042",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/10-stages.md",
+        "line": 82,
+        "text": "常见失败**：实现 PR"
+      },
+      "new": {
+        "file": "references/v2/10-stages.md",
+        "section": "§二 交付-常见失败",
+        "anchor": "常见失败**：实现 PR"
+      },
+      "disposition": "replace",
+      "evidence": "交付常见失败加「不交 manifest」",
+      "status": "done"
+    },
+    {
+      "id": "R-043",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/SKILL.md",
+        "line": 23,
+        "text": "明确的单处修改"
+      },
+      "new": {
+        "file": "references/v2/SKILL.md",
+        "section": "§运行循环-单处修改",
+        "anchor": "明确的单处修改"
+      },
+      "disposition": "replace",
+      "evidence": "入口触发与豁免改为 manifest + 校验",
+      "status": "done"
+    },
+    {
+      "id": "R-044",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "scripts/test-check-change.py",
+        "section": "test",
+        "anchor": "def main"
+      },
+      "same_trigger_search": "scripts/ 下无 check-change 的正负例测试；现有 check-docs 只测文档结构",
+      "disposition": "not-applicable",
+      "evidence": "正负例 18 组",
+      "status": "done"
+    },
+    {
+      "id": "R-045",
+      "type": "replace",
+      "old": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "line": 187,
+        "text": "改旧的（默认不动冻结正文）"
+      },
+      "new": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "section": "§七 D3",
+        "anchor": "改旧的（用户明确确认；默认不动冻结正文）"
+      },
+      "disposition": "replace",
+      "evidence": "D3 行补用户确认",
+      "status": "done"
+    },
+    {
+      "id": "R-046",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/review.md",
+        "line": 131,
+        "text": "独立审核边界"
+      },
+      "new": {
+        "file": "references/v2/30-playbooks/review.md",
+        "section": "§独立审核边界",
+        "anchor": "已合并 spec 默认不改"
+      },
+      "disposition": "replace",
+      "evidence": "已合并 spec 默认不改 + D3 例外",
+      "status": "done"
+    },
+    {
+      "id": "R-047",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/15-records.md",
+        "section": "§四 替换式变更适用段",
+        "anchor": "旧句的删 / 换只适用于"
+      },
+      "same_trigger_search": "15-records 原有载体表无替换式变更适用段；本次新增以限定删/换范围",
+      "disposition": "not-applicable",
+      "evidence": "15-records §四 边界句",
+      "status": "done"
+    },
+    {
+      "id": "R-048",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/15-records.md",
+        "line": 5,
+        "text": "不新建台账或固定报告文件"
+      },
+      "new": {
+        "file": "references/v2/15-records.md",
+        "section": "§头部 1",
+        "anchor": "除 change manifest 外"
+      },
+      "disposition": "replace",
+      "evidence": "15-records:5 加 change manifest 例外",
+      "status": "done"
+    },
+    {
+      "id": "R-049",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/review.md",
+        "line": 132,
+        "text": "**不新增闸**：本页不新增"
+      },
+      "new": {
+        "file": "references/v2/30-playbooks/review.md",
+        "section": "§不新增闸",
+        "anchor": "替换式变更的完成条件"
+      },
+      "disposition": "replace",
+      "evidence": "review:132 补替换式说明",
+      "status": "done"
+    },
+    {
+      "id": "R-050",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/direct.md",
+        "section": "§失败模式",
+        "anchor": "只加新句"
+      },
+      "same_trigger_search": "direct 失败模式无替换式变更项",
+      "disposition": "not-applicable",
+      "evidence": "direct:29 新增失败模式",
+      "status": "done"
+    },
+    {
+      "id": "R-051",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/SKILL.md",
+        "line": 51,
+        "text": "L3 playbook（示例非必须）"
+      },
+      "new": {
+        "file": "references/v2/SKILL.md",
+        "section": "§五层导航",
+        "anchor": "10 核心 + 4 支撑"
+      },
+      "disposition": "replace",
+      "evidence": "SKILL:51 计数 10+4 / 14",
+      "status": "done"
+    },
+    {
+      "id": "R-052",
+      "type": "replace",
+      "old": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "line": 246,
+        "text": "项目接入（`50-adapters/`）"
+      },
+      "new": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "section": "§九 支撑 14",
+        "anchor": "规格成熟度与拆分"
+      },
+      "disposition": "replace",
+      "evidence": "master:246 支撑改为 spec.md",
+      "status": "done"
+    },
+    {
+      "id": "R-053",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "docs/specs/2026-11-13-v2-b3-playbooks-cases.md",
+        "section": "§头部",
+        "anchor": "2026-11-25 更新"
+      },
+      "same_trigger_search": "B3 头部无 2026-11-25 追记",
+      "disposition": "not-applicable",
+      "evidence": "B3:9 追记",
+      "status": "done"
+    },
+    {
+      "id": "R-054",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/spec-revision-sync.md",
+        "section": "§头部",
+        "anchor": "v2 任务按"
+      },
+      "same_trigger_search": "v1 页面无 v2 指针",
+      "disposition": "not-applicable",
+      "evidence": "v1 页 v2 指针",
+      "status": "done"
+    },
+    {
+      "id": "R-055",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/20-decisions.md",
+        "line": 26,
+        "text": "方案、备选及代价、验收"
+      },
+      "new": {
+        "file": "references/v2/20-decisions.md",
+        "section": "D2 证据",
+        "anchor": "change manifest 与 `check-change.py` 输出"
+      },
+      "disposition": "replace",
+      "evidence": "D2 证据加 manifest",
+      "status": "done"
+    },
+    {
+      "id": "R-056",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/20-decisions.md",
+        "line": 33,
+        "text": "审核结果、修订记录"
+      },
+      "new": {
+        "file": "references/v2/20-decisions.md",
+        "section": "D3 证据",
+        "anchor": "change manifest 与用户确认记录"
+      },
+      "disposition": "replace",
+      "evidence": "D3 证据加 manifest",
+      "status": "done"
+    },
+    {
+      "id": "R-057",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/20-decisions.md",
+        "line": 40,
+        "text": "① PR、目标分支、完整提交"
+      },
+      "new": {
+        "file": "references/v2/20-decisions.md",
+        "section": "D4 证据",
+        "anchor": "change manifest 与校验输出"
+      },
+      "disposition": "replace",
+      "evidence": "D4 证据加 manifest",
+      "status": "done"
+    },
+    {
+      "id": "R-058",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/30-playbooks/spec.md",
+        "line": 22,
+        "text": "把对照结果回到同一正文"
+      },
+      "new": {
+        "file": "references/v2/30-playbooks/spec.md",
+        "section": "§终稿",
+        "anchor": "交 change manifest"
+      },
+      "disposition": "replace",
+      "evidence": "spec 终稿加 manifest",
+      "status": "done"
+    },
+    {
+      "id": "R-059",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/README.md",
+        "line": 24,
+        "text": "L1 记录**：记录沿用"
+      },
+      "new": {
+        "file": "references/v2/README.md",
+        "section": "§每层怎么用",
+        "anchor": "除 change manifest 外"
+      },
+      "disposition": "replace",
+      "evidence": "README:24 加 manifest 例外",
+      "status": "done"
+    },
+    {
+      "id": "R-060",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "docs/specs/2026-11-13-spec-flow-v2-master.md",
+        "section": "§九 支撑注记",
+        "anchor": "项目接入在 `50-adapters/`"
+      },
+      "same_trigger_search": "master §九 支撑列表原无「项目接入不属于 4 条支撑」说明",
+      "disposition": "not-applicable",
+      "evidence": "master:251 新增注记",
+      "status": "done"
+    }
+  ],
+  "whitelist": [
+    {
+      "rule_id": "R-002",
+      "reason": "v1 任务仍按该页；v2 走 change-protocol",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+    },
+    {
+      "rule_id": "R-003",
+      "reason": "记录载体规则未替换；载体表限定作用域",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+    },
+    {
+      "rule_id": "R-005",
+      "reason": "迁移别名只保留在迁移行，不作现行引用",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+    },
+    {
+      "rule_id": "R-006",
+      "reason": "带「旧称」标记的对照句，逐条登记",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+    },
+    {
+      "rule_id": "R-009",
+      "reason": "与 D3 默认一致，未改原文",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+    },
+    {
+      "rule_id": "R-021",
+      "reason": "2026-11-13 历史快照 + 2026-11-25 追记",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+    },
+    {
+      "rule_id": "R-022",
+      "reason": "2026-11-13 历史审计行 + 追记",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+    },
+    {
+      "rule_id": "R-023",
+      "reason": "2026-11-14 历史结果 + 追记",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+    },
+    {
+      "rule_id": "R-026",
+      "reason": "v1 刻意保留的旧版抓手，文件内已标注",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+    },
+    {
+      "rule_id": "R-027",
+      "reason": "v1 页面保留；v2 以 review step 11 为准",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+    },
+    {
+      "rule_id": "R-028",
+      "reason": "历史审核记录，证明「零残留」已判不可判定",
+      "reviewer": "review-agent",
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+    }
+  ],
+  "scans": [
+    {
+      "query": "0 残留|零残留",
+      "scope": [
+        "references/",
+        "docs/"
+      ],
+      "hits": [
+        {
+          "file": "references/v2/30-playbooks/change-protocol.md",
+          "text": "0 残留",
+          "conclusion": "whitelist",
+          "reason": "反例 / 历史追记，不是现行规则",
+          "reviewer": "review-agent",
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+        },
+        {
+          "file": "references/v2/40-cases/2026-09-11-criterion-sync.md",
+          "text": "反向扫描 0 残留",
+          "conclusion": "whitelist",
+          "reason": "历史审计 / 追记，不是现行规则",
+          "reviewer": "review-agent",
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+        },
+        {
+          "file": "references/v2/40-cases/2026-09-11-criterion-sync.md",
+          "text": "「0 残留」改为",
+          "conclusion": "whitelist",
+          "reason": "历史审计 / 追记，不是现行规则",
+          "reviewer": "review-agent",
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+        },
+        {
+          "file": "docs/specs/2026-09-23-two-segments-one-gate.md",
+          "text": "零残留",
+          "conclusion": "whitelist",
+          "reason": "反例 / 历史追记，不是现行规则",
+          "reviewer": "review-agent",
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+        }
+      ],
+      "conclusion": "whitelist"
+    },
+    {
+      "query": "9 条核心|9 条 playbook",
+      "scope": [
+        "references/",
+        "docs/"
+      ],
+      "hits": [
+        {
+          "file": "docs/rebuild/inventory.md",
+          "text": "9 条 playbook",
+          "conclusion": "whitelist",
+          "reason": "历史审计 / 追记，不是现行规则",
+          "reviewer": "review-agent",
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+        },
+        {
+          "file": "docs/rebuild/inventory.md",
+          "text": "9 条核心 + 4 条支撑",
+          "conclusion": "whitelist",
+          "reason": "历史审计 / 追记，不是现行规则",
+          "reviewer": "review-agent",
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
+        }
+      ],
+      "conclusion": "whitelist"
+    }
+  ],
+  "semantic_checks": [
+    {
+      "item": "15-records:43 只追加不篡改",
+      "conclusion": "whitelist",
+      "evidence": "15-records §四 载体表"
+    },
+    {
+      "item": "15-records:67 已合并 spec 不改正文",
+      "conclusion": "changed",
+      "evidence": "15-records:67 + D3"
+    },
+    {
+      "item": "15-records:73 旧 ID 只作别名",
+      "conclusion": "whitelist",
+      "evidence": "15-records §四"
+    },
+    {
+      "item": "review:28 不重写获批正文",
+      "conclusion": "changed",
+      "evidence": "review step 11"
+    },
+    {
+      "item": "D3:34 改旧的",
+      "conclusion": "changed",
+      "evidence": "20-decisions:34 + 15-records §四"
+    },
+    {
+      "item": "new-spec:47 默认不动冻结正文",
+      "conclusion": "whitelist",
+      "evidence": "与 D3 默认一致"
+    },
+    {
+      "item": "review:86-96 修订同步",
+      "conclusion": "changed",
+      "evidence": "review §修订同步 指针"
+    },
+    {
+      "item": "gate-details:106 v1 不重写获批正文",
+      "conclusion": "whitelist",
+      "evidence": "v1 页面保留"
+    },
+    {
+      "item": "apply-to-project:240 旧 H1 抓手",
+      "conclusion": "whitelist",
+      "evidence": "文件内标注"
+    },
+    {
+      "item": "15-records:75 旧称总览",
+      "conclusion": "whitelist",
+      "evidence": "标记对照句"
+    },
+    {
+      "item": "master:305 / inventory:29 映射",
+      "conclusion": "changed",
+      "evidence": "docs diff"
+    },
+    {
+      "item": "coverage-audit:110 13 条",
+      "conclusion": "whitelist",
+      "evidence": "2026-11-25 追记"
+    },
+    {
+      "item": "旧句必须删边界",
+      "conclusion": "whitelist",
+      "evidence": "change-protocol §四 指针 + 15-records §四 载体表"
+    },
+    {
+      "item": "4 条支撑组成一致",
+      "conclusion": "changed",
+      "evidence": "master:70 与 249/251、b3:19 统一为 labels/worktree/adr/spec"
+    },
+    {
+      "item": "reviewer=user 无 ref",
+      "conclusion": "changed",
+      "evidence": "validator 要求 review_ref 对 user / review-agent 均必填"
+    },
+    {
+      "item": "anchor 唯一",
+      "conclusion": "changed",
+      "evidence": "MIN_ANCHOR + content.count(anchor)==1"
+    },
+    {
+      "item": "测试判别性",
+      "conclusion": "changed",
+      "evidence": "temp manifest 在 repo 内 + 错误信息断言"
+    },
+    {
+      "item": "anchor 指向新规则句",
+      "conclusion": "changed",
+      "evidence": "R-012/013/032/033 anchor 改为条件句，不再用节标题"
+    },
+    {
+      "item": "HEAD 钉扎",
+      "conclusion": "changed",
+      "evidence": "manifest.head/approval.head = 07c86659bb6c"
+    },
+    {
+      "item": "approval 署名",
+      "conclusion": "changed",
+      "evidence": "用户授权代署名评论 7157609812"
+    }
+  ],
+  "rebuild": {
+    "triggered": true,
+    "reason": "owner 从 review.md §修订同步 / 散文台账移到 change-protocol + manifest/validator",
+    "old_behaviors": [
+      "改判据只改一句，别处不同步",
+      "改口径只追加新句，不删旧句",
+      "反向扫描只 grep 新词",
+      "已合并 spec、记录、历史、别名混用一套删 / 换"
+    ]
+  },
+  "non_rule_changes": [
+    {
+      "file": "references/v2/README.md",
+      "reason": "L3 计数/名称；L1 记录口径见 R-059"
+    },
+    {
+      "file": "references/v2/40-cases/INDEX.md",
+      "reason": "案例索引关键词；视图"
+    }
+  ]
+}
