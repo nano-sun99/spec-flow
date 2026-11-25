@@ -656,7 +656,7 @@
       "old": {
         "file": "references/v2/30-playbooks/direct.md",
         "line": 37,
-        "text": "合并前"
+        "text": "合并前 | 当份审核结论"
       },
       "new": {
         "file": "references/v2/30-playbooks/direct.md",
@@ -672,7 +672,7 @@
       "type": "replace",
       "old": {
         "file": "references/v2/10-stages.md",
-        "line": 68,
+        "line": 67,
         "text": "常见失败**：spec 写步骤"
       },
       "new": {
@@ -689,7 +689,7 @@
       "type": "replace",
       "old": {
         "file": "references/v2/10-stages.md",
-        "line": 84,
+        "line": 82,
         "text": "常见失败**：实现 PR"
       },
       "new": {
