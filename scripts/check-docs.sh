@@ -232,25 +232,32 @@ try:
         for tok in tokens:
             if tok not in body_txt:
                 owner_err.append(f"{path} 缺「{tok}」")
-    # 孤儿检查：references/ 根、30-playbooks/、50-adapters/ 须以 markdown 链接挂在 SKILL.md；
-    # 40-cases/*.md 须以 markdown 链接挂在 40-cases/INDEX.md。
-    skill_links = set(re.findall(r"\]\((references/[^)#\s]+\.md)(?:#[^)\s]*)?\)", skill_text))
-    nav_targets = sorted(
-        [f"references/{f}" for f in os.listdir("references") if f.endswith(".md")]
-        + [f"references/30-playbooks/{f}" for f in os.listdir("references/30-playbooks") if f.endswith(".md")]
-        + [f"references/50-adapters/{f}" for f in os.listdir("references/50-adapters") if f.endswith(".md")]
+    # 全目录孤儿检查（os.walk）：40-cases/ 须登记在 40-cases/INDEX.md；过渡页显式白名单；其余全部须由 SKILL.md 链接。
+    TRANSITION_STUBS = {"references/v2/SKILL.md"}
+    skill_links = set(re.findall(r"\]\((references/[^)#\s]+\.md)(?:#[^)\s]*)?\)", "\n".join(unfenced(skill_text))))
+    all_ref_mds = sorted(
+        os.path.join(dp, f)
+        for dp, _, fs in os.walk("references")
+        for f in fs
+        if f.endswith(".md")
     )
+    case_mds = [p for p in all_ref_mds if p.startswith("references/40-cases/") and p != "references/40-cases/INDEX.md"]
+    nav_targets = [
+        p for p in all_ref_mds
+        if p not in TRANSITION_STUBS and not p.startswith("references/40-cases/")
+    ] + (["references/40-cases/INDEX.md"] if exists_exact("references/40-cases/INDEX.md") else [])
     orphans = [p for p in nav_targets if p not in skill_links]
     if orphans:
         owner_err.append("SKILL.md 未链接：" + "、".join(orphans))
-    if exists_exact("references/40-cases/INDEX.md"):
-        idx_text = open("references/40-cases/INDEX.md", encoding="utf-8", newline="").read()
-        idx_links = set(re.findall(r"\]\(([^)#\s]+\.md)\)", idx_text))
-        case_files = sorted(f for f in os.listdir("references/40-cases") if f.endswith(".md") and f != "INDEX.md")
-        orphan_cases = [f for f in case_files if f not in idx_links]
+    if not exists_exact("references/40-cases/INDEX.md"):
+        owner_err.append("缺失 references/40-cases/INDEX.md")
+    else:
+        idx_text = "\n".join(unfenced(open("references/40-cases/INDEX.md", encoding="utf-8", newline="").read()))
+        idx_links = set(re.findall(r"\]\(([^)#\s]+\.md)(?:#[^)\s]*)?\)", idx_text))
+        orphan_cases = [os.path.basename(p) for p in case_mds if os.path.basename(p) not in idx_links]
         if orphan_cases:
             owner_err.append("40-cases/INDEX.md 未登记：" + "、".join(orphan_cases))
-    report(not owner_err, f"核心 owner 章节、5 选修、{len(nav_targets)} 份导航与案例索引齐全"
+    report(not owner_err, f"核心 owner 章节、5 选修、{len(nav_targets)} 份导航与 {len(case_mds)} 份案例索引齐全"
            if not owner_err else "结构缺失：" + "；".join(owner_err))
 
     # ── 5. 双语 README 同步 ──────────────────────────────────────────────
