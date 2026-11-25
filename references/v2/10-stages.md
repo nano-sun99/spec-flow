@@ -78,7 +78,7 @@
   - 采用 release：候选就绪——单主线 = 待合入主线的任务分支；三层 = 待挑入候选分支的任务 PR；staging 线 = 待合入 staging 的 issue 分支；四类已核。
   - 不采用 release：交付验收后本段即完成，不新增分支、tag 或发布义务。
   - 文档改动已跑文档检查（同上三态口径）。
-  - 改文档时同设计段的替换式变更条件：涉及判据 / 术语 / 范围 / owner / 边界 / 分类且改变判定 / 范围 / 默认 / 权限的，按 [change-protocol](30-playbooks/change-protocol.md) 交 manifest 并跑 `check-change.py` 绿；未交 manifest 或校验红 / 未处置 > 0 = 未完成；直接干按 [direct](30-playbooks/direct.md) 的合并前证据出示。
+  - 改文档时同设计段的替换式变更条件：涉及判据 / 术语 / 范围 / owner / 边界 / 分类的（只改错字 / 措辞且不改变判定 / 范围 / 默认 / 权限的除外），按 [change-protocol](30-playbooks/change-protocol.md) 交 manifest 并跑 `check-change.py` 绿；未交 manifest 或校验红 / 未处置 > 0 = 未完成；直接干按 [direct](30-playbooks/direct.md) 的合并前证据出示。
 - **证据**：PR 列表、构建结果、验收证据、四类逐项、合入预演结果（staging 线）、worktree/锁记录、文档检查结果、审核结论与修订记录、change manifest 与校验输出（如适用）；有冻结范围盘点表时另含表行核对，无表时写不适用及事实理由。
 - **出口**：整条合入 staging（仅 staging 线，D5）/ 任务 PR 合并（D4）/ 无发布义务任务关单。
 - **常见失败**：实现 PR 合了就报 issue 完成；四类用「没改就是不需要」填；预演没在真实 merge 树上跑；文档检查只在主仓跑；文档类改动只加新句、不交 manifest。

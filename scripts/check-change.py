@@ -36,6 +36,8 @@ NON_RULE_ALLOW = {
 MIN_OLD_TEXT = 6
 MIN_SEARCH = 6
 MIN_SEMANTIC = 4
+MIN_ANCHOR = 4
+MIN_EVIDENCE = 6
 
 
 def git(root: Path, *args: str) -> str:
@@ -94,6 +96,9 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
     missing = REQUIRED_TOP - set(data)
     if missing:
         errors.append(f"顶层缺字段：{', '.join(sorted(missing))}")
+    for key in ("change", "title", "base", "head", "classification"):
+        if not str(data.get(key, "")).strip():
+            errors.append(f"{key} 为空")
     if data.get("base") and resolve(root, str(data["base"])) != base:
         errors.append(f"manifest.base 解析后与 --base 不一致：{data.get('base')!r}")
     if data.get("head") and str(data["head"]) != "HEAD":
@@ -125,8 +130,9 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
             errors.append(f"{where} disposition 不在允许集合：{rule.get('disposition')!r}")
         if rule.get("status") not in STATUSES:
             errors.append(f"{where} status 不在 {sorted(STATUSES)}：{rule.get('status')!r}")
-        if not str(rule.get("evidence", "")).strip():
-            errors.append(f"{where} 缺 evidence")
+        evidence = str(rule.get("evidence", "")).strip()
+        if len(evidence) < MIN_EVIDENCE:
+            errors.append(f"{where} evidence 太短（<{MIN_EVIDENCE}）：{evidence!r}")
 
         new = rule.get("new") or {}
         new_file = new.get("file")
@@ -139,8 +145,12 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
             except RuntimeError:
                 errors.append(f"{where} head 中不存在 new.file：{new_file}")
                 content = ""
+            if len(anchor) < MIN_ANCHOR:
+                errors.append(f"{where} new.anchor 太短（<{MIN_ANCHOR}）：{anchor!r}")
             if anchor and content and anchor not in content:
                 errors.append(f"{where} new.anchor 在 head:{new_file} 中找不到：{anchor!r}")
+            if anchor and content and content.count(anchor) != 1:
+                errors.append(f"{where} new.anchor 不唯一（出现 {content.count(anchor)} 次）：{anchor!r}")
         if not anchor:
             errors.append(f"{where} 缺 new.anchor（head 文件中可反查的字面片段）")
         if not str(new.get("section", "")).strip():
@@ -188,8 +198,8 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
             errors.append(f"{where} 缺 reason")
         if w.get("reviewer") not in REVIEWERS:
             errors.append(f"{where} reviewer 不在 {sorted(REVIEWERS)}：{w.get('reviewer')!r}")
-        if w.get("reviewer") == "review-agent" and not str(w.get("review_ref", "")).strip():
-            errors.append(f"{where} reviewer=review-agent 但缺 review_ref")
+        if not str(w.get("review_ref", "")).strip():
+            errors.append(f"{where} 缺 review_ref")
     for rule in rules:
         if rule.get("status") == "whitelist" and rule.get("id") not in white_ids:
             errors.append(f"{rule.get('id')} 状态=whitelist 但 whitelist 表无对应条目")
@@ -238,6 +248,13 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
                 errors.append(f"{where} hit 的 conclusion 不合法：{h.get('conclusion')!r}")
             if h.get("conclusion") == "unresolved":
                 errors.append(f"{where} hit conclusion=unresolved：{h.get('file')!r}")
+            if h.get("conclusion") == "whitelist":
+                if not str(h.get("reason", "")).strip():
+                    errors.append(f"{where} whitelist hit 缺 reason：{h.get('file')!r}")
+                if h.get("reviewer") not in REVIEWERS:
+                    errors.append(f"{where} whitelist hit reviewer 不合法：{h.get('reviewer')!r}")
+                if not str(h.get("review_ref", "")).strip():
+                    errors.append(f"{where} whitelist hit 缺 review_ref：{h.get('file')!r}")
             file = h.get("file")
             text = str(h.get("text", ""))
             if not file or not text:

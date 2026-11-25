@@ -20,8 +20,8 @@
 | `change` / `title` / `base` / `head` / `classification` | 是 | 变更标识；base/head 解析为提交；classification ∈ add/replace/retire |
 | `approval` | 是 | `user_quote` / `timestamp` / `scope` / `base` / `head` / `link`；用户原话与可核链接，不能只写 agent 转述 |
 | `rules[]` | 是 | `id` / `type` / `old`（add 为 null）/ `new`（`file` / `section` / `anchor`）/ `disposition` / `evidence` / `status`；add 另需 `same_trigger_search`（≥6 字） |
-| `whitelist[]` | 有白名单时 | `rule_id` / `reason` / `reviewer` / `review_ref`（review-agent 必填）；每条白名单规则必须有对应条目 |
-| `scans[]` | 是 | `query` / `scope` / `hits[]` / `conclusion`；hits 每条给 file/text/conclusion |
+| `whitelist[]` | 有白名单时 | `rule_id` / `reason` / `reviewer` / `review_ref`（user 与 review-agent 都必填）；每条白名单规则必须有对应条目 |
+| `scans[]` | 是 | `query` / `scope` / `hits[]` / `conclusion`；hits 每条给 file/text/conclusion；whitelist 命中另给 reason/reviewer/review_ref |
 | `semantic_checks[]` | 是 | `item` / `conclusion` / `evidence`；反向冲突逐条结论 |
 | `rebuild` | 是 | `triggered` / `reason` / `old_behaviors[]`；触发时必须给旧行为清单 |
 | `non_rule_changes[]` | 有视图 / 计数改动时 | `file` / `reason`；让校验器能覆盖非规则文件 |
@@ -29,7 +29,9 @@
 - `type`：`add` / `replace` / `retire`。
 - `disposition`：`replace` / `delete` / `merge` / `alias` / `keep-history` / `keep-scoped` / `not-applicable`。
 - `status`：`done` / `whitelist` / `unresolved`；校验器遇到 `unresolved` 直接红。
-- 一行一条规则；旧 owner 给 `file:line` 与 `text`（≥6 字），校验器按 base 核；新 owner 给 `file` + `section` + `anchor`（head 文件中可反查的字面片段）。
+- 一行一条规则；旧 owner 给 `file:line` 与 `text`（≥6 字），校验器按 base 核；新 owner 给 `file` + `section` + `anchor`（head 文件中唯一出现的字面片段）。`section` 是给人看的标签，机器校验靠 `anchor`。
+- `manifest.head` / `approval.head` 写 `HEAD` 只用于开发期；合并卡必须写具体 head SHA。
+- `non_rule_changes` 只允许视图 / 计数文件；规则文件必须落在 `rules[]`。
 
 ## 三、双扫描（规范性）
 
