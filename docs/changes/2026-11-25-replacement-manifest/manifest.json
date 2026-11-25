@@ -9,12 +9,12 @@
     "#191"
   ],
   "approval": {
-    "user_quote": "可以采纳你的方案",
+    "user_quote": "可以采纳你的方案；我授权你为我署名",
     "timestamp": "2026-11-25",
     "scope": "manifest + 校验脚本重画；基于 rebuild/v2 新分支；20 文件",
     "base": "06814b0898314a477e00abdf7c412aa2a15065b1",
     "head": "07c86659bb6c3e2c30b46ebc85f72add7c2563c0",
-    "link": "https://github.com/nano-sun99/spec-flow/pull/192"
+    "link": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157609812"
   },
   "rules": [
     {
@@ -1195,6 +1195,11 @@
       "item": "HEAD 钉扎",
       "conclusion": "changed",
       "evidence": "manifest.head/approval.head = 07c86659bb6c"
+    },
+    {
+      "item": "approval 署名",
+      "conclusion": "changed",
+      "evidence": "用户授权代署名评论 7157609812"
     }
   ],
   "rebuild": {
