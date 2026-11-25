@@ -66,6 +66,15 @@ python3 scripts/check-change.py \
   "semantic_checks": [
     {"item": "旧规则 A 与现行规则 B 是否同触发不同行为", "conclusion": "changed", "evidence": "file:line / diff"}
   ],
+  "count_checks": [
+    {"name": "registry 行数", "value": 74, "source": "docs/facts/customer-read-endpoint-registry.tsv", "command": "awk -F'\\t' '!/^#/ && $1!=\"id\" && NF' <file> | wc -l"}
+  ],
+  "view_files": [
+    {"file": "docs/facts/example-view.tsv", "reason": "只是 registry 的视图，不是规则", "reviewer": "review-agent", "review_ref": "PR # / 轮次"}
+  ],
+  "section_ref_whitelist": [
+    {"ref": "§外部章", "reason": "引用外部项目文档，不在本仓语料", "reviewer": "review-agent", "review_ref": "PR # / 轮次"}
+  ],
   "rebuild": {
     "triggered": false,
     "reason": "",
@@ -84,4 +93,8 @@ python3 scripts/check-change.py \
 - 白名单逐条写 `reason` / `reviewer` / `review_ref`；作者贴标签不能单独成立。
 - `scans[]` 的 query 由校验器复跑；未登记的命中即红；whitelist 命中逐条写 `reason` / `reviewer` / `review_ref`。
 - `semantic_checks[]` 记反向冲突的语义结论（match / changed / whitelist / unresolved；中文：一致 / 改 / 白名单 / 未处置）；至少一条。
-- 每个改动文件必须被 `rules[]` 或 `non_rule_changes[]` 覆盖；漏一个即红。
+- `count_checks[]` 用于正文必须写数字的场景；`source` 必须在 head 存在，`command` 给复核方式。
+- `view_files[]` 用于项目自定义的非规则视图；每条要 reviewer / review_ref，不能拿它盖规则文件。
+- `section_ref_whitelist[]` 只用于外部章节引用；本仓语料能解析的引用不要白名单。
+- 每个改动文件必须被 `rules[]`、`non_rule_changes[]` 或 `view_files[]` 覆盖；漏一个即红。
+- 外部项目从 skill 路径调用：`python3 <skill>/scripts/check-change.py --root <project> --manifest docs/changes/<slug>/manifest.json --base <base> --head <head>`；项目自建 `docs/changes/`，不需要复制校验器。

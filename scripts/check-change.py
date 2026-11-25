@@ -32,7 +32,11 @@ REQUIRED_TOP = {
 NON_RULE_ALLOW = {
     "references/v2/README.md",
     "references/v2/40-cases/INDEX.md",
+    "docs/changes/README.md",
+    "scripts/test-check-change.py",
 }
+TEXT_SUFFIXES = (".md", ".tsv", ".txt")
+SECTION_REF_RE = re.compile(r"§\s*([0-9]+(?:\.[0-9]+)*)")
 MIN_OLD_TEXT = 6
 MIN_SEARCH = 6
 MIN_SEMANTIC = 4
@@ -62,11 +66,11 @@ def changed_files(root: Path, base: str, head: str) -> set[str]:
     return set(git(root, "diff", "--name-only", base, head).splitlines())
 
 
-def head_md_files(root: Path, head: str, scope: list[str]) -> list[str]:
+def head_text_files(root: Path, head: str, scope: list[str]) -> list[str]:
     names = git(root, "ls-tree", "-r", "--name-only", head).splitlines()
     out: list[str] = []
     for name in names:
-        if not name.endswith(".md"):
+        if not name.endswith(TEXT_SUFFIXES):
             continue
         if any(name == s or name.startswith(s.rstrip("/") + "/") for s in scope):
             out.append(name)
@@ -79,6 +83,20 @@ def find_lines(root: Path, head: str, path: str, needle: str) -> list[tuple[int,
         if needle in line:
             hits.append((no, line))
     return hits
+
+
+def dangling_section_refs(
+    changed_texts: dict[str, str], corpus_texts: dict[str, str]
+) -> list[tuple[str, str]]:
+    """§X.Y 引用必须在语料里有一个「非引用」落点（标题 / 标签）。"""
+    corpus = "\n".join(corpus_texts.values())
+    without_refs = SECTION_REF_RE.sub("", corpus)
+    out: list[tuple[str, str]] = []
+    for path, text in changed_texts.items():
+        for token in sorted(set(SECTION_REF_RE.findall(text))):
+            if token not in without_refs:
+                out.append((path, token))
+    return out
 
 
 def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[str]:
@@ -241,7 +259,7 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
         except re.error as exc:
             errors.append(f"{where} query 不是合法正则：{exc}")
             continue
-        files = head_md_files(root, head, scope)
+        files = head_text_files(root, head, scope)
         if not files:
             errors.append(f"{where} scope 在 head 中没有 .md 文件：{scope}")
             continue
@@ -289,6 +307,46 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
         for file, n in found_by_file.items():
             if listed_by_file[file] < n:
                 errors.append(f"{where} {file} 命中登记数 {listed_by_file[file]} < 实际 {n}")
+
+    changed = changed_files(root, base, head)
+    changed_texts: dict[str, str] = {}
+    for path in sorted(changed):
+        if path.endswith(TEXT_SUFFIXES):
+            try:
+                changed_texts[path] = read_at(root, head, path)
+            except RuntimeError:
+                continue
+    corpus_files = head_text_files(root, head, sorted(DEFAULT_SCOPES))
+    corpus_texts = {p: read_at(root, head, p) for p in corpus_files}
+    section_whitelist = data.get("section_ref_whitelist") or []
+    white_refs: set[str] = set()
+    for i, item in enumerate(section_whitelist, 1):
+        where = f"section_ref_whitelist[{i}]"
+        ref = str(item.get("ref", "")).strip()
+        if not ref:
+            errors.append(f"{where} 缺 ref")
+        else:
+            white_refs.add(ref.lstrip("§"))
+        if not str(item.get("reason", "")).strip():
+            errors.append(f"{where} 缺 reason")
+        if item.get("reviewer") not in REVIEWERS:
+            errors.append(f"{where} reviewer 不在 {sorted(REVIEWERS)}：{item.get('reviewer')!r}")
+        review_ref = str(item.get("review_ref", "")).strip()
+        if not review_ref:
+            errors.append(f"{where} 缺 review_ref")
+        elif not (
+            review_ref.startswith("http")
+            or review_ref.startswith("PR #")
+            or review_ref.startswith("review:")
+        ):
+            errors.append(f"{where} review_ref 需为链接 / PR # / review: 记录：{review_ref!r}")
+    for path, token in dangling_section_refs(changed_texts, corpus_texts):
+        if token in white_refs:
+            continue
+        errors.append(
+            f"章节引用解析不到：{path} §{token}"
+            "（语料里没有非引用落点；标题被删 / 移动时同步改引用，外部引用加 section_ref_whitelist）"
+        )
 
     semantic = data.get("semantic_checks") or []
     if not semantic:
@@ -342,6 +400,47 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
         if file not in NON_RULE_ALLOW:
             errors.append(f"non_rule_changes 不允许覆盖规则文件：{file}")
         covered.add(file)
+    for i, item in enumerate(data.get("view_files") or [], 1):
+        where = f"view_files[{i}]"
+        file = item.get("file")
+        if not file or not str(item.get("reason", "")).strip():
+            errors.append(f"{where} 缺 file 或 reason")
+            continue
+        if item.get("reviewer") not in REVIEWERS:
+            errors.append(f"{where} reviewer 不在 {sorted(REVIEWERS)}：{item.get('reviewer')!r}")
+        review_ref = str(item.get("review_ref", "")).strip()
+        if not review_ref:
+            errors.append(f"{where} 缺 review_ref")
+        elif not (
+            review_ref.startswith("http")
+            or review_ref.startswith("PR #")
+            or review_ref.startswith("review:")
+        ):
+            errors.append(f"{where} review_ref 需为链接 / PR # / review: 记录：{review_ref!r}")
+        try:
+            read_at(root, head, file)
+        except RuntimeError:
+            errors.append(f"{where} head 中不存在 file：{file}")
+            continue
+        covered.add(file)
+    for i, item in enumerate(data.get("count_checks") or [], 1):
+        where = f"count_checks[{i}]"
+        name = str(item.get("name", "")).strip()
+        if not name:
+            errors.append(f"{where} 缺 name")
+        if "value" not in item:
+            errors.append(f"{where} 缺 value")
+        source = str(item.get("source", "")).strip()
+        command = str(item.get("command", "")).strip()
+        if not source:
+            errors.append(f"{where} 缺 source")
+        else:
+            try:
+                read_at(root, head, source)
+            except RuntimeError:
+                errors.append(f"{where} head 中不存在 source：{source}")
+        if len(command) < MIN_SEARCH:
+            errors.append(f"{where} command 太短（<{MIN_SEARCH}）：{command!r}")
     try:
         covered.add(manifest_path.relative_to(root).as_posix())
     except ValueError:
@@ -361,7 +460,8 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str) -> list[
         f"add/replace/retire={by_type['add']}/{by_type['replace']}/{by_type['retire']} "
         f"status done/whitelist/unresolved={by_status['done']}/{by_status['whitelist']}/{by_status['unresolved']} "
         f"whitelist_entries={len(whitelist)} scans={len(scans)} "
-        f"semantic_checks={len(semantic)} changed_files={len(changed)}"
+        f"semantic_checks={len(semantic)} view_files={len(data.get('view_files') or [])} "
+        f"count_checks={len(data.get('count_checks') or [])} changed_files={len(changed)}"
     )
     if errors:
         print("违规：")

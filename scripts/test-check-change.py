@@ -8,6 +8,7 @@ head 不一致，必须红。
 from __future__ import annotations
 
 import copy
+import importlib.util
 import json
 import subprocess
 import sys
@@ -17,6 +18,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "docs/changes/2026-11-25-replacement-manifest/manifest.json"
 BASE = "06814b0"
+HEAD = "HEAD"
+_spec = importlib.util.spec_from_file_location("check_change", ROOT / "scripts/check-change.py")
+check_change = importlib.util.module_from_spec(_spec)
+assert _spec.loader
+_spec.loader.exec_module(check_change)
 
 
 def run(manifest_path: Path) -> subprocess.CompletedProcess:
@@ -62,6 +68,7 @@ def expect(ok: bool, name: str, proc: subprocess.CompletedProcess, needle: str =
 
 
 def main() -> int:
+    global HEAD
     original = json.loads(MANIFEST.read_text(encoding="utf-8"))
     HEAD = str(original.get("head", "HEAD"))
     results: list[bool] = []
@@ -175,6 +182,38 @@ def main() -> int:
     path = with_manifest(data)
     results.append(expect(False, "head 与 --head 不一致红", run(path), "manifest.head 解析后与 --head 不一致"))
     path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["view_files"] = [{"file": "docs/changes/README.md", "reason": "测试视图"}]
+    path = with_manifest(data)
+    results.append(expect(False, "view_files 缺 reviewer 红", run(path), "view_files[1] reviewer"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["count_checks"] = [
+        {"name": "测试计数", "value": 1, "source": "docs/changes/README.md"}
+    ]
+    path = with_manifest(data)
+    results.append(expect(False, "count_checks 缺 command 红", run(path), "count_checks[1] command 太短"))
+    path.unlink(missing_ok=True)
+
+    data = copy.deepcopy(original)
+    data["section_ref_whitelist"] = [{"ref": "§9.9.9", "reason": "测试外部引用"}]
+    path = with_manifest(data)
+    results.append(expect(False, "section_ref_whitelist 缺 reviewer 红", run(path), "section_ref_whitelist[1] reviewer"))
+    path.unlink(missing_ok=True)
+
+    dangling = check_change.dangling_section_refs(
+        {"a.md": "见 §9.9.9"}, {"a.md": "见 §9.9.9"}
+    )
+    results.append(dangling == [("a.md", "9.9.9")])
+    print(("PASS " if results[-1] else "FAIL ") + "章节引用无落点红")
+
+    dangling = check_change.dangling_section_refs(
+        {"a.md": "见 §9.9.9"}, {"a.md": "见 §9.9.9\n### 9.9.9 标题"}
+    )
+    results.append(not dangling)
+    print(("PASS " if results[-1] else "FAIL ") + "章节引用有落点绿")
 
     print(f"{sum(results)}/{len(results)} 通过")
     return 0 if all(results) else 1
