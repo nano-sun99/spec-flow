@@ -204,10 +204,14 @@ try:
             out.append(line)
         return out
 
-    # ── R32 审核建议：references 内相对链接可达（围栏里的示例跳过）──
+    # ── R32 审核建议：references 内相对链接可达（围栏里的示例跳过；递归扫 v2）──
     link_problems = []
-    for f in ref_files or []:
-        rel = "references/" + f
+    try:
+        link_files = sorted(os.path.join(dp, f) for dp, _, fs in os.walk("references")
+                            for f in fs if f.endswith(".md"))
+    except OSError:
+        link_files = []
+    for rel in link_files:
         try:
             text = "\n".join(unfenced(open(rel, encoding="utf-8", newline="").read()))
         except OSError:
@@ -217,7 +221,7 @@ try:
             target = m.group(1).split("#", 1)[0]
             if target.startswith(("http://", "https://", "#")):
                 continue
-            if not os.path.exists(os.path.normpath(os.path.join("references", target))):
+            if not os.path.exists(os.path.normpath(os.path.join(os.path.dirname(rel), target))):
                 link_problems.append(f"{rel} → {target}")
     report(not link_problems, "references 内相对链接都可达" if not link_problems
            else "断链：" + "、".join(link_problems))
