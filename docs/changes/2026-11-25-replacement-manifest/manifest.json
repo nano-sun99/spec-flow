@@ -2,7 +2,7 @@
   "change": "replacement-change-manifest",
   "title": "替换式变更协议：manifest + 校验脚本",
   "base": "06814b0898314a477e00abdf7c412aa2a15065b1",
-  "head": "HEAD",
+  "head": "07c86659bb6c3e2c30b46ebc85f72add7c2563c0",
   "classification": "replace",
   "supersedes": [
     "#190",
@@ -13,7 +13,7 @@
     "timestamp": "2026-11-25",
     "scope": "manifest + 校验脚本重画；基于 rebuild/v2 新分支；20 文件",
     "base": "06814b0898314a477e00abdf7c412aa2a15065b1",
-    "head": "HEAD",
+    "head": "07c86659bb6c3e2c30b46ebc85f72add7c2563c0",
     "link": "https://github.com/nano-sun99/spec-flow/pull/192"
   },
   "rules": [
@@ -967,67 +967,67 @@
       "rule_id": "R-002",
       "reason": "v1 任务仍按该页；v2 走 change-protocol",
       "reviewer": "review-agent",
-      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
     },
     {
       "rule_id": "R-003",
       "reason": "记录载体规则未替换；载体表限定作用域",
       "reviewer": "review-agent",
-      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
     },
     {
       "rule_id": "R-005",
       "reason": "迁移别名只保留在迁移行，不作现行引用",
       "reviewer": "review-agent",
-      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
     },
     {
       "rule_id": "R-006",
       "reason": "带「旧称」标记的对照句，逐条登记",
       "reviewer": "review-agent",
-      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
     },
     {
       "rule_id": "R-009",
       "reason": "与 D3 默认一致，未改原文",
       "reviewer": "review-agent",
-      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
     },
     {
       "rule_id": "R-021",
       "reason": "2026-11-13 历史快照 + 2026-11-25 追记",
       "reviewer": "review-agent",
-      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
     },
     {
       "rule_id": "R-022",
       "reason": "2026-11-13 历史审计行 + 追记",
       "reviewer": "review-agent",
-      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
     },
     {
       "rule_id": "R-023",
       "reason": "2026-11-14 历史结果 + 追记",
       "reviewer": "review-agent",
-      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
     },
     {
       "rule_id": "R-026",
       "reason": "v1 刻意保留的旧版抓手，文件内已标注",
       "reviewer": "review-agent",
-      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
     },
     {
       "rule_id": "R-027",
       "reason": "v1 页面保留；v2 以 review step 11 为准",
       "reviewer": "review-agent",
-      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
     },
     {
       "rule_id": "R-028",
       "reason": "历史审核记录，证明「零残留」已判不可判定",
       "reviewer": "review-agent",
-      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+      "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
     }
   ],
   "scans": [
@@ -1044,7 +1044,7 @@
           "conclusion": "whitelist",
           "reason": "反例 / 历史追记，不是现行规则",
           "reviewer": "review-agent",
-          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
         },
         {
           "file": "references/v2/40-cases/2026-09-11-criterion-sync.md",
@@ -1052,7 +1052,7 @@
           "conclusion": "whitelist",
           "reason": "历史审计 / 追记，不是现行规则",
           "reviewer": "review-agent",
-          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
         },
         {
           "file": "references/v2/40-cases/2026-09-11-criterion-sync.md",
@@ -1060,7 +1060,7 @@
           "conclusion": "whitelist",
           "reason": "历史审计 / 追记，不是现行规则",
           "reviewer": "review-agent",
-          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
         },
         {
           "file": "docs/specs/2026-09-23-two-segments-one-gate.md",
@@ -1068,7 +1068,7 @@
           "conclusion": "whitelist",
           "reason": "反例 / 历史追记，不是现行规则",
           "reviewer": "review-agent",
-          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
         }
       ],
       "conclusion": "whitelist"
@@ -1086,7 +1086,7 @@
           "conclusion": "whitelist",
           "reason": "历史审计 / 追记，不是现行规则",
           "reviewer": "review-agent",
-          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
         },
         {
           "file": "docs/rebuild/inventory.md",
@@ -1094,7 +1094,7 @@
           "conclusion": "whitelist",
           "reason": "历史审计 / 追记，不是现行规则",
           "reviewer": "review-agent",
-          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192"
+          "review_ref": "https://github.com/nano-sun99/spec-flow/pull/192#issuecomment-7157544397"
         }
       ],
       "conclusion": "whitelist"
@@ -1190,6 +1190,11 @@
       "item": "anchor 指向新规则句",
       "conclusion": "changed",
       "evidence": "R-012/013/032/033 anchor 改为条件句，不再用节标题"
+    },
+    {
+      "item": "HEAD 钉扎",
+      "conclusion": "changed",
+      "evidence": "manifest.head/approval.head = 07c86659bb6c"
     }
   ],
   "rebuild": {
