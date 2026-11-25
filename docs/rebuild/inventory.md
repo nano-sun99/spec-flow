@@ -1,12 +1,13 @@
 # v2 B1：旧规则处置表（inventory）
 
 - 日期：2026-11-13
-> 2026-11-25 更新：playbook 现为 10 条核心 + 4 条支撑（新增 `change-protocol.md`）；`spec-revision-sync` 的 v2 替换式方法改由 `change-protocol.md` 承接，`review.md` 只留一般同步。本表其余内容保留 2026-11-13 快照。
 - 依据：总纲 `docs/specs/2026-11-13-spec-flow-v2-master.md` §五、§十；批次 spec `docs/specs/2026-11-13-v2-b1-inventory-constitution.md`
 - 覆盖范围：`references/*.md` 全部 17 个 + `docs/specs/2026-11-11-branch-release-flow-drill.md`（下称 drill）+ 根 `SKILL.md` 的导航规则
 - 归类词表：**铁律**（`references/v2/00-constitution.md`）、**阶段合同**（`10-stages.md`）、**记录契约**（`15-records.md`，独立 L1）、**决策**（`20-decisions.md`）、**playbook**（`30-playbooks/`，10 条核心 + 4 条支撑）、**案例**（`40-cases/`）、**项目接入**（`50-adapters/`）、**丢弃**（不进入 v2）
 - 额外标 **入口**：`references/v2/SKILL.md` 是载体而非规则类别；只用于根 `SKILL.md` 的导航行，其余各行必须落到上面八类之一
 - 判定口径：一条规则一行；「保留」= 原义进入新载体；「合并」= 与别的规则合成一条；「拆解」= 一份文件按职责拆到多个新载体（理由见 §二 逐条行）；「降级」= 从闸口降为工作指南/视图约定；「归档」= 原文留作历史档案、不参与运行；「丢弃」= 不进入 v2，必须能在 §三 drop 列表找到
+
+> 2026-11-25 更新：playbook 现为 10 条核心 + 4 条支撑（新增 `change-protocol.md`）；`spec-revision-sync` 的 v2 替换式方法改由 `change-protocol.md` 承接，`review.md` 只留一般同步。本表其余内容保留 2026-11-13 快照。
 
 ## 一、文件级处置
 
