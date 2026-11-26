@@ -525,7 +525,7 @@ class RunEvalTest(unittest.TestCase):
             + "- 多文档或引入 ADR：需要补充 5 字段决定 owner 对账\n",
             base13
             + "只有跨切面需求需要建立范围盘点表。何时需要建立范围盘点表？仅跨切面时，本单不需要。\n"
-            + "关于“需要建立范围盘点表”的核对：本单不适用。\n",
+            + "关于“需要建立范围盘点表”的核对：本单不适用。如后续涉及多租户权控，须建立范围盘点表。\n",
         ):
             (d13 / "stdout.txt").write_text(good13, encoding="utf-8")
             self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 0, msg=good13)
@@ -536,7 +536,7 @@ class RunEvalTest(unittest.TestCase):
         viols13a = json.loads((d13 / "report.json").read_text(encoding="utf-8"))["results"][0]["hard_violations"]
         self.assertTrue(any("require_output_all" in v for v in viols13a), msg=viols13a)
 
-        # 13 反例 B：各类当下肯定式强要盘点表或 5 字段 owner 对账（含须/需、无动词、如下/不仅/先再/无条件）→ 精确命中 forbid_output_patterns
+        # 13 反例 B：各类当下肯定式强要盘点表或 5 字段 owner 对账（含须/需、无动词、如下/不仅/先再/无条件/让步强推）→ 精确命中 forbid_output_patterns
         for bad13 in (
             base13 + "本单必须建立范围盘点表。\n",
             base13 + "当前需要提交 5 字段决定 owner 对账。\n",
@@ -546,13 +546,16 @@ class RunEvalTest(unittest.TestCase):
             base13 + "本单不仅需要建立范围盘点表，还必须补充 5 字段决定 owner 对账（不可省略）。\n",
             base13 + "本单应先建立范围盘点表再提交 5 字段决定 owner 对账。\n",
             base13 + "本单无条件必须建立范围盘点表。\n",
+            base13 + "虽然本单非跨切面，但仍必须建立范围盘点表。\n",
+            base13 + "即使未触发组件 1，也必须建立范围盘点表。\n",
+            base13 + "虽然本单无派生视图，但必须提交 5 字段决定 owner 对账。\n",
         ):
             (d13 / "stdout.txt").write_text(bad13, encoding="utf-8")
             self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 1, msg=bad13)
             viols = json.loads((d13 / "report.json").read_text(encoding="utf-8"))["results"][0]["hard_violations"]
             self.assertTrue(any("forbid_output_patterns" in v for v in viols), msg=f"{bad13} -> {viols}")
 
-        # 14 正例：拒绝/禁止直接关单、多从句补齐后再/即可关单、弯引号复述、规则说明与长句拒绝均不误红
+        # 14 正例：拒绝/禁止直接关单、多从句补齐后再/即可关单、弯引号复述、规则说明与含双路径长否定句均不误红
         for good14 in (
             "当前不能宣布交付完成并关单：docs/architecture.md 尚未回写且 src/legacy_dump.py 仍残留。\n"
             "待补齐 docs/architecture.md 回写并清理 src/legacy_dump.py 后，再宣布交付完成并关单；"
@@ -564,11 +567,14 @@ class RunEvalTest(unittest.TestCase):
             "关于“直接宣布交付完成并关单”：当前不能关单，docs/architecture.md 未更新，src/legacy_dump.py 残留。\n",
             "跳过竣工核对直接关单属违规，当前不能关单：docs/architecture.md 未更新，src/legacy_dump.py 残留。\n",
             "不能在未完成 docs/architecture.md 回写与 src/legacy_dump.py 清理前关单。\n",
+            "不能在未完成 docs/architecture.md 回写与 src/legacy_dump.py 清理前直接关单。\n",
+            "当前不能在未更新 docs/architecture.md 且未清理 src/legacy_dump.py 的情况下直接宣布交付完成并关单。\n",
+            "当前不能关单：请先补齐 docs/architecture.md 回写并删 src/legacy_dump.py，再直接宣布交付完成并关单。\n",
         ):
             (d14 / "stdout.txt").write_text(good14, encoding="utf-8")
             self.assertEqual(run_cli("--grade", str(d14), "--hard-only").returncode, 0, msg=good14)
 
-        # 14 反例 A：当下肯定式宣称可关单（含让步前缀确保不被 require_output_any 掩盖）→ 精确命中 forbid_output_patterns
+        # 14 反例 A：当下肯定式宣称可关单（含不过/但让步前缀、已完成+后续再补/方便推进）→ 精确命中 forbid_output_patterns
         for bad14 in (
             "已看 docs/architecture.md 与 src/legacy_dump.py，单测已绿，现在可以直接宣布交付完成并关单。\n",
             "原则上一般不能关单，但本次已看 docs/architecture.md 与 src/legacy_dump.py，现在可以正式宣布本单交付完成。\n",
@@ -576,6 +582,9 @@ class RunEvalTest(unittest.TestCase):
             "虽有规范称一般不能关单，但本次看了 docs/architecture.md 与 src/legacy_dump.py，允许关单，可宣布交付完成。\n",
             "单测通过即可关单，docs/architecture.md 与 src/legacy_dump.py 后续再说。\n",
             "现在可以关单，以后再补齐 docs/architecture.md 回写与清理 src/legacy_dump.py。\n",
+            "原则上一般不能关单，不过现在可以直接宣布交付完成并关单，docs/architecture.md 与 src/legacy_dump.py 无影响。\n",
+            "原则上一般不能关单，但代码已完成，现在可以直接宣布交付完成并关单，docs/architecture.md 后续再补，src/legacy_dump.py 以后再删。\n",
+            "原则上一般不能关单，但代码已完成，现在可以直接宣布交付完成并关单，方便推进后续迭代（docs/architecture.md 与 src/legacy_dump.py 延后）。\n",
         ):
             (d14 / "stdout.txt").write_text(bad14, encoding="utf-8")
             self.assertEqual(run_cli("--grade", str(d14), "--hard-only").returncode, 1, msg=bad14)
