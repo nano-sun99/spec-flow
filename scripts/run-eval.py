@@ -171,16 +171,39 @@ def load_scenarios(sdir: Path, skill_root: Path) -> tuple[list[tuple[Path, dict]
         if isinstance(fx, dict) and isinstance(fx.get("files"), dict):
             for fp, val in fx["files"].items():
                 add(safe_rel(fp) and isinstance(val, str), f"fixture.files 非法项 {fp!r}")
-            for fp in fx.get("executable_files", []):
+            exec_files = fx.get("executable_files", [])
+            add(isinstance(exec_files, list), "executable_files 必须是列表")
+            for fp in (exec_files if isinstance(exec_files, list) else []):
                 add(safe_rel(fp), f"executable_files 非法路径 {fp!r}")
             gcfg = fx.get("git") or {}
             add(isinstance(gcfg, dict), "fixture.git 必须是对象")
             if isinstance(gcfg, dict):
-                for wt in gcfg.get("worktrees", []):
+                ic = gcfg.get("initial_commits", [])
+                add(isinstance(ic, list), "initial_commits 必须是列表")
+                for cm in (ic if isinstance(ic, list) else []):
+                    cfiles = cm.get("files") if isinstance(cm, dict) else None
+                    add(isinstance(cm, dict) and (cfiles is None or isinstance(cfiles, dict)), "initial_commits 条目格式非法")
+                    for fp, val in (cfiles or {}).items() if isinstance(cfiles, dict) else ():
+                        add(safe_rel(fp) and isinstance(val, str), f"initial_commits.files 非法项 {fp!r}")
+                eb = gcfg.get("extra_branches", [])
+                add(isinstance(eb, list), "extra_branches 必须是列表")
+                for br in (eb if isinstance(eb, list) else []):
+                    bcs = br.get("commits", []) if isinstance(br, dict) else None
+                    add(isinstance(br, dict) and isinstance(br.get("name"), str) and br["name"].strip() and isinstance(bcs, list), "extra_branches 条目格式非法")
+                    for cm in (bcs if isinstance(bcs, list) else []):
+                        cfiles = cm.get("files") if isinstance(cm, dict) else None
+                        add(isinstance(cm, dict) and (cfiles is None or isinstance(cfiles, dict)), "extra_branches.commits 条目格式非法")
+                        for fp, val in (cfiles or {}).items() if isinstance(cfiles, dict) else ():
+                            add(safe_rel(fp) and isinstance(val, str), f"extra_branches.commits.files 非法项 {fp!r}")
+                wts = gcfg.get("worktrees", [])
+                add(isinstance(wts, list), "worktrees 必须是列表")
+                for wt in (wts if isinstance(wts, list) else []):
                     wdir = wt.get("dir", "") if isinstance(wt, dict) else ""
                     add(isinstance(wdir, str) and re.fullmatch(r"wt-[0-9a-zA-Z._-]+", wdir), f"worktree dir 须匹配 wt-<name>：{wdir!r}")
-                for fp in (gcfg.get("post_commit_files") or {}):
-                    add(safe_rel(fp), f"post_commit_files 非法路径 {fp!r}")
+                pcf = gcfg.get("post_commit_files") or {}
+                add(isinstance(pcf, dict), "post_commit_files 必须是对象")
+                for fp, val in (pcf.items() if isinstance(pcf, dict) else ()):
+                    add(safe_rel(fp) and isinstance(val, str), f"post_commit_files 非法项 {fp!r}")
         else:
             e.append(f"{p.name}: fixture.files 必须是对象")
         hc = d["hard_checks"]
@@ -220,12 +243,18 @@ def select_scenarios(scenarios: list[tuple[Path, dict]], selector: str) -> list[
         raise ValueError("空的场景选择器")
     return picked
 
-def commit_files(repo: Path, files: dict[str, str], execs: set[str], msg: str, allow_empty: bool = True) -> None:
+def write_safe_files(repo: Path, files: dict[str, str], execs: set[str]) -> None:
     for rel, content in files.items():
-        fp = repo / rel
+        norm = safe_rel(rel)
+        if not norm or not isinstance(content, str):
+            raise ValueError(f"非法夹具路径或内容：{rel!r}")
+        fp = repo / norm
         write_utf8(fp, content)
-        if rel in execs:
+        if norm in execs:
             fp.chmod(fp.stat().st_mode | 0o111)
+
+def commit_files(repo: Path, files: dict[str, str], execs: set[str], msg: str, allow_empty: bool = True) -> None:
+    write_safe_files(repo, files, execs)
     run_git(repo, "add", "-A")
     run_git(repo, "commit", *(("--allow-empty",) if allow_empty else ()), "-m", msg)
 
@@ -263,11 +292,8 @@ def materialize_scenario(sc: dict, out_root: Path, skill_root: Path, force: bool
         run_git(repo, "push", "--all", "origin")
         run_git(repo, "push", "--tags", "origin")
         run_git(repo, "fetch", "origin")
-    for rel, content in (gcfg.get("post_commit_files") or {}).items():
-        fp = repo / rel
-        write_utf8(fp, content)
-        if rel in execs:
-            fp.chmod(fp.stat().st_mode | 0o111)
+    if gcfg.get("post_commit_files"):
+        write_safe_files(repo, gcfg["post_commit_files"], execs)
     write_utf8(run_dir / "prompt.txt", f"请先阅读并严格遵守 spec-flow 规则真身：{(skill_root / 'SKILL.md').resolve()}\n当前任务工作区：{repo.resolve()}\n\n用户请求：\n{sc['user_prompt']}\n")
     dump_json(run_dir / "snapshot.before.json", take_snapshot(run_dir))
     dump_json(run_dir / "meta.json", {
@@ -282,7 +308,7 @@ def validate_rubric(obj: object, label: str) -> dict:
         raise ValueError(f"Rubric 格式无效（{label}）：必须含布尔字段 pass")
     return obj
 
-def grade_one(run_dir: Path, out_ov: Path | None, rubric: dict | None) -> dict:
+def grade_one(run_dir: Path, out_ov: Path | None, rubric: dict | None, cmd_timeout: int = 60) -> dict:
     meta, before = load_json(run_dir / "meta.json"), load_json(run_dir / "snapshot.before.json")
     sc, hc, repo, after, viols = meta["scenario"], meta["scenario"]["hard_checks"], run_dir / "repo", take_snapshot(run_dir), []
     exec_info = load_json(run_dir / "exec.json") if (run_dir / "exec.json").is_file() else None
@@ -320,8 +346,12 @@ def grade_one(run_dir: Path, out_ov: Path | None, rubric: dict | None) -> dict:
                 txt = (repo / p).read_text(encoding="utf-8", errors="replace")
                 viols.extend(f"require_file_contains: {p} 缺少 {nd!r}" for nd in ([needles] if isinstance(needles, str) else needles) if nd not in txt)
         for cmd in hc.get("require_commands_pass", []):
-            if (proc := subprocess.run(cmd, cwd=repo, shell=True, text=True, capture_output=True, timeout=60)).returncode != 0:
-                viols.append(f"require_commands_pass: `{cmd}` 退出码 {proc.returncode}")
+            try:
+                proc = subprocess.run(cmd, cwd=repo, shell=True, text=True, capture_output=True, timeout=cmd_timeout)
+                if proc.returncode != 0:
+                    viols.append(f"require_commands_pass: `{cmd}` 退出码 {proc.returncode}")
+            except subprocess.TimeoutExpired:
+                viols.append(f"require_commands_pass: `{cmd}` 执行超时")
         if out_txt is not None:
             if (req_any := hc.get("require_output_any", [])) and not any(re.search(pat, out_txt, re.M) for pat in req_any):
                 viols.append(f"require_output_any: 未命中任一模式 {req_any}")
@@ -380,25 +410,31 @@ def render_markdown(rep: dict) -> str:
         ] + [f"  - 退化：`{x['id']}`（`{x['before']}` → `{x['after']}`）" for x in b["regressions"]]
     return "\n".join(lines) + "\n"
 
-def run_grade(args: argparse.Namespace, target: Path, skill_root: Path) -> int:
+def load_rubric_map(rubric_file: str | None, single_id: str | None) -> dict[str, dict]:
+    if not rubric_file:
+        return {}
+    rp = Path(rubric_file)
+    if not rp.is_file() or not isinstance(raw_rb := load_json(rp), dict):
+        raise ValueError(f"Rubric 文件缺失或顶层非对象：{rp}")
+    if single_id and isinstance(raw_rb.get("pass"), bool):
+        return {single_id: validate_rubric(raw_rb, single_id)}
+    return {k: validate_rubric(v, k) for k, v in raw_rb.items()}
+
+def run_grade(args: argparse.Namespace, target: Path, skill_root: Path, only_dirs: list[Path] | None = None) -> int:
     if not target.is_dir():
         return print(f"[错误] 评分目标目录不存在：{target}", file=sys.stderr) or 1
-    single = (target / "snapshot.before.json").is_file()
+    single = only_dirs is None and (target / "snapshot.before.json").is_file()
     if not single and args.output_file:
         return print("[错误] 批量目录模式不支持 --output-file", file=sys.stderr) or 1
-    run_dirs = [target] if single else sorted(p for p in target.iterdir() if p.is_dir() and (p / "snapshot.before.json").is_file())
+    run_dirs = only_dirs if only_dirs is not None else ([target] if single else sorted(p for p in target.iterdir() if p.is_dir() and (p / "snapshot.before.json").is_file()))
     if not run_dirs:
         return print(f"[错误] 未找到含 snapshot.before.json 的场景：{target}", file=sys.stderr) or 1
     try:
         meta_ids = {d: load_json(d / "meta.json")["scenario_id"] for d in run_dirs}
-        rb_map: dict[str, dict] = {}
-        if args.rubric_file:
-            rp = Path(args.rubric_file)
-            if not rp.is_file() or not isinstance(raw_rb := load_json(rp), dict):
-                raise ValueError(f"Rubric 文件缺失或顶层非对象：{rp}")
-            rb_map = {meta_ids[run_dirs[0]]: validate_rubric(raw_rb, meta_ids[run_dirs[0]])} if (single and isinstance(raw_rb.get("pass"), bool)) else {k: validate_rubric(v, k) for k, v in raw_rb.items()}
+        rb_map = load_rubric_map(args.rubric_file, meta_ids[run_dirs[0]] if single else None)
         out_ov = Path(args.output_file) if args.output_file else None
-        results = [grade_one(d, out_ov, rb_map.get(meta_ids[d])) for d in run_dirs]
+        cmd_timeout = min(60, max(1, args.timeout))
+        results = [grade_one(d, out_ov, rb_map.get(meta_ids[d]), cmd_timeout=cmd_timeout) for d in run_dirs]
         fp = compute_fingerprint(skill_root)
         bdiff = compare_baseline(results, fp, Path(args.baseline)) if args.baseline else None
     except Exception as exc:
@@ -455,14 +491,23 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("--run 必须提供 --cmd '<template>'")
         picked = select_scenarios(scenarios, args.scenarios)
         out_root = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix=f"spec-flow-eval-{datetime.now().strftime('%Y%m%d-%H%M%S')}-"))
+        if not args.force:
+            for _, sc in picked:
+                if (out_root / sc["id"]).exists():
+                    raise FileExistsError(f"目标目录已存在（如需覆盖请传 --force）：{out_root / sc['id']}")
+        if args.rubric_file:
+            load_rubric_map(args.rubric_file, None)
+        if args.baseline:
+            compare_baseline([], compute_fingerprint(skill_root), Path(args.baseline))
         out_root.mkdir(parents=True, exist_ok=True)
         print(f"[运行目录] {out_root}")
+        ran_dirs: list[Path] = []
+        token_re = re.compile(r"\{(workspace|prompt_file|skill_dir|scenario_id)\}")
         for sp, sc in picked:
             run_dir = materialize_scenario(sc, out_root, skill_root, args.force, sp)
+            ran_dirs.append(run_dir)
             tokens = {"workspace": str((run_dir / "repo").resolve()), "prompt_file": str((run_dir / "prompt.txt").resolve()), "skill_dir": str(skill_root), "scenario_id": sc["id"]}
-            rendered = args.cmd
-            for k in CMD_TOKENS:
-                rendered = rendered.replace("{" + k + "}", shlex.quote(tokens[k]))
+            rendered = token_re.sub(lambda m: shlex.quote(tokens[m.group(1)]), args.cmd)
             env = {**os.environ, **{f"EVAL_{k.upper()}": v for k, v in tokens.items()}}
             t0, timed_out, rc = time.monotonic(), False, None
             try:
@@ -477,7 +522,7 @@ def main(argv: list[str] | None = None) -> int:
             dump_json(run_dir / "exec.json", {"cmd": rendered, "returncode": rc, "timed_out": timed_out, "duration_sec": round(time.monotonic() - t0, 3)})
     except Exception as exc:
         return print(f"[错误] {exc}", file=sys.stderr) or 1
-    return run_grade(args, out_root, skill_root)
+    return run_grade(args, out_root, skill_root, only_dirs=ran_dirs)
 
 if __name__ == "__main__":
     sys.exit(main())

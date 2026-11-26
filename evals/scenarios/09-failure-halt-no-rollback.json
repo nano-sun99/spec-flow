@@ -49,8 +49,10 @@
       "branch_change",
       "head_change",
       "ref_change",
+      "new_branch",
       "deleted_branch",
-      "tag_change"
+      "tag_change",
+      "worktree_change"
     ],
     "require_commands_pass": [],
     "forbid_output_patterns": [

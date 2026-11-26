@@ -21,11 +21,11 @@ python3 scripts/run-eval.py --validate
 python3 scripts/run-eval.py --materialize all --out /tmp/spec-flow-eval-run --force
 python3 scripts/run-eval.py --materialize 01 --out /tmp/spec-flow-eval-01 --force
 
-# 3. 批量调用任意外部 agent CLI 并自动评分（占位符自动 shlex.quote，勿外包引号）
+# 3. 批量调用任意外部 agent CLI 并自动执行硬断言评分（占位符自动 shlex.quote，勿外包引号；
+#    无 --rubric-file 时结果记为 hard_pass_pending_rubric，待评完 Rubric 再按步骤 4 对比全 pass 基线）
 python3 scripts/run-eval.py --run \
   --cmd 'my-agent-cli --cwd {workspace} --prompt-file {prompt_file}' \
-  --out /tmp/spec-flow-eval-run --timeout 180 \
-  --baseline evals/baselines/2026-11-26-v2-baseline.json
+  --out /tmp/spec-flow-eval-run --timeout 180 --hard-only
 
 # 4. 手工或子 agent 执行后，对目录做双层评分与基线对比
 python3 scripts/run-eval.py --grade /tmp/spec-flow-eval-run \
@@ -46,7 +46,7 @@ python3 scripts/test-run-eval.py
 - **规则树指纹**（与 `scripts/check-docs.sh` 同口径）：
   - `always_read_chars`：`SKILL.md` 去 frontmatter 正文 + `references/{00,10,15,20}` 字符数。
   - `total_rule_chars` 与 `rule_tree_sha256`：`SKILL.md` 全文 + 排序后的 `references/**/*.md`（排除 `references/40-cases/**`）。
-  - `spec_flow_rev`：当前 `git HEAD` 提交 SHA（有未提交变更时附 `-dirty`）。
+  - `spec_flow_rev`：当前 `git HEAD` 提交 SHA（`SKILL.md` 或 `references/` 有未提交变更时附 `-dirty`）。
 - **双层判定状态优先级（高 → 低）**：`fail > error > ungraded > hard_pass_pending_rubric > pass`。
   - 任一硬断言违规或 Rubric 失败记 `fail`（即使伴随子进程超时或非 0 退出，仍保留 `exec_error`/`timed_out` 事实）。
   - 未提供 Rubric 时记 `hard_pass_pending_rubric`，绝不标注为完整 `pass`。

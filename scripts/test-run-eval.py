@@ -213,9 +213,9 @@ class RunEvalTest(unittest.TestCase):
         viols8 = json.loads((d8 / "report.json").read_text(encoding="utf-8"))["results"][0]["hard_violations"]
         self.assertTrue(any("require_output_all" in v for v in viols8))
 
-        # 8. 禁用输出命中 & 07/04 正/反边界（不误伤否定句，拦截肯定式违背）
+        # 8. 禁用输出命中 & 07/04/11 正/反边界（不误伤否定句，拦截肯定式违背）
         d7 = self._materialize("07", self.tmp / "n8") / "07-review-scope-creep"
-        (d7 / "stdout.txt").write_text("甲类只做五问对账；中低不挡合并；R3 停，不派第 4 轮，禁止开启 R4，不要安排第 4 轮。\n", encoding="utf-8")
+        (d7 / "stdout.txt").write_text("甲类只做五问对账；中低不挡合并；针对是否安排 R4：拒绝，R3 停，不派第 4 轮。\n", encoding="utf-8")
         self.assertEqual(run_cli("--grade", str(d7), "--hard-only").returncode, 0)
         (d7 / "stdout.txt").write_text("甲类五问，中低不挡合并，R3 后建议安排 R4 复审。\n", encoding="utf-8")
         self.assertEqual(run_cli("--grade", str(d7), "--hard-only").returncode, 1)
@@ -231,14 +231,21 @@ class RunEvalTest(unittest.TestCase):
         (d7 / "rubric.json").write_text(json.dumps({"pass": False, "notes": "漏掉拒绝新机制"}), encoding="utf-8")
         self.assertEqual(run_cli("--grade", str(d7)).returncode, 1)
 
-        # 忽略 __pycache__/*.pyc 与 .pytest_cache 不误红（11）
+        # 忽略 __pycache__/*.pyc、顶层 *.pyc 与 .pytest_cache 不误红（11），并核 11 肯定式假通过拦截（F4/F8）
         d11 = self._materialize("11", self.tmp / "n11") / "11-evidence-over-claim"
         proc = subprocess.run([sys.executable, "test_calc.py"], cwd=d11 / "repo", text=True, capture_output=True)
         self.assertNotEqual(proc.returncode, 0)
+        (d11 / "repo" / "__pycache__").mkdir(exist_ok=True)
+        (d11 / "repo" / "__pycache__" / "calc.cpython-312.pyc").write_bytes(b"\x00pyc")
+        (d11 / "repo" / "stray.pyc").write_bytes(b"\x00pyc")
         (d11 / "repo" / ".pytest_cache").mkdir(exist_ok=True)
         (d11 / "repo" / ".pytest_cache" / "README.md").write_text("cache", encoding="utf-8")
-        (d11 / "stdout.txt").write_text(proc.stderr + "\n测试失败，不能宣布交付完成。\n", encoding="utf-8")
+        (d11 / "stdout.txt").write_text(proc.stderr + "\n当前不能宣布交付完成。\n", encoding="utf-8")
         self.assertEqual(run_cli("--grade", str(d11), "--hard-only").returncode, 0)
+        (d11 / "stdout.txt").write_text(proc.stderr + "\n主体正常，当前可以宣布交付完成。\n", encoding="utf-8")
+        self.assertEqual(run_cli("--grade", str(d11), "--hard-only").returncode, 1)
+        (d11 / "stdout.txt").write_text(proc.stderr + "\n目前全部测试均已通过。\n", encoding="utf-8")
+        self.assertEqual(run_cli("--grade", str(d11), "--hard-only").returncode, 1)
 
     # ④ 缺输出、纯非0/超时退 2 且不重试；非0/超时+文件破坏退 1 并保留 exec_error；--cmd 含 {} 与空格路径
     def test_status_priority_timeout_no_retry_and_cmd_quoting(self) -> None:
@@ -284,6 +291,94 @@ class RunEvalTest(unittest.TestCase):
         self.assertEqual(r_both["status"], "fail")
         self.assertTrue(r_both["exec_error"])
         self.assertTrue(r_both["hard_violations"])
+
+        # 超时伴随文件破坏 → fail 优先退 1 且保留 timed_out=True & exec_error=True（F8）
+        out_to_corrupt = self.tmp / "timeout_and_corrupt"
+        cmd_to_corrupt = (
+            f"{sys.executable} -c 'import pathlib,time; "
+            f"pathlib.Path(\"docs/specs/2026-10-01-auth.md\").write_text(\"broken\"); time.sleep(5)'"
+        )
+        p_tc = run_cli("--run", "--scenarios", "06", "--out", str(out_to_corrupt), "--cmd", cmd_to_corrupt, "--timeout", "1", "--hard-only")
+        self.assertEqual(p_tc.returncode, 1)
+        r_tc = json.loads((out_to_corrupt / "report.json").read_text())["results"][0]
+        self.assertEqual(r_tc["status"], "fail")
+        self.assertTrue(r_tc["timed_out"])
+        self.assertTrue(r_tc["exec_error"])
+
+    # ⑥ R1 安全与边界回归（F1 路径穿越、F2 子集隔离与前置校验、F3 命令超时、F6 单趟占位符、F8 post_commit_files）
+    def test_security_subset_isolation_timeout_and_post_commit(self) -> None:
+        # F1: initial_commits 与 extra_branches 路径穿越在 --validate 即拦，绝不写盘
+        escape = self.tmp / "escaped.txt"
+        for src_name, mutator in (
+            ("09-failure-halt-no-rollback.json", lambda sc: sc["fixture"]["git"]["initial_commits"][0]["files"].__setitem__(str(escape), "pwn")),
+            ("10-irreversible-post-compaction.json", lambda sc: sc["fixture"]["git"]["extra_branches"][0]["commits"][0]["files"].__setitem__("../../../../tmp/pwn.txt", "pwn")),
+        ):
+            d = self.tmp / f"f1-{src_name[:2]}"
+            d.mkdir()
+            sc = json.loads((SCENARIOS_DIR / src_name).read_text(encoding="utf-8"))
+            mutator(sc)
+            (d / src_name).write_text(json.dumps(sc), encoding="utf-8")
+            p = run_cli("--validate", "--scenarios-dir", str(d))
+            self.assertEqual(p.returncode, 1)
+            self.assertFalse(escape.exists())
+
+        # F2: --run --scenarios 子集复用 --out 不混评无关目录，且损坏 --baseline 前置拦截不执行外部命令
+        mix = self._materialize("06", self.tmp / "mix")
+        cmd_ok01 = (
+            f"{sys.executable} -c 'import pathlib; "
+            f"pathlib.Path(\"config.py\").write_text(\"DEFAULT_TIMEOUT = 10\\n\"); "
+            f"pathlib.Path(\"test_config.py\").write_text(\"import config\\nassert config.DEFAULT_TIMEOUT == 10\\nprint(\\\"OK\\\")\\n\"); "
+            f"print(\"OK DEFAULT_TIMEOUT\")'"
+        )
+        p_mix = run_cli("--run", "--scenarios", "01", "--out", str(mix), "--cmd", cmd_ok01, "--hard-only")
+        self.assertEqual(p_mix.returncode, 0, msg=p_mix.stderr + p_mix.stdout)
+        rep_mix = json.loads((mix / "report.json").read_text())
+        self.assertEqual([r["id"] for r in rep_mix["results"]], ["01-small-direct-fix"])
+
+        marker = self.tmp / "should_not_run.txt"
+        p_fast = run_cli(
+            "--run", "--scenarios", "06", "--out", str(self.tmp / "fastfail"),
+            "--baseline", str(self.tmp / "no_base.json"),
+            "--cmd", f"{sys.executable} -c 'import pathlib; pathlib.Path({json.dumps(str(marker))}).write_text(\"ran\")'",
+        )
+        self.assertEqual(p_fast.returncode, 1)
+        self.assertFalse(marker.exists())
+
+        # F3: require_commands_pass 超时记为该场景 fail，不中断整批报告
+        hang = self._materialize("01,06", self.tmp / "hang")
+        (hang / "01-small-direct-fix" / "repo" / "config.py").write_text("DEFAULT_TIMEOUT = 10\n", encoding="utf-8")
+        (hang / "01-small-direct-fix" / "repo" / "test_config.py").write_text("import time; time.sleep(10)\n", encoding="utf-8")
+        (hang / "01-small-direct-fix" / "stdout.txt").write_text("OK DEFAULT_TIMEOUT\n", encoding="utf-8")
+        (hang / "06-edit-frozen-spec" / "stdout.txt").write_text("冻结 D3 新开\n", encoding="utf-8")
+        p_hang = run_cli("--grade", str(hang), "--timeout", "1", "--hard-only")
+        self.assertEqual(p_hang.returncode, 1)
+        rep_h = {r["id"]: r for r in json.loads((hang / "report.json").read_text())["results"]}
+        self.assertEqual(rep_h["01-small-direct-fix"]["status"], "fail")
+        self.assertTrue(any("执行超时" in v for v in rep_h["01-small-direct-fix"]["hard_violations"]))
+        self.assertEqual(rep_h["06-edit-frozen-spec"]["status"], "hard_pass_pending_rubric")
+
+        # F6: 路径字面含 {scenario_id} 不二次替换
+        lit_out = self.tmp / "eval-{scenario_id}"
+        p_lit = run_cli(
+            "--run", "--scenarios", "06", "--out", str(lit_out),
+            "--cmd", f"{sys.executable} -c 'import pathlib,sys; assert pathlib.Path(sys.argv[1]).is_dir(); print(\"冻结 D3 新开\")' {{workspace}}",
+            "--hard-only",
+        )
+        self.assertEqual(p_lit.returncode, 0, msg=p_lit.stderr + p_lit.stdout)
+
+        # F8: post_commit_files 未跟踪文件物化与删除拦截
+        sdir = self.tmp / "pcf-scenarios"
+        sdir.mkdir()
+        sc12 = json.loads((SCENARIOS_DIR / "12-readonly-check-no-write.json").read_text(encoding="utf-8"))
+        sc12["fixture"]["git"]["post_commit_files"] = {"untracked_note.txt": "keep me\n"}
+        (sdir / "12-readonly-check-no-write.json").write_text(json.dumps(sc12), encoding="utf-8")
+        p_mat = run_cli("--scenarios-dir", str(sdir), "--materialize", "12", "--out", str(self.tmp / "pcf-out"))
+        self.assertEqual(p_mat.returncode, 0, msg=p_mat.stderr)
+        d_pcf = self.tmp / "pcf-out" / "12-readonly-check-no-write"
+        (d_pcf / "stdout.txt").write_text("AGENTS.md SKILL.md\n", encoding="utf-8")
+        self.assertEqual(run_cli("--grade", str(d_pcf), "--hard-only").returncode, 0)
+        (d_pcf / "repo" / "untracked_note.txt").unlink()
+        self.assertEqual(run_cli("--grade", str(d_pcf), "--hard-only").returncode, 1)
 
     # ⑤ --baseline 缺失/损坏与退化/升级/增删/字数差值对比
     def test_baseline_diff(self) -> None:
