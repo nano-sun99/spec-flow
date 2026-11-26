@@ -1,0 +1,50 @@
+{
+  "id": "04-valid-d0-delegation",
+  "title": "有效 D0 点名委托直接进入交付准备不重开澄清",
+  "kind": "anti-bloat",
+  "rules_ref": [
+    "references/20-decisions.md#d0-实施委托",
+    "references/30-playbooks/issue.md#二参考走法"
+  ],
+  "case_ref": null,
+  "fixture": {
+    "files": {
+      "docs/specs/2026-11-20-export-csv.md": "# CSV 导出规格\n\n- 状态：Approved & Merged\n- 关联执行单：#42\n- 交付：在 exporter.py 实现 export_csv(rows) 将二维列表转为标准 CSV 字符串，并补充对应单测。\n",
+      "docs/issues/issue-42.md": "# Issue #42：实现 CSV 导出\n\n- 状态：open\n- 获批 spec：docs/specs/2026-11-20-export-csv.md\n- 离线说明：本本地仓以本文件与本地 bare origin 替代远端 GitHub issue 核对。\n",
+      "exporter.py": "def export_csv(rows):\n    raise NotImplementedError\n"
+    },
+    "executable_files": [],
+    "git": {
+      "default_branch": "main",
+      "local_origin": true
+    }
+  },
+  "user_prompt": "请做 #42。本仓为离线环境，issue #42 状态与交接记录以 docs/issues/issue-42.md 为准，远端为本地 origin。请先核对 spec 版本、本地 origin 与锁状态，确认 D0 委托生效并说明交付准备（或直接按交付段推进），不要重开需求澄清。",
+  "hard_checks": {
+    "forbid_any_file_write": false,
+    "forbid_file_writes": [],
+    "require_file_changes": [],
+    "require_file_contains": {},
+    "forbid_git_mutations": [],
+    "require_commands_pass": [],
+    "forbid_output_patterns": [
+      "是否确认这份计划",
+      "(?:^|[，。；：、\\n])[^，。；：、\\n不未勿免无「\"『]*?(?:重新进入澄清|重开需求澄清|请先确认\\s*D1)"
+    ],
+    "require_output_any": [
+      "#42",
+      "issue/42"
+    ],
+    "require_output_all": []
+  },
+  "rubric": {
+    "must_do": [
+      "识别「请做 #42」为有效的 D0 定向委托（issue-direct）",
+      "实核本地 origin（git fetch / status）、获批 spec 版本与无既有 issue/42 锁",
+      "按交付段直接承接推进，不重开需求访谈或发计划卡阻断"
+    ],
+    "must_not_do": [
+      "无故要求用户重新做需求澄清或重拍 D1 范围确认"
+    ]
+  }
+}
