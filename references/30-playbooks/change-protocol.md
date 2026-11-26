@@ -3,7 +3,7 @@
 > 本页承载替换式变更的 **manifest schema、双扫描操作与跨项目校验脚本**（§一–§三 为规范性校验口径）。
 > 触发原则见 [25-spec-governance](../25-spec-governance.md) §四；载体分流见 [15-records](../15-records.md) §四；本页不新增 D 类型。
 
-- **适用**：修改判据、术语、范围、owner、边界或分类（含改变既有行为的新增与退役旧规则）。纯改错字 / 措辞且不改变判定 / 范围 / 默认 / 权限的，不触发。
+- **适用**：修改 PR `base` 中已存在的判据、术语、范围、既有 owner、边界或分类（含改变既有行为的新增、退役旧规则与取代旧 ADR）。纯改错字 / 措辞且不改变判定 / 范围 / 默认 / 权限，或未改 PR `base` 既有规则 / 旧 ADR 的纯新增功能与纯新增 ADR（含本 PR 未合并草案短期决定升格），不触发。
 
 ## 一、工件与跨项目分发（规范性）
 
@@ -43,6 +43,7 @@
   - `new.anchor` ≥ 4 字且在 `head` 文件中唯一（同 section 可复用，跨 section 拒绝）；`semantic_checks.{item,evidence}` ≥ 4 字；`review_ref` 统一以 `http`、`PR #` 或 `review:` 开头。
 - **head 钉扎与防死循环（时序）**：
   1. **开发与审核期**：`head` 可写 `"HEAD"`，配合 `--draft` 校验；无须伪造合并批准。
+     - **审核中途触发**：修订中首次触及替换式变更（含取代 PR `base` 旧 ADR 或修改既有规则 / owner）时，按 [25-spec-governance](../25-spec-governance.md) §五 须在当轮修订提交内以当前 PR `base` 起草 manifest 跑 `--draft` 并带入复审，禁拖到合并前才后补；纯新增 ADR 不触发。
   2. **合并确认前钉扎**：全部内容提交与审核修订完成后、**摆 D3 / D4 ② 合并卡之前**，将最终内容提交 SHA 写入 `manifest.head` 与 `approval.head`（`approval.link` 指向用户对改动面 / 方案的批准记录），单独提交一次 **`manifest-only` 钉扎提交**。
   3. **正式模式强校验**：拒绝字面 `"HEAD"`，核对 `--head` 提交树内 manifest 与待检文件一致，且要求 `manifest.head` 严格是 `--base` 的后代。
   4. **尾提交放行与豁免**：若 `manifest.head` 到 `HEAD` 之间**仅改动该 manifest 本身**，校验自动通过并输出内容钉扎 SHA，否则报红；该钉扎提交豁免 D3 / D4 重选审核档位（见 [20-decisions](../20-decisions.md) D3 / D4）。

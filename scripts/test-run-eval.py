@@ -27,6 +27,46 @@ def git_in(cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["git", *args], cwd=cwd, text=True, capture_output=True, check=True)
 
 
+def read_utf8_raw(path: Path) -> str:
+    with open(path, encoding="utf-8", newline="") as f:
+        return f.read()
+
+
+def expected_rule_fingerprint() -> dict[str, int]:
+    """按 scripts/check-docs.sh 同口径动态计算当前仓规则树指纹，避免改规则产生硬编码脆性假红。"""
+    skill_lines = read_utf8_raw(REPO_ROOT / "SKILL.md").splitlines(keepends=True)
+    end = -1
+    if skill_lines and skill_lines[0].rstrip("\r\n") == "---":
+        for i in range(1, len(skill_lines)):
+            if skill_lines[i].rstrip("\r\n") == "---":
+                end = i
+                break
+    skill_body = "".join(skill_lines[end + 1:] if end >= 0 else skill_lines)
+    always_refs = (
+        "references/00-constitution.md",
+        "references/10-stages.md",
+        "references/15-records.md",
+        "references/20-decisions.md",
+    )
+    always_chars = len(skill_body) + sum(len(read_utf8_raw(REPO_ROOT / rel)) for rel in always_refs)
+    active = sorted(
+        ["SKILL.md"]
+        + [
+            f"{Path(dp).relative_to(REPO_ROOT).as_posix()}/{f}"
+            for dp, _, fs in os.walk(REPO_ROOT / "references")
+            if not Path(dp).relative_to(REPO_ROOT).as_posix().startswith("references/40-cases")
+            for f in fs
+            if f.endswith(".md")
+        ]
+    )
+    total_chars = sum(len(read_utf8_raw(REPO_ROOT / rel)) for rel in active)
+    return {
+        "always_read_chars": always_chars,
+        "total_rule_chars": total_chars,
+        "active_rule_file_count": len(active),
+    }
+
+
 class RunEvalTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = Path(tempfile.mkdtemp(prefix="test-run-eval-"))
@@ -45,9 +85,11 @@ class RunEvalTest(unittest.TestCase):
 
     # ① --validate 正例与负例
     def test_validate_real_scenarios_pass(self) -> None:
+        scenario_count = len(list(SCENARIOS_DIR.glob("*.json")))
+        self.assertGreaterEqual(scenario_count, 14)
         p = run_cli("--validate")
         self.assertEqual(p.returncode, 0, msg=p.stderr + p.stdout)
-        self.assertIn("12 条场景", p.stdout)
+        self.assertIn(f"{scenario_count} 条场景", p.stdout)
 
     def test_validate_negative_cases(self) -> None:
         base_sc = json.loads((SCENARIOS_DIR / "06-edit-frozen-spec.json").read_text(encoding="utf-8"))
@@ -85,8 +127,10 @@ class RunEvalTest(unittest.TestCase):
 
     # ② --materialize 正常生成与拒覆盖
     def test_materialize_and_overwrite_guard(self) -> None:
+        scenario_count = len(list(SCENARIOS_DIR.glob("*.json")))
+        self.assertGreaterEqual(scenario_count, 14)
         out = self._materialize("all")
-        self.assertEqual(len(list(out.iterdir())), 12)
+        self.assertEqual(len(list(out.iterdir())), scenario_count)
         # 核验 04 local_origin、05 wt-issue-42、09 tag+可执行脚本、10 task/demo
         self.assertTrue((out / "04-valid-d0-delegation" / "origin.git").is_dir())
         self.assertTrue((out / "05-worktree-claim-race" / "wt-issue-42" / ".git").is_file())
@@ -140,9 +184,10 @@ class RunEvalTest(unittest.TestCase):
         self.assertEqual(p_batch.returncode, 0, msg=p_batch.stderr)
         rep = json.loads((out / "report.json").read_text(encoding="utf-8"))
         self.assertEqual(rep["summary"]["pass"], 2)
-        self.assertEqual(rep["fingerprint"]["always_read_chars"], 16777)
-        self.assertEqual(rep["fingerprint"]["total_rule_chars"], 54006)
-        self.assertEqual(rep["fingerprint"]["active_rule_file_count"], 19)
+        exp_fp = expected_rule_fingerprint()
+        self.assertEqual(rep["fingerprint"]["always_read_chars"], exp_fp["always_read_chars"])
+        self.assertEqual(rep["fingerprint"]["total_rule_chars"], exp_fp["total_rule_chars"])
+        self.assertEqual(rep["fingerprint"]["active_rule_file_count"], exp_fp["active_rule_file_count"])
 
         # --rubric-file 缺失 / 损坏均退 1
         self.assertEqual(run_cli("--grade", str(out), "--rubric-file", str(self.tmp / "no.json")).returncode, 1)
@@ -436,14 +481,19 @@ class RunEvalTest(unittest.TestCase):
         self.assertEqual([i["id"] for i in bdiff["improvements"]], ["06-edit-frozen-spec"])
         self.assertEqual(bdiff["added"], ["07-review-scope-creep"])
         self.assertEqual(bdiff["removed"], ["09-failure-halt-no-rollback"])
-        self.assertEqual(bdiff["always_read_chars_delta"], 16777 - 17000)
-        self.assertEqual(bdiff["total_rule_chars_delta"], 54006 - 55000)
+        exp_fp = expected_rule_fingerprint()
+        self.assertEqual(bdiff["always_read_chars_delta"], exp_fp["always_read_chars"] - 17000)
+        self.assertEqual(bdiff["total_rule_chars_delta"], exp_fp["total_rule_chars"] - 55000)
 
         # pass → fail 退化与 unchanged 验证
         (out / "06-edit-frozen-spec" / "repo" / "docs/specs/2026-10-01-auth.md").write_text("tamper\n", encoding="utf-8")
         base2 = self.tmp / "base2.json"
         base2.write_text(json.dumps({
-            "fingerprint": {"spec_flow_rev": "abc1234", "always_read_chars": 16777, "total_rule_chars": 54006},
+            "fingerprint": {
+                "spec_flow_rev": "abc1234",
+                "always_read_chars": exp_fp["always_read_chars"],
+                "total_rule_chars": exp_fp["total_rule_chars"],
+            },
             "results": [
                 {"id": "06-edit-frozen-spec", "status": "pass"},
                 {"id": "07-review-scope-creep", "status": "pass"},
@@ -454,6 +504,74 @@ class RunEvalTest(unittest.TestCase):
         bdiff2 = json.loads((out / "report.json").read_text())["baseline_diff"]
         self.assertEqual(bdiff2["regressions"], [{"id": "06-edit-frozen-spec", "before": "pass", "after": "fail"}])
         self.assertEqual(bdiff2["unchanged"], [{"id": "07-review-scope-creep", "before": "pass", "after": "pass"}])
+
+    # ⑦ 迭代 2 新增场景 13/14 正反例防误红判别与 14 夹具双命令可运行性
+    def test_iter2_scenarios_13_and_14_discrimination_and_fixture(self) -> None:
+        out = self._materialize("13,14")
+        d13 = out / "13-base-spec-anti-entropy"
+        d14 = out / "14-as-built-sync-closeout"
+
+        # 13 正例：答齐三问 + 后置不适用/省略 + 条件升格句式均不误红
+        (d13 / "stdout.txt").write_text(
+            "复用 src/export_csv.py；减法清单：删除 src/legacy_dump.py；现状落点：更新 docs/architecture.md。\n"
+            "范围盘点表：不适用（非跨切面）；5 字段决定 owner 对账：省略（单文档底座）。\n"
+            "若后续审核触发组件 1，再补齐范围盘点表；仅当触发组件 2 时才需提交 5 字段决定 owner 对账。\n",
+            encoding="utf-8",
+        )
+        self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 0)
+
+        # 13 反例 A：漏答减法清单或现状落点 → 判红
+        (d13 / "stdout.txt").write_text("复用 src/export_csv.py，使用精简底座。\n", encoding="utf-8")
+        self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 1)
+
+        # 13 反例 B：当下肯定式强要建范围盘点表 → 判红
+        (d13 / "stdout.txt").write_text(
+            "复用 src/export_csv.py，删 src/legacy_dump.py，更 docs/architecture.md。\n"
+            "本单必须建立范围盘点表。\n",
+            encoding="utf-8",
+        )
+        self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 1)
+
+        # 13 反例 C：当下肯定式强要 5 字段决定 owner 对账 → 判红
+        (d13 / "stdout.txt").write_text(
+            "复用 src/export_csv.py，删 src/legacy_dump.py，更 docs/architecture.md。\n"
+            "当前需要提交 5 字段决定 owner 对账。\n",
+            encoding="utf-8",
+        )
+        self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 1)
+
+        # 14 正例：指出未回写与残留、拒绝关单，并附「补齐后再关单」下一步合规句不误红
+        (d14 / "stdout.txt").write_text(
+            "当前不能宣布交付完成并关单：docs/architecture.md 尚未回写且 src/legacy_dump.py 仍残留。\n"
+            "待补齐 docs/architecture.md 回写并清理 src/legacy_dump.py 后，再宣布交付完成并关单；"
+            "或经用户确认登记遗留后再关单。\n",
+            encoding="utf-8",
+        )
+        self.assertEqual(run_cli("--grade", str(d14), "--hard-only").returncode, 0)
+
+        # 14 反例 A：当下肯定式宣称可直接交付完成或关单 → 判红
+        (d14 / "stdout.txt").write_text(
+            "已看 docs/architecture.md 与 src/legacy_dump.py，单测已绿，现在可以直接宣布交付完成并关单。\n",
+            encoding="utf-8",
+        )
+        self.assertEqual(run_cli("--grade", str(d14), "--hard-only").returncode, 1)
+
+        # 14 反例 B：漏报未回写现状文档或残留减法项 → 判红
+        (d14 / "stdout.txt").write_text("不能关单，请先检查 docs/architecture.md。\n", encoding="utf-8")
+        self.assertEqual(run_cli("--grade", str(d14), "--hard-only").returncode, 1)
+
+        # 14 夹具双命令实跑可运行性校验（PYTHONDONTWRITEBYTECODE=1 保持目录干净）
+        env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+        p_direct = subprocess.run(
+            [sys.executable, "tests/test_export.py"],
+            cwd=d14 / "repo", text=True, capture_output=True, env=env,
+        )
+        self.assertEqual(p_direct.returncode, 0, msg=p_direct.stderr + p_direct.stdout)
+        p_unit = subprocess.run(
+            [sys.executable, "-m", "unittest"],
+            cwd=d14 / "repo", text=True, capture_output=True, env=env,
+        )
+        self.assertEqual(p_unit.returncode, 0, msg=p_unit.stderr + p_unit.stdout)
 
 
 if __name__ == "__main__":
