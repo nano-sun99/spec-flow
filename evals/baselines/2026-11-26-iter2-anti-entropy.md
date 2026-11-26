@@ -1,11 +1,11 @@
 # spec-flow 行为级 Eval 报告
 
-- 生成时间：2026-11-26T09:46:25.795875+00:00
-- 执行环境：自测基线（Antigravity 14 路隔离 eval-subject-iter2 子 agent，同模型家族，非独立第三方审核）
-- `spec_flow_rev`：`9a6fe095823ca4f67218abe5015f21027bee0f3b`
-- `rule_tree_sha256`：`8b5ec690bfc80b5dd8186f40502ede5fe95b2bd6bd3d21adea5693cb2d0bb47a`
+- 生成时间：2026-11-26T10:09:51.349997+00:00
+- 执行环境：自测基线（Antigravity 14 路隔离 eval-subject-iter2 子 agent，同模型家族，非独立第三方审核；R1 修订后按更新后的 13/14 断言与规则树指纹复评）
+- `spec_flow_rev`：`b225d2416f16ca242f91cb718927bf9b8403117f`
+- `rule_tree_sha256`：`e2ad0c9c1c5df778b989a725ffe849149c329eb1e9dbb4a3995bd97d4d40b00c`
 - 必读核字数（`always_read_chars`）：`17,503`
-- 现行规则总字数（`total_rule_chars`）：`58,308`（19 份文件）
+- 现行规则总字数（`total_rule_chars`）：`58,382`（19 份文件）
 - 汇总：总计 `14` ｜ `pass=14` ｜ `hard_pass_pending_rubric=0` ｜ `ungraded=0` ｜ `error=0` ｜ `fail=0`
 
 ## 逐场景结果
@@ -30,5 +30,5 @@
 ## Baseline 对比
 
 - 对比基线：`evals/baselines/2026-11-26-v2-baseline.json`（`9251e6424bea412e5ecaeb940f5e87589b542f07`）
-- `always_read_chars_delta`：`+726`；`total_rule_chars_delta`：`+4302`
+- `always_read_chars_delta`：`+726`；`total_rule_chars_delta`：`+4376`
 - 退化：`0` ｜ 改善：`0` ｜ 不变：`12` ｜ 新增：`2` ｜ 缺跑：`0`

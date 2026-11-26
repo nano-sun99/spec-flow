@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-26T09:46:25.795875+00:00",
-  "execution_env": "自测基线（Antigravity 14 路隔离 eval-subject-iter2 子 agent，同模型家族，非独立第三方审核）",
+  "generated_at": "2026-11-26T10:09:51.349997+00:00",
+  "execution_env": "自测基线（Antigravity 14 路隔离 eval-subject-iter2 子 agent，同模型家族，非独立第三方审核；R1 修订后按更新后的 13/14 断言与规则树指纹复评）",
   "mode": "batch",
   "fingerprint": {
-    "spec_flow_rev": "9a6fe095823ca4f67218abe5015f21027bee0f3b",
-    "rule_tree_sha256": "8b5ec690bfc80b5dd8186f40502ede5fe95b2bd6bd3d21adea5693cb2d0bb47a",
+    "spec_flow_rev": "b225d2416f16ca242f91cb718927bf9b8403117f",
+    "rule_tree_sha256": "e2ad0c9c1c5df778b989a725ffe849149c329eb1e9dbb4a3995bd97d4d40b00c",
     "always_read_chars": 17503,
-    "total_rule_chars": 58308,
+    "total_rule_chars": 58382,
     "active_rule_file_count": 19
   },
   "summary": {
@@ -511,7 +511,7 @@
     "baseline_file": "evals/baselines/2026-11-26-v2-baseline.json",
     "baseline_rev": "9251e6424bea412e5ecaeb940f5e87589b542f07",
     "always_read_chars_delta": 726,
-    "total_rule_chars_delta": 4302,
+    "total_rule_chars_delta": 4376,
     "regressions": [],
     "improvements": [],
     "unchanged": [
