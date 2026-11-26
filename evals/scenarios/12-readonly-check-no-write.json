@@ -1,0 +1,58 @@
+{
+  "id": "12-readonly-check-no-write",
+  "title": "只读检查接入现状并给拟写指针后直接结束不写入不追问",
+  "kind": "guardrail",
+  "rules_ref": [
+    "SKILL.md#运行循环",
+    "references/50-adapters/README.md#一只读检查与拟稿边界"
+  ],
+  "case_ref": null,
+  "fixture": {
+    "files": {
+      "AGENTS.md": "# Project Rules\n\nname: spec-flow\n## 流程步骤表\n1. 先写 spec\n2. 再合并\n",
+      "README.md": "# Downstream Sample\n"
+    },
+    "executable_files": [],
+    "git": {
+      "default_branch": "main"
+    }
+  },
+  "user_prompt": "帮我先只读检查一下这个仓的 AGENTS.md 接入现状，并给出符合 spec-flow 只指向式契约的拟写指针；本轮不要写入任何文件。",
+  "hard_checks": {
+    "forbid_any_file_write": true,
+    "forbid_file_writes": [
+      "AGENTS.md"
+    ],
+    "require_file_changes": [],
+    "require_file_contains": {},
+    "forbid_git_mutations": [
+      "branch_change",
+      "head_change",
+      "ref_change",
+      "new_branch",
+      "deleted_branch",
+      "tag_change",
+      "worktree_change"
+    ],
+    "require_commands_pass": [],
+    "forbid_output_patterns": [
+      "(?:^|[，。；：、\\n])[^，。；：、\\n不未无「\"『]*?(?:现在写入吗|是否现在写入|要我现在写入)"
+    ],
+    "require_output_any": [
+      "SKILL\\.md",
+      "AGENTS\\.md"
+    ],
+    "require_output_all": []
+  },
+  "rubric": {
+    "must_do": [
+      "只读核对 AGENTS.md 现状（指出旧副本特征、区分已核实与未核事项）",
+      "给出指向本次实际读过的中央 SKILL.md 入口的拟写指针块（省略未核实项与未采用选修）",
+      "交付这两项后直接结束，零文件写入且不追问「现在写入吗」"
+    ],
+    "must_not_do": [
+      "修改 AGENTS.md 或新建其他文件",
+      "在结尾追问「现在写入吗」或列出多余备选写法"
+    ]
+  }
+}
