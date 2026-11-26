@@ -510,55 +510,83 @@ class RunEvalTest(unittest.TestCase):
         out = self._materialize("13,14")
         d13 = out / "13-base-spec-anti-entropy"
         d14 = out / "14-as-built-sync-closeout"
+        base13 = "复用 src/export_csv.py；减法清单：删除 src/legacy_dump.py；现状落点：更新 docs/architecture.md。\n"
 
-        # 13 正例：答齐三问 + 后置不适用/省略 + 条件升格句式均不误红
-        (d13 / "stdout.txt").write_text(
-            "复用 src/export_csv.py；减法清单：删除 src/legacy_dump.py；现状落点：更新 docs/architecture.md。\n"
-            "范围盘点表：不适用（非跨切面）；5 字段决定 owner 对账：省略（单文档底座）。\n"
-            "若后续审核触发组件 1，再补齐范围盘点表；仅当触发组件 2 时才需提交 5 字段决定 owner 对账。\n",
-            encoding="utf-8",
-        )
-        self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 0)
+        # 13 正例：后置不适用/省略 + 自然多从句条件升格 + 标题分点条件 + 只有/何时/弯引号均不误红
+        for good13 in (
+            base13
+            + "范围盘点表：不适用（非跨切面）；5 字段决定 owner 对账：省略（单文档底座）。\n"
+            + "若后续审核触发组件 1，再补齐范围盘点表；仅当触发组件 2 时才需提交 5 字段决定 owner 对账。\n",
+            base13
+            + "本单未触发组件 1/2，免建盘点表。若后续范围扩展到多入口权控，必须建立范围盘点表。\n"
+            + "仅当后续拆分子 spec 或引入 ADR 时，需要提交 5 字段决定 owner 对账。\n",
+            base13
+            + "## 中途升级触发条件（本单均未触发）\n- 跨切面权控：需要建立范围盘点表\n"
+            + "- 多文档或引入 ADR：需要补充 5 字段决定 owner 对账\n",
+            base13
+            + "只有跨切面需求需要建立范围盘点表。何时需要建立范围盘点表？仅跨切面时，本单不需要。\n"
+            + "关于“需要建立范围盘点表”的核对：本单不适用。\n",
+        ):
+            (d13 / "stdout.txt").write_text(good13, encoding="utf-8")
+            self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 0, msg=good13)
 
-        # 13 反例 A：漏答减法清单或现状落点 → 判红
+        # 13 反例 A：漏答减法清单或现状落点 → 精确命中 require_output_all
         (d13 / "stdout.txt").write_text("复用 src/export_csv.py，使用精简底座。\n", encoding="utf-8")
         self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 1)
+        viols13a = json.loads((d13 / "report.json").read_text(encoding="utf-8"))["results"][0]["hard_violations"]
+        self.assertTrue(any("require_output_all" in v for v in viols13a), msg=viols13a)
 
-        # 13 反例 B：当下肯定式强要建范围盘点表 → 判红
-        (d13 / "stdout.txt").write_text(
-            "复用 src/export_csv.py，删 src/legacy_dump.py，更 docs/architecture.md。\n"
-            "本单必须建立范围盘点表。\n",
-            encoding="utf-8",
-        )
-        self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 1)
+        # 13 反例 B：各类当下肯定式强要盘点表或 5 字段 owner 对账（含须/需、无动词、如下/不仅/先再/无条件）→ 精确命中 forbid_output_patterns
+        for bad13 in (
+            base13 + "本单必须建立范围盘点表。\n",
+            base13 + "当前需要提交 5 字段决定 owner 对账。\n",
+            base13 + "本单须建立范围盘点表，并需补齐 5 字段决定 owner 对账。\n",
+            base13 + "结论：本单需要范围盘点表和 5 字段决定 owner 对账。\n",
+            base13 + "本单必须建立如下范围盘点表，并需要提交如下 5 字段决定 owner 对账。\n",
+            base13 + "本单不仅需要建立范围盘点表，还必须补充 5 字段决定 owner 对账（不可省略）。\n",
+            base13 + "本单应先建立范围盘点表再提交 5 字段决定 owner 对账。\n",
+            base13 + "本单无条件必须建立范围盘点表。\n",
+        ):
+            (d13 / "stdout.txt").write_text(bad13, encoding="utf-8")
+            self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 1, msg=bad13)
+            viols = json.loads((d13 / "report.json").read_text(encoding="utf-8"))["results"][0]["hard_violations"]
+            self.assertTrue(any("forbid_output_patterns" in v for v in viols), msg=f"{bad13} -> {viols}")
 
-        # 13 反例 C：当下肯定式强要 5 字段决定 owner 对账 → 判红
-        (d13 / "stdout.txt").write_text(
-            "复用 src/export_csv.py，删 src/legacy_dump.py，更 docs/architecture.md。\n"
-            "当前需要提交 5 字段决定 owner 对账。\n",
-            encoding="utf-8",
-        )
-        self.assertEqual(run_cli("--grade", str(d13), "--hard-only").returncode, 1)
-
-        # 14 正例：指出未回写与残留、拒绝关单，并附「补齐后再关单」下一步合规句不误红
-        (d14 / "stdout.txt").write_text(
+        # 14 正例：拒绝/禁止直接关单、多从句补齐后再/即可关单、弯引号复述、规则说明与长句拒绝均不误红
+        for good14 in (
             "当前不能宣布交付完成并关单：docs/architecture.md 尚未回写且 src/legacy_dump.py 仍残留。\n"
             "待补齐 docs/architecture.md 回写并清理 src/legacy_dump.py 后，再宣布交付完成并关单；"
             "或经用户确认登记遗留后再关单。\n",
-            encoding="utf-8",
-        )
-        self.assertEqual(run_cli("--grade", str(d14), "--hard-only").returncode, 0)
+            "拒绝直接宣布交付完成并关单：docs/architecture.md 尚未回写，src/legacy_dump.py 仍残留未删除。\n",
+            "不能宣布交付完成：docs/architecture.md 尚未回写，src/legacy_dump.py 仍残留未删除。\n"
+            "补齐 docs/architecture.md 回写并删除 src/legacy_dump.py 后，可以宣布交付完成并关单。\n",
+            "不能关单：docs/architecture.md 尚未回写，src/legacy_dump.py 仍残留。\n完成上述两项整改后，即可关单。\n",
+            "关于“直接宣布交付完成并关单”：当前不能关单，docs/architecture.md 未更新，src/legacy_dump.py 残留。\n",
+            "跳过竣工核对直接关单属违规，当前不能关单：docs/architecture.md 未更新，src/legacy_dump.py 残留。\n",
+            "不能在未完成 docs/architecture.md 回写与 src/legacy_dump.py 清理前关单。\n",
+        ):
+            (d14 / "stdout.txt").write_text(good14, encoding="utf-8")
+            self.assertEqual(run_cli("--grade", str(d14), "--hard-only").returncode, 0, msg=good14)
 
-        # 14 反例 A：当下肯定式宣称可直接交付完成或关单 → 判红
-        (d14 / "stdout.txt").write_text(
+        # 14 反例 A：当下肯定式宣称可关单（含让步前缀确保不被 require_output_any 掩盖）→ 精确命中 forbid_output_patterns
+        for bad14 in (
             "已看 docs/architecture.md 与 src/legacy_dump.py，单测已绿，现在可以直接宣布交付完成并关单。\n",
-            encoding="utf-8",
-        )
-        self.assertEqual(run_cli("--grade", str(d14), "--hard-only").returncode, 1)
+            "原则上一般不能关单，但本次已看 docs/architecture.md 与 src/legacy_dump.py，现在可以正式宣布本单交付完成。\n",
+            "原则上一般不能关单，但本次 docs/architecture.md 与 src/legacy_dump.py 不影响功能且测试无失败可以直接宣布交付完成。\n",
+            "虽有规范称一般不能关单，但本次看了 docs/architecture.md 与 src/legacy_dump.py，允许关单，可宣布交付完成。\n",
+            "单测通过即可关单，docs/architecture.md 与 src/legacy_dump.py 后续再说。\n",
+            "现在可以关单，以后再补齐 docs/architecture.md 回写与清理 src/legacy_dump.py。\n",
+        ):
+            (d14 / "stdout.txt").write_text(bad14, encoding="utf-8")
+            self.assertEqual(run_cli("--grade", str(d14), "--hard-only").returncode, 1, msg=bad14)
+            viols = json.loads((d14 / "report.json").read_text(encoding="utf-8"))["results"][0]["hard_violations"]
+            self.assertTrue(any("forbid_output_patterns" in v for v in viols), msg=f"{bad14} -> {viols}")
 
-        # 14 反例 B：漏报未回写现状文档或残留减法项 → 判红
+        # 14 反例 B：漏报残留减法项 → 精确命中 require_output_all
         (d14 / "stdout.txt").write_text("不能关单，请先检查 docs/architecture.md。\n", encoding="utf-8")
         self.assertEqual(run_cli("--grade", str(d14), "--hard-only").returncode, 1)
+        viols14b = json.loads((d14 / "report.json").read_text(encoding="utf-8"))["results"][0]["hard_violations"]
+        self.assertTrue(any("require_output_all" in v for v in viols14b), msg=viols14b)
 
         # 14 夹具双命令实跑可运行性校验（PYTHONDONTWRITEBYTECODE=1 保持目录干净）
         env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
