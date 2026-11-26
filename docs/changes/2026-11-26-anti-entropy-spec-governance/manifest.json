@@ -351,6 +351,18 @@
       "reason": "Eval Runner 确定性单测脚本，动态化场景数与规则树指纹并补场景 13/14 正反例与夹具单测",
       "reviewer": "review-agent",
       "review_ref": "review:iter2-draft-pending-d4"
+    },
+    {
+      "file": "evals/baselines/2026-11-26-iter2-anti-entropy.json",
+      "reason": "迭代 2 全量 14 场景自测脱敏基线报告（JSON），含相对 v2 基线 0 退化与字数增量证据",
+      "reviewer": "review-agent",
+      "review_ref": "review:iter2-draft-pending-d4"
+    },
+    {
+      "file": "evals/baselines/2026-11-26-iter2-anti-entropy.md",
+      "reason": "迭代 2 全量 14 场景自测脱敏基线报告（Markdown 视图）",
+      "reviewer": "review-agent",
+      "review_ref": "review:iter2-draft-pending-d4"
     }
   ]
 }
