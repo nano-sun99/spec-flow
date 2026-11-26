@@ -2,8 +2,16 @@
   "change": "2026-11-26-anti-entropy-spec-governance",
   "title": "迭代 2：反熵增规格治理精简底座、3 按需治理组件中途平滑升级与竣工回写",
   "base": "079cf9c059bb843347fa1ee15b41670f5e4d4afa",
-  "head": "HEAD",
+  "head": "3de40d01a5abb64a9f6c49e0dbbe84793a4f7a2c",
   "classification": "replace",
+  "approval": {
+    "user_quote": "D1/D3 批准迭代 2 规格（079cf9c），D0 委托实施（「还是你来做」），D4 ① 选重审+全改，R2 选全改+R3 轻审；R3 仅复核 0 阻断/0 高闭合后执行 manifest-only 钉扎，待 D4 ② 独立合并确认",
+    "timestamp": "2026-11-26",
+    "scope": "迭代 2 反熵增规格治理精简底座、3 按需治理组件与中途平滑升级、反熵增三问、竣工回写、双语 README 同步、Eval 场景 13-14 与动态单测及脱敏自测基线（21 份改动文件，8 份保护文件零改动）",
+    "base": "079cf9c059bb843347fa1ee15b41670f5e4d4afa",
+    "head": "3de40d01a5abb64a9f6c49e0dbbe84793a4f7a2c",
+    "link": "review:iter2-spec-079cf9c-r1-heavy-r2-r3-light"
+  },
   "rules": [
     {
       "id": "R-001",
@@ -452,49 +460,49 @@
       "file": "README.md",
       "reason": "对外英文说明视图，同步精简底座、3 按需组件、反熵增三问、竣工回写及 evals/run-eval 入口",
       "reviewer": "review-agent",
-      "review_ref": "review:iter2-r1-heavy-lane-a-b"
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
     },
     {
       "file": "README.zh-CN.md",
       "reason": "对外中文说明视图，与 README.md 双语同步 14 节标记与文件表",
       "reviewer": "review-agent",
-      "review_ref": "review:iter2-r1-heavy-lane-a-b"
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
     },
     {
       "file": "evals/README.md",
       "reason": "Eval 现状文档视图，回写 14 条场景现状并去硬编码 12",
       "reviewer": "review-agent",
-      "review_ref": "review:iter2-r1-heavy-lane-a-b"
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
     },
     {
       "file": "evals/scenarios/13-base-spec-anti-entropy.json",
       "reason": "新增行为级 Eval 场景 13（anti-bloat：单文档精简底座 + 反熵增三问），非运行规则",
       "reviewer": "review-agent",
-      "review_ref": "review:iter2-r1-heavy-lane-a-b"
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
     },
     {
       "file": "evals/scenarios/14-as-built-sync-closeout.json",
       "reason": "新增行为级 Eval 场景 14（guardrail：竣工回写与减法核销缺项拒关单），非运行规则",
       "reviewer": "review-agent",
-      "review_ref": "review:iter2-r1-heavy-lane-a-b"
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
     },
     {
       "file": "scripts/test-run-eval.py",
       "reason": "Eval Runner 确定性单测脚本，动态化场景数与规则树指纹并补场景 13/14 正反例与夹具单测",
       "reviewer": "review-agent",
-      "review_ref": "review:iter2-r1-heavy-lane-a-b"
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
     },
     {
       "file": "evals/baselines/2026-11-26-iter2-anti-entropy.json",
       "reason": "迭代 2 全量 14 场景自测脱敏基线报告（JSON），含相对 v2 基线 0 退化与字数增量证据",
       "reviewer": "review-agent",
-      "review_ref": "review:iter2-r1-heavy-lane-a-b"
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
     },
     {
       "file": "evals/baselines/2026-11-26-iter2-anti-entropy.md",
       "reason": "迭代 2 全量 14 场景自测脱敏基线报告（Markdown 视图）",
       "reviewer": "review-agent",
-      "review_ref": "review:iter2-r1-heavy-lane-a-b"
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
     }
   ]
 }
