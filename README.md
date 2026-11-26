@@ -45,8 +45,8 @@ Real incidents are preserved in [`references/40-cases/`](references/40-cases/) (
 
 Externally still **two phases** (Design & Implementation); internally structured in **clean layers**:
 
-- **Always-read core**: L0 Constitution (8 iron rules) → L1 Stage Contracts & Records (4 stages, 15 record groups) → L2 Decision Catalog (D0–D7 hard gates + interaction card contract).
-- **On-demand governance specs**: Spec Governance (decision index, single active ID, cross-cutting scope inventory, view authority order) & Review Contract (tiers, R1–R3 rounds, #158 mechanisms, Lane A/B prompts).
+- **Always-read core**: L0 Constitution (8 iron rules) → L1 Stage Contracts & Records (4 stages, anti-entropy 3 questions & as-built sync, 15 record groups) → L2 Decision Catalog (D0–D7 hard gates + interaction card contract).
+- **On-demand governance specs**: Spec Governance (streamlined base + 3 fact-triggered governance components & smooth mid-review escalation) & Review Contract (tiers, R1–R3 rounds, #158 mechanisms, Lane A/B prompts).
 - **On-demand playbooks & cases**: 9 concise playbooks under [`references/30-playbooks/`](references/30-playbooks/) and 15 cases under [`references/40-cases/`](references/40-cases/).
 
 See [`references/README.md`](references/README.md) for the full file map.
@@ -63,7 +63,7 @@ The user chooses whether and how to review each deliverable (none / light / heav
 
 Decisions use the client's choice tool (or equivalent explicit text options) with facts, differences and a recommendation. Only 8 fixed decision types (D0–D7) plus irreversible actions (L0-1) and load-bearing gaps (L0-7) stop the agent; non-load-bearing methods are chosen autonomously and reported.
 
-Heavy governance (cross-cutting inventory tables, decision-index audits, change manifests) loads only on demand instead of taxing every small task.
+Specs start from one streamlined base (4-column decision table + three anti-entropy questions: overlap audit, subtraction list, as-built doc target); heavy governance (cross-cutting inventory tables, multi-doc/view audits, replacement manifests) activates only on objective facts and escalates smoothly in place if scope grows mid-review. Direct fixes skip the three questions and incur zero extra doc tax unless external behavior, commands, architecture, interfaces or READMEs change.
 
 <!-- s:longrun -->
 ## Why it survives long work
@@ -99,7 +99,7 @@ The five optional modules (`adr`, `doc-lifecycle`, `issue-status`, `issue-type`,
 <!-- s:evidence -->
 ## This repo is its own case study
 
-Specifications, change manifests, cases and verification scripts live in this repository. Static green is necessary, never sufficient for client or production verification: `scripts/check-docs.sh` guards budgets, single-line limits, links/anchors and bilingual sync; `scripts/check-change.py` (with `scripts/test-check-change.py`) validates replacement change manifests across this repo and external projects (`--root <project>`).
+Specifications, change manifests, behavioral evals, cases and verification scripts live in this repository. Static green is necessary, never sufficient for client or production verification: `scripts/check-docs.sh` guards budgets, single-line limits, links/anchors and bilingual sync; `scripts/check-change.py` (with `scripts/test-check-change.py`) validates replacement change manifests across this repo and external projects (`--root <project>`); `evals/` and `scripts/run-eval.py` (with `scripts/test-run-eval.py`) run CLI-agnostic behavioral guardrail and anti-bloat regressions against saved baselines.
 
 <!-- s:docs -->
 ## Files
@@ -110,18 +110,20 @@ Specifications, change manifests, cases and verification scripts live in this re
 | `AGENTS.md`, `CLAUDE.md` | Repository maintenance rules; `CLAUDE.md` imports `AGENTS.md` |
 | `references/README.md` | Layer overview and reading-order map |
 | `references/00-constitution.md` | L0: 8 iron rules (user-only edits via L0-8) |
-| `references/10-stages.md` | L1: 4 stage contracts, core glossary and delivery preconditions |
+| `references/10-stages.md` | L1: 4 stage contracts, core glossary (incl. anti-entropy 3 questions & as-built sync) and delivery preconditions |
 | `references/15-records.md` | L1: 15 record groups, D0–D7 logs, document carriers, close-out and exceptions |
 | `references/20-decisions.md` | L2: D0–D7 hard gates, interaction card contract and label confirmations |
-| `references/25-spec-governance.md` | Sole owner for decision index / unique ID, scope inventory, view authority and reopen bounds |
+| `references/25-spec-governance.md` | Sole owner for streamlined base, 3 fact-triggered governance components, view authority and smooth mid-review escalation |
 | `references/26-review-contract.md` | Sole owner for review tiers, R1–R3 rounds, #158 mechanisms, doc checks and Lane A/B prompts |
 | `references/30-playbooks/` | 9 on-demand playbooks (`new-spec`, `direct`, `issue`, `change-protocol`, `release`, `incident`, `labels`, `worktree`, `adr`) |
 | `references/40-cases/` | L4: 15 incident & drill cases (narrative + proposals, not authority) |
 | `references/50-adapters/` | Self-contained pointer-only adoption contract and 5 optional modules |
+| `evals/` | Behavioral Eval regression suite (`evals/README.md`, self-contained JSON `scenarios/`, sanitized `baselines/`) |
 | `docs/archive/v1/` | Archived v1 documents & frozen `rationale.md` (historical reference only) |
 | `docs/maintainer-notes.md` | Local symlink wiring and repo history |
 | `scripts/check-docs.sh` | Guards budgets, single-line length limits, links/anchors, owners and bilingual README sync |
 | `scripts/check-change.py` | Portable replacement-change manifest validator (`--root`, `--draft`, manifest-only head pinning) |
+| `scripts/run-eval.py` | CLI-agnostic behavioral Eval runner (`--validate`, `--materialize`, `--run`, `--grade`, `--baseline`; tested by `scripts/test-run-eval.py`) |
 
 The README introduces the system; follow `SKILL.md` to each sole canonical owner.
 

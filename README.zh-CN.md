@@ -45,8 +45,8 @@
 
 对外仍是**两段主线**（方案期与实施期），对内按清晰层次组织：
 
-- **每次必读内核**：L0 铁律（8 条）→ L1 阶段合同与记录（4 段完成条件、15 类记录）→ L2 决策目录（D0–D7 硬闸 + 交互卡片契约）。
-- **按需专项总纲**：规格文档治理（决定索引、唯一活动 ID、跨切面范围盘点表、摘要视图权威顺序）与审核契约（档位、R1–R3、#158 机制、Lane A/B 模板）。
+- **每次必读内核**：L0 铁律（8 条）→ L1 阶段合同与记录（4 段完成条件、反熵增三问与竣工回写、15 类记录）→ L2 决策目录（D0–D7 硬闸 + 交互卡片契约）。
+- **按需专项总纲**：规格文档治理（精简底座 + 3 个按需治理组件与中途平滑升级）与审核契约（档位、R1–R3、#158 机制、Lane A/B 模板）。
 - **按需 Playbook 与案例**：[`references/30-playbooks/`](references/30-playbooks/) 下 9 条精简走法与 [`references/40-cases/`](references/40-cases/) 下 15 条案例。
 
 完整文件地图见 [`references/README.md`](references/README.md)。
@@ -63,7 +63,7 @@ agent 派出的子 agent 仍是它自己的执行分身。换模型、名字或 
 
 必要决定优先用客户端选项卡（无工具列等价文字选项），给出事实、差别与推荐。只有 D0–D7 八类固定决策加上 L0-1 不可逆动作与 L0-7 承重缺口会停住 agent；非承重写法由 agent 自主决定并报告。
 
-重型治理机制（跨切面盘点表、决定索引对账、替换式变更 manifest）按需加载，不让普通小改背负极端场景的认知税。
+开 spec 统一从单一精简底座起步（4 列简版决定表 + 反熵增三问：重叠盘点 / 减法清单 / 现状真身落点）；重型治理（跨切面盘点表、多文档/视图对账、替换式变更 manifest）只按客观事实按需激活，审核中途扩大也可原位平滑升级。直接干不填三问，纯内部小改零额外文书税，仅改变对外可见行为、命令、架构、接口或 README 时同步现状文档。
 
 <!-- s:longrun -->
 ## 它凭什么扛得住长活
@@ -99,7 +99,7 @@ git clone --branch rebuild/v2 https://github.com/nano-sun99/spec-flow.git ~/.cla
 <!-- s:evidence -->
 ## 本仓自己就是样板
 
-规格、变更清单、案例与校验脚本均留在本仓。静态绿是必要条件，不代替客户端或生产实测：`scripts/check-docs.sh` 守卫预算、单行长度、链接锚点与双语同步；`scripts/check-change.py`（配 `scripts/test-check-change.py`）支持本仓与外部项目（`--root <project>`）的替换式变更校验。
+规格、变更清单、行为评测、案例与校验脚本均留在本仓。静态绿是必要条件，不代替客户端或生产实测：`scripts/check-docs.sh` 守卫预算、单行长度、链接锚点与双语同步；`scripts/check-change.py`（配 `scripts/test-check-change.py`）支持本仓与外部项目（`--root <project>`）的替换式变更校验；`evals/` 与 `scripts/run-eval.py`（配 `scripts/test-run-eval.py`）提供 CLI 无关的行为级护栏与反膨胀回归评测及基线对比。
 
 <!-- s:docs -->
 ## 文件
@@ -110,18 +110,20 @@ git clone --branch rebuild/v2 https://github.com/nano-sun99/spec-flow.git ~/.cla
 | `AGENTS.md`、`CLAUDE.md` | 本仓维护规矩；`CLAUDE.md` 导入 `AGENTS.md` |
 | `references/README.md` | 分层说明与阅读顺序地图 |
 | `references/00-constitution.md` | L0：8 条铁律（仅用户按 L0-8 修改） |
-| `references/10-stages.md` | L1：4 段阶段合同、核心术语与交付前置 |
+| `references/10-stages.md` | L1：4 段阶段合同、核心术语（含反熵增三问 / 竣工回写）与交付前置 |
 | `references/15-records.md` | L1：15 类记录、D0–D7 留痕、文档载体、关单与观察式例外 |
 | `references/20-decisions.md` | L2：D0–D7 硬闸、交互卡片契约与标签确认 |
-| `references/25-spec-governance.md` | 规格文档治理唯一正文（决定索引 / 唯一 ID、范围盘点表、视图权威顺序、重开边界） |
+| `references/25-spec-governance.md` | 规格文档治理唯一正文（精简底座、3 按需治理组件、视图权威顺序与中途平滑升级） |
 | `references/26-review-contract.md` | 审核契约唯一正文（档位、R1–R3、#158 五机制、文档检查与 Lane A/B 模板） |
 | `references/30-playbooks/` | 9 条按需 Playbook（`new-spec`、`direct`、`issue`、`change-protocol`、`release`、`incident`、`labels`、`worktree`、`adr`） |
 | `references/40-cases/` | L4：15 条事故与演练案例（叙述 + 提议，不是授权） |
 | `references/50-adapters/` | 自足的只指向式项目接入契约与 5 个选修模块 |
+| `evals/` | 行为级 Eval 回归套件（`evals/README.md`、自足 JSON `scenarios/` 与脱敏 `baselines/`） |
 | `docs/archive/v1/` | 已废弃的 v1 文档与冻结的 `rationale.md`（历史档案） |
 | `docs/maintainer-notes.md` | 本机软链接线与仓库历史 |
 | `scripts/check-docs.sh` | 守卫核心层预算、单行上限、链接与锚点、owner 章节与双语 README 同步 |
 | `scripts/check-change.py` | 跨项目替换式变更校验器（`--root`、`--draft`、manifest-only 尾提交钉扎） |
+| `scripts/run-eval.py` | CLI 无关行为级 Eval Runner（`--validate`、`--materialize`、`--run`、`--grade`、`--baseline`；配 `scripts/test-run-eval.py`） |
 
 README 是介绍，实际执行请从 `SKILL.md` 进入各唯一正文 owner。
 

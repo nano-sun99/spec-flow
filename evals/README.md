@@ -6,7 +6,7 @@
 
 | 路径 | 职责 |
 |---|---|
-| `evals/scenarios/01..12.json` | 12 条单文件自足场景（9 条 `guardrail` + 3 条 `anti-bloat`），运行时物化到临时目录 |
+| `evals/scenarios/01..14.json` | 14 条单文件自足场景（10 条 `guardrail` + 4 条 `anti-bloat`），运行时物化到临时目录 |
 | `evals/baselines/` | 脱敏基线报告（JSON + Markdown），用于规则修改前后的行为退化与字数对比 |
 | `scripts/run-eval.py` | 纯 Python 3（≥ 3.9）标准库、CLI 无关 Runner |
 | `scripts/test-run-eval.py` | 确定性单测（零模型调用），验证校验、物化、硬断言判别性与基线对比 |
@@ -56,6 +56,6 @@ python3 scripts/test-run-eval.py
 
 1. 改规则前确认已有干净基线（如 `evals/baselines/2026-11-26-v2-baseline.json`）。
 2. 在独立分支 / worktree 改完规则后，跑 `bash scripts/check-docs.sh` 与 `python3 scripts/run-eval.py --validate`。
-3. 物化全部 12 场景，在相同执行环境下跑完并产出每条场景的 `stdout.txt` 与人工/结构化 `rubric.json`。
+3. 物化全部场景（`--materialize all`），在相同执行环境下跑完并产出每条场景的 `stdout.txt` 与人工/结构化 `rubric.json`。
 4. 执行 `python3 scripts/run-eval.py --grade <out> --rubric-file <rubric.json> --baseline evals/baselines/2026-11-26-v2-baseline.json`。
 5. 核对 `regressions == []` 以及 `always_read_chars_delta` / `total_rule_chars_delta`；任何 `guardrail` 或 `anti-bloat` 退化即停止合并并查原因。
