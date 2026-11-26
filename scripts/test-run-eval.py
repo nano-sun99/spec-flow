@@ -307,20 +307,41 @@ class RunEvalTest(unittest.TestCase):
 
     # ⑥ R1 安全与边界回归（F1 路径穿越、F2 子集隔离与前置校验、F3 命令超时、F6 单趟占位符、F8 post_commit_files）
     def test_security_subset_isolation_timeout_and_post_commit(self) -> None:
-        # F1: initial_commits 与 extra_branches 路径穿越在 --validate 即拦，绝不写盘
+        # F1 & N1: initial_commits / extra_branches 路径穿越与 .git / .GIT 覆写在 --validate 即拦，绝不写盘或触发 hook
         escape = self.tmp / "escaped.txt"
-        for src_name, mutator in (
-            ("09-failure-halt-no-rollback.json", lambda sc: sc["fixture"]["git"]["initial_commits"][0]["files"].__setitem__(str(escape), "pwn")),
-            ("10-irreversible-post-compaction.json", lambda sc: sc["fixture"]["git"]["extra_branches"][0]["commits"][0]["files"].__setitem__("../../../../tmp/pwn.txt", "pwn")),
+        for tag, src_name, mutator in (
+            ("abs", "09-failure-halt-no-rollback.json", lambda sc: sc["fixture"]["git"]["initial_commits"][0]["files"].__setitem__(str(escape), "pwn")),
+            ("dotdot", "10-irreversible-post-compaction.json", lambda sc: sc["fixture"]["git"]["extra_branches"][0]["commits"][0]["files"].__setitem__("../../../../tmp/pwn.txt", "pwn")),
+            ("githook", "06-edit-frozen-spec.json", lambda sc: (sc["fixture"]["files"].__setitem__(".git/hooks/pre-commit", f"#!/bin/sh\necho pwn > {escape}\n"), sc["fixture"]["executable_files"].append(".git/hooks/pre-commit"))),
+            ("gitconfig", "06-edit-frozen-spec.json", lambda sc: sc["fixture"]["files"].__setitem__(".GIT/config", f"[core]\n\tfsmonitor = sh -c 'echo pwn > {escape}'\n")),
         ):
-            d = self.tmp / f"f1-{src_name[:2]}"
+            d = self.tmp / f"f1-{tag}"
             d.mkdir()
             sc = json.loads((SCENARIOS_DIR / src_name).read_text(encoding="utf-8"))
             mutator(sc)
             (d / src_name).write_text(json.dumps(sc), encoding="utf-8")
             p = run_cli("--validate", "--scenarios-dir", str(d))
-            self.assertEqual(p.returncode, 1)
-            self.assertFalse(escape.exists())
+            self.assertEqual(p.returncode, 1, msg=f"{tag} should fail validate")
+            self.assertFalse(escape.exists(), msg=f"{tag} wrote escape file!")
+
+        # N2 & N3: commits[*].files=null 允许正常物化；畸形 tags / worktrees.branch 在 --validate 拦截
+        d_n2 = self.tmp / "n2-null-files"
+        d_n2.mkdir()
+        sc09 = json.loads((SCENARIOS_DIR / "09-failure-halt-no-rollback.json").read_text(encoding="utf-8"))
+        sc09["fixture"]["git"]["initial_commits"][0]["files"] = None
+        (d_n2 / "09-failure-halt-no-rollback.json").write_text(json.dumps(sc09), encoding="utf-8")
+        self.assertEqual(run_cli("--validate", "--scenarios-dir", str(d_n2)).returncode, 0)
+
+        d_n3 = self.tmp / "n3-bad-git"
+        d_n3.mkdir()
+        sc05 = json.loads((SCENARIOS_DIR / "05-worktree-claim-race.json").read_text(encoding="utf-8"))
+        sc05["fixture"]["git"]["tags"] = [{}]
+        sc05["fixture"]["git"]["worktrees"] = [{"dir": "wt-ok"}]
+        (d_n3 / "05-worktree-claim-race.json").write_text(json.dumps(sc05), encoding="utf-8")
+        p_n3 = run_cli("--validate", "--scenarios-dir", str(d_n3))
+        self.assertEqual(p_n3.returncode, 1)
+        self.assertIn("tags", p_n3.stderr)
+        self.assertIn("worktree branch", p_n3.stderr)
 
         # F2: --run --scenarios 子集复用 --out 不混评无关目录，且损坏 --baseline 前置拦截不执行外部命令
         mix = self._materialize("06", self.tmp / "mix")

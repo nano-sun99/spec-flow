@@ -38,7 +38,9 @@ def safe_rel(raw: object) -> str | None:
     if not isinstance(raw, str) or not raw or raw.startswith("/") or "\\" in raw:
         return None
     parts = Path(raw).parts
-    return None if (not parts or any(p in ("", ".", "..") for p in parts)) else "/".join(parts)
+    if not parts or any(p in ("", ".", "..") or p.lower() == ".git" for p in parts):
+        return None
+    return "/".join(parts)
 
 def run_git(cwd: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
     proc = subprocess.run(["git", *args], cwd=cwd, text=True, capture_output=True, env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
@@ -195,11 +197,17 @@ def load_scenarios(sdir: Path, skill_root: Path) -> tuple[list[tuple[Path, dict]
                         add(isinstance(cm, dict) and (cfiles is None or isinstance(cfiles, dict)), "extra_branches.commits 条目格式非法")
                         for fp, val in (cfiles or {}).items() if isinstance(cfiles, dict) else ():
                             add(safe_rel(fp) and isinstance(val, str), f"extra_branches.commits.files 非法项 {fp!r}")
+                tags = gcfg.get("tags", [])
+                add(isinstance(tags, list), "tags 必须是列表")
+                for tg in (tags if isinstance(tags, list) else []):
+                    add(isinstance(tg, dict) and isinstance(tg.get("name"), str) and bool(tg["name"].strip()), "tags 条目须含非空 name")
                 wts = gcfg.get("worktrees", [])
                 add(isinstance(wts, list), "worktrees 必须是列表")
                 for wt in (wts if isinstance(wts, list) else []):
                     wdir = wt.get("dir", "") if isinstance(wt, dict) else ""
+                    wbr = wt.get("branch", "") if isinstance(wt, dict) else ""
                     add(isinstance(wdir, str) and re.fullmatch(r"wt-[0-9a-zA-Z._-]+", wdir), f"worktree dir 须匹配 wt-<name>：{wdir!r}")
+                    add(isinstance(wbr, str) and bool(wbr.strip()), "worktree branch 必须是非空字符串")
                 pcf = gcfg.get("post_commit_files") or {}
                 add(isinstance(pcf, dict), "post_commit_files 必须是对象")
                 for fp, val in (pcf.items() if isinstance(pcf, dict) else ()):
@@ -256,7 +264,7 @@ def write_safe_files(repo: Path, files: dict[str, str], execs: set[str]) -> None
 def commit_files(repo: Path, files: dict[str, str], execs: set[str], msg: str, allow_empty: bool = True) -> None:
     write_safe_files(repo, files, execs)
     run_git(repo, "add", "-A")
-    run_git(repo, "commit", *(("--allow-empty",) if allow_empty else ()), "-m", msg)
+    run_git(repo, "commit", "--no-verify", *(("--allow-empty",) if allow_empty else ()), "-m", msg)
 
 def materialize_scenario(sc: dict, out_root: Path, skill_root: Path, force: bool, sp: Path | None = None) -> Path:
     run_dir = out_root / sc["id"]
@@ -267,17 +275,18 @@ def materialize_scenario(sc: dict, out_root: Path, skill_root: Path, force: bool
     repo = run_dir / "repo"
     repo.mkdir(parents=True, exist_ok=True)
     fx, gcfg = sc["fixture"], (sc["fixture"].get("git") or {})
-    default_br, execs = gcfg.get("default_branch", "main"), set(fx.get("executable_files", []))
+    default_br = gcfg.get("default_branch", "main")
+    execs = {n for x in fx.get("executable_files", []) if (n := safe_rel(x))}
     run_git(repo, "init", "-b", default_br)
     for k, v in (("user.name", "Eval Fixture"), ("user.email", "eval@example.invalid"), ("commit.gpgsign", "false")):
         run_git(repo, "config", k, v)
     commit_files(repo, fx.get("files", {}), execs, "Initial fixture", allow_empty=not fx.get("files"))
     for cm in gcfg.get("initial_commits", []):
-        commit_files(repo, cm.get("files", {}), execs, cm.get("message", "Fixture commit"))
+        commit_files(repo, cm.get("files") or {}, execs, cm.get("message", "Fixture commit"))
     for br in gcfg.get("extra_branches", []):
         run_git(repo, "checkout", "-b", br["name"], br.get("from", default_br))
         for cm in br.get("commits", []):
-            commit_files(repo, cm.get("files", {}), execs, cm.get("message", "Branch commit"))
+            commit_files(repo, cm.get("files") or {}, execs, cm.get("message", "Branch commit"))
         run_git(repo, "checkout", default_br)
     for tag in gcfg.get("tags", []):
         ref = tag.get("ref", "HEAD")
@@ -489,20 +498,22 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if not args.cmd:
             raise ValueError("--run 必须提供 --cmd '<template>'")
+        if args.output_file:
+            raise ValueError("--run 模式不支持 --output-file")
         picked = select_scenarios(scenarios, args.scenarios)
-        out_root = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix=f"spec-flow-eval-{datetime.now().strftime('%Y%m%d-%H%M%S')}-"))
-        if not args.force:
-            for _, sc in picked:
-                if (out_root / sc["id"]).exists():
-                    raise FileExistsError(f"目标目录已存在（如需覆盖请传 --force）：{out_root / sc['id']}")
         if args.rubric_file:
             load_rubric_map(args.rubric_file, None)
         if args.baseline:
             compare_baseline([], compute_fingerprint(skill_root), Path(args.baseline))
+        if args.out and not args.force:
+            for _, sc in picked:
+                if (Path(args.out) / sc["id"]).exists():
+                    raise FileExistsError(f"目标目录已存在（如需覆盖请传 --force）：{Path(args.out) / sc['id']}")
+        out_root = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix=f"spec-flow-eval-{datetime.now().strftime('%Y%m%d-%H%M%S')}-"))
         out_root.mkdir(parents=True, exist_ok=True)
         print(f"[运行目录] {out_root}")
         ran_dirs: list[Path] = []
-        token_re = re.compile(r"\{(workspace|prompt_file|skill_dir|scenario_id)\}")
+        token_re = re.compile(r"\{(" + "|".join(CMD_TOKENS) + r")\}")
         for sp, sc in picked:
             run_dir = materialize_scenario(sc, out_root, skill_root, args.force, sp)
             ran_dirs.append(run_dir)
