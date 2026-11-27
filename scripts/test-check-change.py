@@ -186,7 +186,7 @@ def setup_repo(tmp: Path) -> tuple[Path, str, str, str, str]:
     # 内容提交：重命名 old.md -> new.md、改 10-stages、15-records、README.md（配套）、草案 spec
     (repo / "references/30-playbooks/old.md").unlink()
     write(repo / "references/30-playbooks/new.md", "# 新走法\n\n## 一、参考走法\n\n新步骤\n")
-    write(repo / "references/10-stages.md", "# 阶段\n\n## 一、核心\n\n见 [新走法](30-playbooks/new.md#一参考走法) 与 §一\n\n```text\n示例代码块 §9.9.9 不误报\n```\n")
+    write(repo / "references/10-stages.md", "# 阶段\n\n## 一、核心\n\n见 [新走法](30-playbooks/new.md#一参考走法) 与 §一\n\n```text\n示例代码块 §9.9.9 与已删 §二 不误报\n```\n")
     write(repo / "references/15-records.md", "# 记录\n\n## 一、说明\n\n新内容无残留\n")
     write(repo / "README.md", "# Demo\n\nUpdated README\n")
     write(repo / "docs/specs/2026-11-27-draft.md", "# 草案规格\n\n更新后草案\n")
@@ -243,8 +243,8 @@ def main() -> int:
         p_mismatch = run_cli(repo, mrel, base, content)
         check(False, "磁盘 manifest 与 --head 提交树不一致红", p_mismatch.returncode == 0, p_mismatch.stdout, "不存在或无法解析")
 
-        # 5. schema 边界：缺 schema / schema=1 / schema=True
-        for label, s_val in [("缺 schema 红", None), ("schema=1 红", 1), ("schema=True 红", True)]:
+        # 5. schema 边界：缺 schema / schema=1 / schema=True / schema=2.0
+        for label, s_val in [("缺 schema 红", None), ("schema=1 红", 1), ("schema=True 红", True), ("schema=2.0 红", 2.0)]:
             d = copy.deepcopy(base_manifest)
             if s_val is None:
                 d.pop("schema", None)
@@ -329,10 +329,16 @@ def main() -> int:
         errs, out = lint_mem(repo, mpath, d_draft_hit, base=base, head=head)
         check(False, "本 PR 改动中的 docs/specs 草案纳入默认扫描红", not errs, out, "docs/specs/2026-11-27-draft.md")
 
-        # 11. 容器畸形防崩溃 & rebuild.triggered=true 缺 old_behaviors 拦截
+        # 11. 容器畸形防崩溃（含 6 处不可哈希枚举）& rebuild.triggered=true 缺 old_behaviors 拦截
         for label, mut, needle in [
             ("rules 非数组红", lambda x: x.__setitem__("rules", "bad"), "rules 必须是数组"),
             ("rules 元素非对象红", lambda x: x.__setitem__("rules", [123]), "rules[1] 必须是对象"),
+            ("classification=[] 不崩溃报红", lambda x: x.__setitem__("classification", []), "classification 不在"),
+            ("rules[0].type={} 不崩溃报红", lambda x: x["rules"][0].__setitem__("type", {}), "type 不在"),
+            ("rules[0].disposition=[] 不崩溃报红", lambda x: x["rules"][0].__setitem__("disposition", []), "disposition 不在"),
+            ("rules[0].status=[] 不崩溃报红", lambda x: x["rules"][0].__setitem__("status", []), "status 不在"),
+            ("allow.reviewer=[] 不崩溃报红", lambda x: x["scans"][0]["allow"][0].__setitem__("reviewer", []), "reviewer 不在"),
+            ("semantic_checks.conclusion=[] 不崩溃报红", lambda x: x["semantic_checks"][0].__setitem__("conclusion", []), "conclusion 不合法"),
             ("rebuild 缺 old_behaviors 红", lambda x: x.__setitem__("rebuild", {"triggered": True, "reason": "重构", "old_behaviors": []}), "old_behaviors 为空"),
             ("allow.count=True 红", lambda x: x["scans"][0]["allow"][0].__setitem__("count", True), "count 必须是正整数"),
         ]:
@@ -340,6 +346,11 @@ def main() -> int:
             mut(d)
             errs, out = lint_mem(repo, mpath, d, base=base, head=head)
             check(False, label, not errs, out, needle)
+
+        # 11b. 带注释 tag 作 --base 剥离至提交 SHA 绿（B6）
+        sh(repo, "git", "tag", "-a", "v1.0-test", "-m", "annotated base tag", base)
+        errs, out = lint_mem(repo, mpath, base_manifest, base="v1.0-test", head=head, draft=True)
+        check(True, "带注释 tag 作 --base 自动剥离至提交 SHA 绿", not errs, out)
 
         # 12. 对抗分支测试：tail-rename 绕过、C* 3 字段、allow span 攻击（同行双命中/搭便车/重叠/过期）、
         #     新增断链 §、删改章节残留、已删/改名中文紧邻路径 & #anchor/?query/URL 编码链接 & path_ref_whitelist
@@ -411,13 +422,47 @@ def main() -> int:
         errs, out = lint_mem(repo, mpath, d_exp_al, base=base, head=c_span, draft=True)
         check(False, "过期无效 allow（0 命中）拦截红", not errs, out, "过期无效")
 
-        # 12c. 路径残留反扫（中文紧邻裸路径 + 带 #anchor/?query/URL 编码链接 + {file, path} 白名单与过期拦截）+ 新增/删改 § 章节反扫
+        # count=2 精准放行 & 默认 count=1 吞没 2 命中拦截（B3 / A-5）
+        d_cnt_fail = copy.deepcopy(d_span)
+        d_cnt_fail["scans"][0]["allow"] = [
+            {"file": "references/15-records.md", "match": "old.line（旧表1）与 old.line（旧表2）", "reason": "双处", "reviewer": "user", "review_ref": "PR #1"},
+            {"file": "references/15-records.md", "match": "历史说明 old.line（保留）", "reason": "保留", "reviewer": "user", "review_ref": "PR #1"},
+        ]
+        errs, out = lint_mem(repo, mpath, d_cnt_fail, base=base, head=c_span, draft=True)
+        check(False, "单条 allow（count=1）吞没 2 处命中拦截红", not errs, out, "命中次数 2 != 声明 count=1")
+
+        d_cnt_ok = copy.deepcopy(d_cnt_fail)
+        d_cnt_ok["scans"][0]["allow"][0]["count"] = 2
+        errs, out = lint_mem(repo, mpath, d_cnt_ok, base=base, head=c_span, draft=True)
+        check(True, "单条 allow 显式 count=2 精准放行 2 处命中绿", not errs, out)
+
+        # 12b-2. ++ 开头新增行不吞行号（B2）
+        sh(repo, "git", "checkout", "-b", "test-plus-hunk", base)
+        write(
+            repo / "references/10-stages.md",
+            "# 阶段\n\n## 一、核心\n\n原有内容\n++ 见 §999\n```text\ncode\n```\n真正正文断链 §888\n",
+        )
+        c_plus = commit_all(repo, "plus prefix line")
+        d_plus = copy.deepcopy(d_span)
+        d_plus["rules"] = [{"id": "R-1", "type": "replace", "files": ["references/10-stages.md"], "summary": "测试 ++ 开头行号不漂移", "disposition": "replace", "status": "done"}]
+        d_plus["scans"] = [{"query": "OBSOLETE_RULE"}]
+        errs, out = lint_mem(repo, mpath, d_plus, base=base, head=c_plus, draft=True)
+        joined_plus = "\n".join(errs)
+        check(False, "++ 开头新增行 §999 检出红", not errs, joined_plus, "§999")
+        check(False, "++ 开头后不偏移行号并检出 §888 红", not errs, joined_plus, "§888")
+
+        # 12c. 路径残留反扫（子目录相对链接 + [`scans[]`] 方括号与 (v1) 括号链接 + 中文紧邻裸路径 + {file, path} 重复/非法/过期）+ § 反扫
         sh(repo, "git", "checkout", "-b", "test-path-sec", base)
+        write(repo / "references/30-playbooks/old(v1).md", "# 旧括号\n")
+        base_v1 = commit_all(repo, "add old(v1)")
         (repo / "references/30-playbooks/old.md").unlink()
+        (repo / "references/30-playbooks/old(v1).md").unlink()
         write(repo / "references/30-playbooks/new.md", "# 新走法\n\n## 一、参考走法\n\n见 §99\n")
         write(
             repo / "references/10-stages.md",
-            "# 阶段\n\n## 一、核心\n\n请详见references/30-playbooks/old.md说明；另见 §二。\n",
+            "# 阶段\n\n## 一、核心\n\n"
+            "请详见references/30-playbooks/old.md说明；另见 §二。\n"
+            "相对链接 [`scans[]`](30-playbooks/old.md#一参考走法) 与 [旧括号](30-playbooks/old%28v1%29.md?x=1#sec \"t\")。\n",
         )
         write(
             repo / "README.md",
@@ -425,18 +470,21 @@ def main() -> int:
         )
         c_ps = commit_all(repo, "path and section residue")
         d_ps = copy.deepcopy(d_span)
+        d_ps["base"] = base_v1
         d_ps["rules"] = [
-            {"id": "R-1", "type": "replace", "files": ["references/10-stages.md", "references/30-playbooks/new.md"], "summary": "测试路径与章节残留反扫", "disposition": "replace", "status": "done"},
+            {"id": "R-1", "type": "replace", "files": ["references/10-stages.md", "references/30-playbooks/new.md", "references/30-playbooks/old(v1).md"], "summary": "测试路径与章节残留反扫", "disposition": "replace", "status": "done"},
         ]
         d_ps["scans"] = [{"query": "OBSOLETE_RULE"}]
-        errs, out = lint_mem(repo, mpath, d_ps, base=base, head=c_ps, draft=True)
+        errs, out = lint_mem(repo, mpath, d_ps, base=base_v1, head=c_ps, draft=True)
         joined = "\n".join(errs)
         check(False, "紧邻中文裸路径残留拦截红", not errs, joined, "references/10-stages.md:5 → references/30-playbooks/old.md")
+        check(False, "子目录相对链接含 [`scans[]`] 与 URL 编码 old(v1).md 均拦截红", not errs, joined, "references/10-stages.md:6 → references/30-playbooks/old(v1).md")
         check(False, "README 带 #anchor/?query/URL 编码链接残留拦截红", not errs, joined, "README.md:3 → references/30-playbooks/old.md")
         check(False, "新增断链 §99 拦截红", not errs, joined, "references/30-playbooks/new.md §99")
         check(False, "删改章节 §二 残留拦截红", not errs, joined, "references/10-stages.md:5 §二")
 
-        # 仅白名单 README.md 不致盲 10-stages.md；两者都白名单 + section 白名单则绿；多余白名单报过期
+        # 仅白名单 README.md 不致盲 10-stages.md；两者全白名单绿；重复/非法/过期白名单均拦截（B9）
+        check(False, "子目录相对链接 [`scans[]`](30-playbooks/old.md) 精准拦截红", not errs, joined, "references/10-stages.md:6 → references/30-playbooks/old.md")
         d_ps["section_ref_whitelist"] = [
             {"ref": "§99", "reason": "外部章节", "reviewer": "user", "review_ref": "PR #2"},
             {"ref": "§二", "reason": "测试豁免", "reviewer": "user", "review_ref": "PR #2"},
@@ -444,20 +492,71 @@ def main() -> int:
         d_ps["path_ref_whitelist"] = [
             {"file": "README.md", "path": "references/30-playbooks/old.md", "reason": "迁移说明", "reviewer": "user", "review_ref": "PR #2"},
         ]
-        errs, out = lint_mem(repo, mpath, d_ps, base=base, head=c_ps, draft=True)
+        errs, out = lint_mem(repo, mpath, d_ps, base=base_v1, head=c_ps, draft=True)
         check(False, "path_ref_whitelist 仅豁免 README 不致盲 10-stages.md 红", not errs, "\n".join(errs), "references/10-stages.md:5 → references/30-playbooks/old.md")
 
-        d_ps["path_ref_whitelist"].append(
-            {"file": "references/10-stages.md", "path": "references/30-playbooks/old.md", "reason": "迁移说明", "reviewer": "user", "review_ref": "PR #2"}
-        )
-        errs, out = lint_mem(repo, mpath, d_ps, base=base, head=c_ps, draft=True)
+        d_ps["path_ref_whitelist"].extend([
+            {"file": "references/10-stages.md", "path": "references/30-playbooks/old.md", "reason": "迁移说明", "reviewer": "user", "review_ref": "PR #2"},
+            {"file": "references/10-stages.md", "path": "references/30-playbooks/old(v1).md", "reason": "括号路径说明", "reviewer": "user", "review_ref": "PR #2"},
+        ])
+        errs, out = lint_mem(repo, mpath, d_ps, base=base_v1, head=c_ps, draft=True)
         check(True, "绑定式 {file, path} path_ref_whitelist 全覆盖绿", not errs, out)
+
+        d_ps_dup = copy.deepcopy(d_ps)
+        d_ps_dup["path_ref_whitelist"].append(
+            {"file": "README.md", "path": "references/30-playbooks/old.md", "reason": "重复", "reviewer": "user", "review_ref": "PR #2"}
+        )
+        errs, out = lint_mem(repo, mpath, d_ps_dup, base=base_v1, head=c_ps, draft=True)
+        check(False, "重复 path_ref_whitelist 拦截红", not errs, "\n".join(errs), "重复登记")
+
+        d_ps_bad = copy.deepcopy(d_ps)
+        d_ps_bad["path_ref_whitelist"].append(
+            {"file": "../bad.md", "path": "references/30-playbooks/old.md", "reason": "非法", "reviewer": "user", "review_ref": "PR #2"}
+        )
+        errs, out = lint_mem(repo, mpath, d_ps_bad, base=base_v1, head=c_ps, draft=True)
+        check(True, "非法 path_ref_whitelist.file 仅报不合法不误报过期", bool(errs) and all("过期无效" not in e for e in errs), "\n".join(errs), "file 不合法")
 
         d_ps["path_ref_whitelist"].append(
             {"file": "SKILL.md", "path": "references/30-playbooks/old.md", "reason": "过期", "reviewer": "user", "review_ref": "PR #2"}
         )
-        errs, out = lint_mem(repo, mpath, d_ps, base=base, head=c_ps, draft=True)
-        check(False, "过期无效 path_ref_whitelist 拦截红", not errs, "\n".join(errs), "path_ref_whitelist[3] 过期无效")
+        errs, out = lint_mem(repo, mpath, d_ps, base=base_v1, head=c_ps, draft=True)
+        check(False, "过期无效 path_ref_whitelist 拦截红", not errs, "\n".join(errs), "path_ref_whitelist[4] 过期无效")
+
+        # 12d-2. 阻断漏洞回归：R* 将规则文件重命名为 manifest_rel 不得绕过规则覆盖门禁（B1 / A-6）
+        ext_r = tmp / "ext-rename-bypass"
+        ext_r.mkdir()
+        sh(ext_r, "git", "init", "-b", "main")
+        sh(ext_r, "git", "config", "user.email", "t@e.com")
+        sh(ext_r, "git", "config", "user.name", "T")
+        seed_manifest = {
+            "schema": 2,
+            "change": "bypass",
+            "title": "验证 R* 重命名到 manifest_rel 拦截",
+            "base": "0" * 40,
+            "head": "HEAD",
+            "classification": "replace",
+            "rule_paths": ["docs/"],
+            "rule_exclude": [],
+            "rules": [{"id": "R-1", "type": "replace", "files": ["docs/keep.md"], "summary": "仅声明修改 keep 漏报被删规则文件", "disposition": "replace", "status": "done"}],
+            "scans": [{"query": "NEVER_MATCH_TOKEN"}],
+            "semantic_checks": [{"item": "无冲突核对", "conclusion": "changed", "evidence": "核对完成"}],
+            "rebuild": {"triggered": False, "reason": "", "old_behaviors": []},
+        }
+        write(ext_r / "docs/keep.md", "# Keep\n\nold\n")
+        write(ext_r / "docs/secret-policy.md", json.dumps(seed_manifest, ensure_ascii=False, indent=2) + "\n")
+        eb = commit_all(ext_r, "ext base")
+        write(ext_r / "docs/keep.md", "# Keep\n\nnew\n")
+        (ext_r / "docs/secret-policy.md").unlink()
+        seed_manifest["base"] = eb
+        bmrel = "docs/changes/2026-11-27-bypass/manifest.json"
+        write(ext_r / bmrel, json.dumps(seed_manifest, ensure_ascii=False, indent=2) + "\n")
+        ec1 = commit_all(ext_r, "delete secret-policy and add similar manifest")
+        seed_manifest["head"] = ec1
+        seed_manifest["approval"] = {"user_quote": "ok", "timestamp": "2026-11-27", "scope": "docs", "base": eb, "head": ec1, "link": "PR #9"}
+        write(ext_r / bmrel, json.dumps(seed_manifest, ensure_ascii=False, indent=2) + "\n")
+        eh1 = commit_all(ext_r, "pin manifest")
+        p_b1 = run_cli(ext_r, bmrel, eb, eh1)
+        check(False, "R* 将规则文件重命名为 manifest_rel 绕过门禁拦截红（B1）", p_b1.returncode == 0, p_b1.stdout, "docs/secret-policy.md")
 
         # 12d. 外部项目 rule_paths=["docs/"], rule_exclude=[] 豁免 manifest_rel 不死锁
         ext = tmp / "ext-repo"

@@ -33,7 +33,6 @@ HEADING_ID_RES = (
     re.compile(r"^#{1,6}\s+([一二三四五六七八九十百]+)(?=$|[\s、.．：:）)])"),
 )
 HUNK_NEW_RE = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
-MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 ROOT_README_RE = re.compile(r"^README[^/]*\.md$")
 REVIEW_REF_RE = re.compile(r"^(?:https?://\S+|PR #\d+.*|review:\S+.*)$")
 MIN_SUMMARY, MIN_MATCH, MIN_SEMANTIC = 6, 4, 4
@@ -42,6 +41,10 @@ MIN_SUMMARY, MIN_MATCH, MIN_SEMANTIC = 6, 4, 4
 def get_str(obj: dict, key: str) -> str:
     val = obj.get(key)
     return val.strip() if isinstance(val, str) else ""
+
+
+def in_set(val: object, allowed: set[str]) -> bool:
+    return isinstance(val, str) and val in allowed
 
 
 def is_pos_int(val: object) -> bool:
@@ -75,7 +78,7 @@ def git(root: Path, *args: str) -> str:
 
 
 def resolve(root: Path, rev: str) -> str:
-    return git(root, "rev-parse", "--verify", rev).strip()
+    return git(root, "rev-parse", "--verify", f"{rev}^{{commit}}").strip()
 
 
 def is_hex_commit_sha(root: Path, rev: str) -> bool:
@@ -176,12 +179,16 @@ def added_lines_for_entry(root: Path, base: str, head: str, st: str, old_p: str,
         lines = list(enumerate(head_text.splitlines(), 1))
     else:
         diff = git(root, "diff", "--unified=0", f"{base}:{old_p}", f"{head}:{new_p}") if st.startswith("R") else git(root, "diff", "--unified=0", base, head, "--", new_p)
-        lines, cur = [], 0
+        lines, cur, in_hunk = [], 0, False
         for raw in diff.splitlines():
+            if raw.startswith("diff --git "):
+                in_hunk = False
+                continue
             m = HUNK_NEW_RE.match(raw)
             if m:
-                cur = int(m.group(1))
-            elif raw.startswith("+") and not raw.startswith("+++"):
+                cur, in_hunk = int(m.group(1)), True
+                continue
+            if in_hunk and raw.startswith("+"):
                 lines.append((cur, raw[1:]))
                 cur += 1
     if new_p.endswith(".md"):
@@ -192,6 +199,51 @@ def added_lines_for_entry(root: Path, base: str, head: str, st: str, old_p: str,
 
 def defined_section_ids(texts: dict[str, str]) -> set[str]:
     return {m.group(1) for p, t in texts.items() for _, ln in scan_lines(p, t) for pat in HEADING_ID_RES if (m := pat.match(ln))}
+
+
+def iter_md_link_targets(line: str) -> list[str]:
+    """扫描 Markdown 链接目标，支持链接文字内配对 [...] / 反引号以及目标内配对 (...) / <...>。"""
+    targets: list[str] = []
+    i, n = 0, len(line)
+    while i < n:
+        if line[i] != "[":
+            i += 1
+            continue
+        # 匹配配对 [...]（含内联反引号）
+        j, depth, in_code = i + 1, 1, False
+        while j < n and depth > 0:
+            ch = line[j]
+            if ch == "`":
+                in_code = not in_code
+            elif not in_code:
+                if ch == "[":
+                    depth += 1
+                elif ch == "]":
+                    depth -= 1
+            j += 1
+        if depth != 0 or j >= n or line[j] != "(":
+            i += 1
+            continue
+        # 匹配配对 (...)（支持 <...> 包裹）
+        k, pdepth, in_angle = j + 1, 1, False
+        while k < n and pdepth > 0:
+            ch = line[k]
+            if ch == "<" and k == j + 1:
+                in_angle = True
+            elif ch == ">" and in_angle:
+                in_angle = False
+            elif not in_angle:
+                if ch == "(":
+                    pdepth += 1
+                elif ch == ")":
+                    pdepth -= 1
+            k += 1
+        if pdepth == 0:
+            targets.append(line[j + 1 : k - 1])
+            i = k
+        else:
+            i += 1
+    return targets
 
 
 def parse_md_link_target(cur_file: str, raw_target: str) -> str | None:
@@ -251,7 +303,7 @@ def parse_path_list(data: dict, key: str, default: list[str], allow_empty: bool,
 def validate_wl_meta(obj: dict, where: str, errors: list[str]) -> None:
     if not get_str(obj, "reason"):
         errors.append(f"{where} 缺 reason")
-    if obj.get("reviewer") not in REVIEWERS:
+    if not in_set(obj.get("reviewer"), REVIEWERS):
         errors.append(f"{where} reviewer 不在 {sorted(REVIEWERS)}：{obj.get('reviewer')!r}")
     ref = get_str(obj, "review_ref")
     if not ref:
@@ -290,7 +342,7 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str, draft: b
     if not isinstance(data, dict):
         return early_fail("manifest 顶层必须是 JSON 对象")
     sv = data.get("schema")
-    if isinstance(sv, bool) or sv != SCHEMA_VERSION:
+    if not isinstance(sv, int) or isinstance(sv, bool) or sv != SCHEMA_VERSION:
         return early_fail(f"manifest.schema 必须为整数 {SCHEMA_VERSION}，实际：{sv!r}（2026-11-26 及以前的 v1 manifest 为历史快照，请按 v2 薄声明编写）")
     try:
         base, head = resolve(root, base_arg), resolve(root, head_arg)
@@ -347,7 +399,7 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str, draft: b
                     else:
                         errors.append(f"manifest.head 解析后与 --head 不一致：{raw_head!r}")
 
-    if data.get("classification") not in TYPES:
+    if not in_set(data.get("classification"), TYPES):
         errors.append(f"classification 不在 {sorted(TYPES)}：{data.get('classification')!r}")
 
     rule_paths = parse_path_list(data, "rule_paths", DEFAULT_RULE_PATHS, False, errors)
@@ -383,13 +435,13 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str, draft: b
         else:
             ids.add(rid)
         rtype, status = rule.get("type"), rule.get("status")
-        if rtype not in TYPES:
+        if not in_set(rtype, TYPES):
             errors.append(f"{w} type 不在 {sorted(TYPES)}：{rtype!r}")
-        if rule.get("disposition") not in DISPOSITIONS:
+        if not in_set(rule.get("disposition"), DISPOSITIONS):
             errors.append(f"{w} disposition 不在允许集合：{rule.get('disposition')!r}")
         if rtype == "add" and rule.get("disposition") != "not-applicable":
             errors.append(f"{w} type=add 的 disposition 必须是 not-applicable")
-        if status not in STATUSES:
+        if not in_set(status, STATUSES):
             errors.append(f"{w} status 不在 {sorted(STATUSES)}：{status!r}")
         elif status == "whitelist":
             validate_wl_meta(rule, w, errors)
@@ -413,17 +465,19 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str, draft: b
 
     rule_file_count = aux_file_count = 0
     for st, old_p, new_p in diff_entries:
-        if manifest_rel and ((st == "D" and old_p == manifest_rel) or new_p == manifest_rel):
+        if manifest_rel and ((st == "D" and old_p == manifest_rel) or (not st.startswith("R") and new_p == manifest_rel)):
             continue
         if st == "D":
-            paths_check, hit_rule = (old_p,), is_rule(old_p)
-            label = old_p
+            paths_check, hit_rule, label = (old_p,), is_rule(old_p), old_p
         elif st.startswith("R"):
-            paths_check, hit_rule = (old_p, new_p), (is_rule(old_p) or is_rule(new_p))
-            label = f"{old_p} -> {new_p}"
+            if manifest_rel and new_p == manifest_rel:
+                paths_check, hit_rule, label = (old_p,), is_rule(old_p), f"{old_p} -> {new_p}"
+            elif manifest_rel and old_p == manifest_rel:
+                paths_check, hit_rule, label = (new_p,), is_rule(new_p), f"{old_p} -> {new_p}"
+            else:
+                paths_check, hit_rule, label = (old_p, new_p), (is_rule(old_p) or is_rule(new_p)), f"{old_p} -> {new_p}"
         else:
-            paths_check, hit_rule = (new_p,), is_rule(new_p)
-            label = new_p
+            paths_check, hit_rule, label = (new_p,), is_rule(new_p), new_p
         covered = any(p in declared_files for p in paths_check)
         if hit_rule:
             rule_file_count += 1
@@ -573,13 +627,17 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str, draft: b
             errors.append(f"{w} 必须是对象")
             continue
         pf, pp = get_str(item, "file"), get_str(item, "path")
-        if not pf or not is_valid_rel_path(pf):
+        pf_ok, pp_ok = bool(pf) and is_valid_rel_path(pf), bool(pp) and is_valid_rel_path(pp)
+        if not pf_ok:
             errors.append(f"{w} file 不合法：{item.get('file')!r}")
-        if not pp or not is_valid_rel_path(pp):
+        if not pp_ok:
             errors.append(f"{w} path 不合法：{item.get('path')!r}")
         validate_wl_meta(item, w, errors)
-        if pf and pp:
-            path_wl[(pf, pp)] = i
+        if pf_ok and pp_ok:
+            if (pf, pp) in path_wl:
+                errors.append(f"{w} 重复登记：{pf} → {pp}")
+            else:
+                path_wl[(pf, pp)] = i
 
     retired_paths = sorted({op for st, op, _ in diff_entries if (st == "D" or st.startswith("R")) and op.endswith(TEXT_SUFFIXES)})
     path_wl_used: set[tuple[str, str]] = set()
@@ -590,7 +648,7 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str, draft: b
         for cur in p3_files:
             for no, line in scan_lines(cur, get_head(cur)):
                 found_old = {rp for rp, pat in boundary_res.items() if pat.search(line)}
-                found_old |= {t for m in MD_LINK_RE.finditer(line) if (t := parse_md_link_target(cur, m.group(1))) and t in retired_set}
+                found_old |= {t for raw_t in iter_md_link_targets(line) if (t := parse_md_link_target(cur, raw_t)) and t in retired_set}
                 for old_p in sorted(found_old):
                     if (cur, old_p) in path_wl:
                         path_wl_used.add((cur, old_p))
@@ -613,7 +671,7 @@ def lint(root: Path, manifest_path: Path, base_arg: str, head_arg: str, draft: b
         semantic.append(item)
         if len(get_str(item, "item")) < MIN_SEMANTIC:
             errors.append(f"{w} item 太短（<{MIN_SEMANTIC}）")
-        if item.get("conclusion") not in CONCLUSIONS or item.get("conclusion") == "unresolved":
+        if not in_set(item.get("conclusion"), CONCLUSIONS) or item.get("conclusion") == "unresolved":
             errors.append(f"{w} conclusion 不合法或为 unresolved：{item.get('conclusion')!r}")
         if len(get_str(item, "evidence")) < MIN_SEMANTIC:
             errors.append(f"{w} evidence 太短（<{MIN_SEMANTIC}）")
