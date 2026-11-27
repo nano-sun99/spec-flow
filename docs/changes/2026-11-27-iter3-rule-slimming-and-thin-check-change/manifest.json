@@ -3,8 +3,16 @@
   "change": "2026-11-27-iter3-rule-slimming-and-thin-check-change",
   "title": "迭代 3：全仓规则字数硬闸、17 份现行规则激进瘦身与 check-change.py v2 薄声明重构",
   "base": "19ff1ac7dde9f42cbab743cdee9040223ea562aa",
-  "head": "HEAD",
+  "head": "0df4df6f5e39939fcfc00adc2fc85408fc811557",
   "classification": "replace",
+  "approval": {
+    "user_quote": "开始干（同窗口 D0，承接 D1 确认 SL-1..SL-6 与 D3 冻结 spec 19ff1ac）；R2 后用户批准「破例重开 SL-4，修正 07-review-scope-creep.json 禁用正则豁免原输入复述后重评落盘 14/14 pass」；R3 后用户批准「重画：极简收紧 07 正则彻底堵死 R3-H1 与 R3-M1 全部逃逸用例（不派 R4），实测验证后刷新 14/14 基线并钉扎进 D4 ② 合并卡」",
+    "timestamp": "2026-11-27",
+    "scope": "Iteration 3 全仓规则字数硬闸、17 份现行规则瘦身、check-change.py 纯 v2 薄声明重构、双语 README 同步，以及用户批准的 SL-4 例外 07 正则收紧与 14 路基线刷新",
+    "base": "19ff1ac7dde9f42cbab743cdee9040223ea562aa",
+    "head": "0df4df6f5e39939fcfc00adc2fc85408fc811557",
+    "link": "review:iter3-r3"
+  },
   "rules": [
     {
       "id": "R-001",
@@ -70,7 +78,7 @@
           "match": "免手写 `view_files[]`",
           "reason": "明确告知免手写旧版 view_files[] 字段",
           "reviewer": "review-agent",
-          "review_ref": "review:iter3-draft"
+          "review_ref": "review:iter3-r2"
         }
       ]
     },
