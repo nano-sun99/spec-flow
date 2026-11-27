@@ -462,7 +462,8 @@ def main() -> int:
             repo / "references/10-stages.md",
             "# 阶段\n\n## 一、核心\n\n"
             "请详见references/30-playbooks/old.md说明；另见 §二。\n"
-            "相对链接 [`scans[]`](30-playbooks/old.md#一参考走法) 与 [旧括号](30-playbooks/old%28v1%29.md?x=1#sec \"t\")。\n",
+            "相对链接 [`scans[]`](30-playbooks/old.md#一参考走法) 与 [旧括号](30-playbooks/old%28v1%29.md?x=1#sec \"t\")。\n"
+            "字面括号链接 [未编码](30-playbooks/old(v1).md?y=2#top \"lit\")。\n",
         )
         write(
             repo / "README.md",
@@ -479,6 +480,7 @@ def main() -> int:
         joined = "\n".join(errs)
         check(False, "紧邻中文裸路径残留拦截红", not errs, joined, "references/10-stages.md:5 → references/30-playbooks/old.md")
         check(False, "子目录相对链接含 [`scans[]`] 与 URL 编码 old(v1).md 均拦截红", not errs, joined, "references/10-stages.md:6 → references/30-playbooks/old(v1).md")
+        check(False, "子目录相对链接含未编码字面 old(v1).md 括号拦截红", not errs, joined, "references/10-stages.md:7 → references/30-playbooks/old(v1).md")
         check(False, "README 带 #anchor/?query/URL 编码链接残留拦截红", not errs, joined, "README.md:3 → references/30-playbooks/old.md")
         check(False, "新增断链 §99 拦截红", not errs, joined, "references/30-playbooks/new.md §99")
         check(False, "删改章节 §二 残留拦截红", not errs, joined, "references/10-stages.md:5 §二")
