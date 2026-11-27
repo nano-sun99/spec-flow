@@ -116,20 +116,22 @@ try:
         raise ValueError("frontmatter description 必须为非空单行字符串")
 
     report(len(front) <= 500, f"SKILL.md frontmatter {len(front)} / 500 字")
-    report(len(body) <= 3200 and len(lines) <= 70,
-           f"SKILL.md 正文 {len(body):,} / 3,200 字，{len(lines)} / 70 行")
+    report(len(body) <= 2600 and len(lines) <= 60,
+           f"SKILL.md 正文 {len(body):,} / 2,600 字，{len(lines)} / 60 行")
     alerts = body.count("⚠") + body.count("⛔")
     report(alerts <= 3, f"SKILL.md 警示符 {alerts} / 3")
 
-    # ── 2. 核心层预算与全套正文单行可见长度上限（SKILL.md 跳过 frontmatter）──
+    # ── 2. 核心层预算、必读核 / 全仓现行规则硬上限与单行长度上限 ────────────
     CORE_BUDGETS = {
         "references/00-constitution.md": (62, 2800),
-        "references/10-stages.md": (120, 5500),
-        "references/15-records.md": (140, 6200),
-        "references/20-decisions.md": (115, 5200),
-        "references/25-spec-governance.md": (130, 6000),
-        "references/26-review-contract.md": (165, 7800),
+        "references/10-stages.md": (95, 4200),
+        "references/15-records.md": (95, 3800),
+        "references/20-decisions.md": (85, 3400),
+        "references/25-spec-governance.md": (100, 4500),
+        "references/26-review-contract.md": (110, 4800),
     }
+    ALWAYS_READ_MAX = 15500
+    TOTAL_RULE_MAX = 46000
     budget_err = []
     always_read_chars = len(body)
     for path, (max_l, max_c) in CORE_BUDGETS.items():
@@ -144,8 +146,10 @@ try:
         if lc > max_l or cc > max_c:
             budget_err.append(f"{path}({lc}/{max_l}行, {cc}/{max_c}字)")
     report(not budget_err,
-           f"核心层预算全部达标（必读核 SKILL+L0-L2 共 {always_read_chars:,} 字）"
+           "核心层单文件预算全部达标"
            if not budget_err else "核心层超预算：" + "；".join(budget_err))
+    report(always_read_chars <= ALWAYS_READ_MAX,
+           f"必读核字数（SKILL正文+L0-L2）{always_read_chars:,} / {ALWAYS_READ_MAX:,} 字")
 
     MAX_VISIBLE_LINE = 220
     active_rule_files = ["SKILL.md"] + sorted(
@@ -154,6 +158,12 @@ try:
         for f in fs
         if f.endswith(".md") and not dp.startswith("references/40-cases")
     )
+    total_rule_chars = sum(
+        len(open(path, encoding="utf-8", newline="").read())
+        for path in active_rule_files
+    )
+    report(total_rule_chars <= TOTAL_RULE_MAX,
+           f"全仓现行规则总字数 {total_rule_chars:,} / {TOTAL_RULE_MAX:,} 字（覆盖 {len(active_rule_files)} 份文件）")
     long_lines = []
     for path in active_rule_files:
         raw_lines = open(path, encoding="utf-8", newline="").read().splitlines()

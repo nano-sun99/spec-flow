@@ -9,7 +9,7 @@
 
 它没有运行时或服务，是 agent 读取的 Markdown 规则。开 spec 路径保留获批规格、执行 issue 与可追溯来源；直接干跳过方案期，但不免独立 worktree、验收与合并闸。代码地图默认停用，影响判断靠源码、真实 diff 与相关测试。
 
-[`SKILL.md`](SKILL.md) 是唯一入口（≤ 3,200 字），背后是极简的必读内核（L0–L2）、两份按需专项总纲、9 条精简 Playbook 与 15 条案例库。[`scripts/check-docs.sh`](scripts/check-docs.sh) 守卫字数预算、单行长度上限、链接 / 锚点可达性与双语 README 同步。已废弃的 v1 文档归档于 `docs/archive/v1/`。
+[`SKILL.md`](SKILL.md) 是唯一入口（正文 ≤ 2,600 字），背后是极简的必读内核（L0–L2，≤ 15,500 字）、两份按需专项总纲、9 条精简 Playbook 与 15 条案例库。[`scripts/check-docs.sh`](scripts/check-docs.sh) 守卫单文件、必读核与全仓现行规则总字数（≤ 46,000 字）预算、单行长度上限、链接 / 锚点可达性与双语 README 同步。已废弃的 v1 文档归档于 `docs/archive/v1/`。
 
 [English](README.md) · **中文**
 
@@ -121,8 +121,8 @@ git clone --branch rebuild/v2 https://github.com/nano-sun99/spec-flow.git ~/.cla
 | `evals/` | 行为级 Eval 回归套件（`evals/README.md`、自足 JSON `scenarios/` 与脱敏 `baselines/`） |
 | `docs/archive/v1/` | 已废弃的 v1 文档与冻结的 `rationale.md`（历史档案） |
 | `docs/maintainer-notes.md` | 本机软链接线与仓库历史 |
-| `scripts/check-docs.sh` | 守卫核心层预算、单行上限、链接与锚点、owner 章节与双语 README 同步 |
-| `scripts/check-change.py` | 跨项目替换式变更校验器（`--root`、`--draft`、manifest-only 尾提交钉扎） |
+| `scripts/check-docs.sh` | 守卫单文件、必读核与全仓现行规则总字数预算、单行上限、链接与锚点、owner 章节与双语 README 同步 |
+| `scripts/check-change.py` | 跨项目 v2 薄声明 + 自动扫 diff 替换式变更校验器（`schema: 2`、`--root`、`--draft`、manifest-only 尾提交钉扎） |
 | `scripts/run-eval.py` | CLI 无关行为级 Eval Runner（`--validate`、`--materialize`、`--run`、`--grade`、`--baseline`；配 `scripts/test-run-eval.py`） |
 
 README 是介绍，实际执行请从 `SKILL.md` 进入各唯一正文 owner。

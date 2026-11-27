@@ -1,11 +1,13 @@
-# Change manifests（替换式变更清单）
+# Change manifests（v2 薄声明替换式变更清单）
 
-一次替换式变更一个目录：`docs/changes/<slug>/manifest.json`。manifest 是这次变更的**唯一台账**；PR 正文只放摘要。**完整字段规范、枚举与钉扎时序见 [change-protocol](../../references/30-playbooks/change-protocol.md) §二，本页只给最小命令与模板。**
+一次替换式变更一个目录：`docs/changes/<slug>/manifest.json`（必填 `"schema": 2`），PR 正文只放摘要。**完整字段、自动扫 diff 规则与钉扎时序见 [change-protocol](../../references/30-playbooks/change-protocol.md) §二–§三，本页只给最小命令与模板。**
+
+> 历史快照说明：`2026-11-26` 及以前（`2026-11-25-*`、`2026-11-26-*`）的 4 份 manifest 沿用旧版 v1 格式（含已退役的逐行转录与人工清单字段），保留为只读历史快照不重写，不再走现行 v2 校验器。
 
 ## 最小用法
 
 ```bash
-# 开发 / 审核期（允许本地未提交 manifest 与字面 HEAD，跳过 approval 完整性）
+# 开发 / 审核期（允许未提交 manifest 与字面 HEAD，跳过 approval 必填）
 python3 scripts/check-change.py \
   --manifest docs/changes/<slug>/manifest.json \
   --base <base-rev> --head HEAD --draft
@@ -16,85 +18,94 @@ python3 scripts/check-change.py \
   --base <base-rev> --head HEAD
 ```
 
-外部项目从 skill 路径调用：`python3 <skill>/scripts/check-change.py --root <project> --manifest docs/changes/<slug>/manifest.json --base <base> --head <head>`。退出码 0 = 通过，1 = 有违规；语义冲突仍由审核判断。本地预检未提交正式文件可临时加 `--from-disk`，合并门禁不得使用。
+外部项目从 skill 路径调用：`python3 <skill>/scripts/check-change.py --root <project> --manifest docs/changes/<slug>/manifest.json --base <base> --head <rev>`（按需设置 `rule_paths` / `rule_exclude`）。退出码 `0` = 通过，`1` = 有违规；语义冲突仍由审核判断。本地预检未提交正式文件可临时加 `--from-disk`，合并门禁禁用。
 
-## 模板（正式模式须填完整内容 SHA；`--draft` 期 `head` 可暂写 `"HEAD"`）
+## v2 模板（正式模式填不可变内容 SHA；`--draft` 期 `head` 可写 `"HEAD"`）
 
 ```json
 {
-  "change": "example-change",
-  "title": "一句话说明这次改什么",
+  "schema": 2,
+  "change": "2026-11-27-example",
+  "title": "一句话说明本次替换式变更",
   "base": "<base commit SHA>",
   "head": "<内容提交 SHA>",
   "classification": "replace",
+  "rule_paths": ["SKILL.md", "references/"],
+  "rule_exclude": ["references/40-cases/", "references/README.md", "references/v2/SKILL.md"],
   "approval": {
     "user_quote": "用户批准改动面的原话",
-    "timestamp": "2026-11-25",
+    "timestamp": "2026-11-27",
     "scope": "批准覆盖的改动面",
     "base": "<base commit SHA>",
     "head": "<内容提交 SHA>",
-    "link": "<用户批准记录链接或 PR 评论链接>"
+    "link": "<PR 评论或用户批准记录链接>"
   },
   "rules": [
     {
       "id": "R-001",
       "type": "replace",
-      "old": {"file": "references/example.md", "line": 12, "text": "旧句的关键片段"},
-      "new": {"file": "references/example.md", "section": "§四", "anchor": "head 文件里唯一出现的字面片段"},
-      "disposition": "keep-scoped",
-      "evidence": "见 git diff 旧句替换与扫描登记",
-      "status": "whitelist"
+      "files": ["references/example.md"],
+      "summary": "旧口径替换为新口径并同步关联引用",
+      "disposition": "replace",
+      "status": "done"
     },
     {
       "id": "R-002",
-      "type": "add",
-      "old": null,
-      "new": {"file": "references/example.md", "section": "§五", "anchor": "head 文件里可反查的字面片段"},
-      "same_trigger_search": "搜了哪些文件 / 词 / 条款；为什么没有同触发旧规则",
-      "disposition": "not-applicable",
-      "evidence": "见 git diff 新增规则段落与扫描结果",
-      "status": "done"
+      "type": "replace",
+      "files": ["references/scoped.md"],
+      "summary": "保留一处带范围说明的旧条款",
+      "disposition": "keep-scoped",
+      "status": "whitelist",
+      "reason": "说明保留理由",
+      "reviewer": "review-agent",
+      "review_ref": "PR #200 R1"
     }
-  ],
-  "whitelist": [
-    {"rule_id": "R-001", "reason": "为什么可以保留", "reviewer": "review-agent", "review_ref": "PR #194 R1"}
   ],
   "scans": [
     {
-      "query": "旧词|旧 ID",
-      "scope": ["references/", "docs/"],
-      "hits": [
+      "query": "旧术语|已退役字段",
+      "allow": [
         {
-          "file": "references/example.md",
-          "text": "旧词",
-          "conclusion": "whitelist",
-          "reason": "为什么可以留",
+          "file": "docs/changes/README.md",
+          "match": "含命中词的上下文片段",
+          "reason": "历史快照说明保留",
           "reviewer": "review-agent",
-          "review_ref": "PR #194 R1"
+          "review_ref": "PR #200 R1"
         }
-      ],
-      "conclusion": "whitelist"
+      ]
+    },
+    {
+      "query": "已彻底删除的旧词"
     }
   ],
   "semantic_checks": [
-    {"item": "旧规则 A 与现行规则 B 是否同触发不同行为", "conclusion": "changed", "evidence": "file:line / diff"}
-  ],
-  "count_checks": [
-    {"name": "registry 行数", "value": 74, "source": "docs/facts/registry.tsv", "command": "awk -F'\\t' '!/^#/ && $1!=\"id\" && NF' <file> | wc -l"}
-  ],
-  "view_files": [
-    {"file": "README.md", "reason": "对外说明视图，非规则正文", "reviewer": "review-agent", "review_ref": "PR #194 R1"}
+    {
+      "item": "旧规则与现行规则是否同触发异行为",
+      "conclusion": "changed",
+      "evidence": "同层与相邻层核对一致"
+    }
   ],
   "section_ref_whitelist": [
-    {"ref": "§外部章", "reason": "引用外部项目文档，不在本仓语料", "reviewer": "review-agent", "review_ref": "PR #194 R1"}
+    {
+      "ref": "§外部章",
+      "reason": "引用外部项目文档，不在本仓语料",
+      "reviewer": "review-agent",
+      "review_ref": "PR #200 R1"
+    }
+  ],
+  "path_ref_whitelist": [
+    {
+      "file": "docs/changes/README.md",
+      "path": "references/deleted-old.md",
+      "reason": "历史迁移说明中点名旧路径",
+      "reviewer": "review-agent",
+      "review_ref": "PR #200 R1"
+    }
   ],
   "rebuild": {
     "triggered": false,
     "reason": "",
     "old_behaviors": []
-  },
-  "non_rule_changes": [
-    {"file": "references/README.md", "reason": "只改导航索引，不是规则"}
-  ]
+  }
 }
 ```
