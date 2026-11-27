@@ -8,7 +8,7 @@
 **`~/code/spec-flow`（或任何你 clone 的地方）是唯一真身。** 别处的 skill 目录都是软链：
 
 ```bash
-git clone https://github.com/Strelizialeomon/spec-flow.git ~/code/spec-flow
+git clone https://github.com/nano-sun99/spec-flow.git ~/code/spec-flow  # 原账号 Strelizialeomon 已迁至 nano-sun99
 ln -s ~/code/spec-flow ~/.claude/skills/spec-flow                  # Claude Code
 ln -s ~/.claude/skills/spec-flow ~/.agents/skills/spec-flow        # 共享 skills 目录，走上面那条链
 ```

@@ -3,41 +3,42 @@ name: spec-flow
 description: "Use when 用户提出值得先设计的复杂需求、要求实施既有 issue（如请做 #N）、接续未完成规格或 PR，或要求应用、更新项目的 spec-flow 接入。"
 ---
 
-# 复杂活的两段流程
+# spec-flow
 
-**对用户是方案期、实施期两段；必要闸口严格，闸内方法灵活。** 本文件只识别入口、当前阶段和已采用模块，不另定义流程、卡片、交付或完成判据。正文按职责各有唯一 owner（依据：rationale R37）。
+- **定位**：决策环境，非流程编译器。五层知识（铁律 → 阶段合同 → 决策目录 → 专项总纲 / Playbook → 案例）按事实自选路径。
+- **硬闸**：D0–D7（[20-decisions](references/20-decisions.md)）+ L0-1 不可逆 + L0-7 承重缺口。
+- **澄清自主完成**：禁查、读、调用、推荐或提示安装 `grill-me`、`grilling`、`grilling-cards`、`brainstorming`、`writing-plans` 等外部技能（客户端列出亦不调）；缺工具只报限制。
 
-## 从当前入口读
+## 运行循环
 
-- **新需求**：先读 `references/one-path.md` 的方案期，再读 `references/gate-details.md` 的入口与方案闸口。已有效的选择不重问。
-- **既有 issue / 实施委托**（如“请做 #N”）：读 issue、当前获批 spec 和项目指令；按 `references/gate-details.md` 识别授权，按 `references/phase-handoff.md` 留痕，再按 `references/worktree-lock.md` 认领。不重走新需求访谈。
-- **续接未合并 spec / PR 或暂停任务**：从 `references/one-path.md` 核当前阶段事实；确认的适用范围和恢复条件见 `references/gate-details.md`，交接记录见 `references/phase-handoff.md`。
-- **应用 / 更新项目接入**：读 `references/apply-to-project.md`，只处理获准的采用意图、指针和项目落点；不因普通任务补制度或自动迁移采用项目。
+先核用户原话、项目事实、获批材料与分支/issue/锁；示例非本项目决定。
 
-文件变更与锁、审核和合并、交付与关单分别读取对应正文；压缩后不可见或版本变化，动作前重读。源码、实际 diff 和相关测试用来核事实与影响，不由历史规格的现状断言代替。
-
-## 导航与正文归属
-
-项目目录、命名和明确约束依项目 `AGENTS.md` / `CLAUDE.md`；承重冲突报告来源，不擅自用中央规则覆盖。指南可替换，不能据此替用户批准或省略必要交付。
-
-选修**默认关闭**：仅用户本次明确要求，或项目规则**声明已采用**时读取。已采用 ADR、文档生命周期等按其实际触发时点执行，不因结构重组新增制度。代码地图仍停用，仅明确试用 / 恢复时读。
-
-| 文件 | 何时读 |
+| 本轮任务 | 下一步 |
 |---|---|
-| `references/one-path.md` | 流程唯一正文：两段主线、定稿图、阶段事实与衔接 |
-| `references/gate-details.md` | 闸口唯一正文：选项交互、可实施/送审、授权、审核、修订、合并及停止 |
-| `references/phase-handoff.md` | 交付唯一正文：spec / issue / PR / 候选字段、来源与更新责任；授权留痕 |
-| `references/done-criteria.md` | 完成唯一判据：必要证据、关单、观察式收尾与已批准例外 |
-| `references/worktree-lock.md` | 文件变更、认领、撞锁、接管和放锁；Git 工作区安全 |
-| `references/spec-maturity.md` | 方案期工作指南：骨架、设计/规则对照、终稿表达 |
-| `references/split-large-spec.md` | 拆分工作指南：交付物、依赖、并行与稳定身份 |
-| `references/spec-revision-sync.md` | 修订工作指南：定位并同步真实现行落点 |
-| `references/apply-to-project.md` | 项目采用、显式升级、指针与资产边界；梳理技能依赖 |
-| `references/adr-decision-records.md` | 选修 `adr`：调查、明确长期决定、收尾 |
-| `references/documentation-lifecycle.md` | 选修 `doc-lifecycle`：现状/规格读序、载体分工 |
-| `references/issue-status-labels.md` | 选修 `issue-status`：阶段标签、分拣和下次看 |
-| `references/issue-type-labels.md` | 选修 `issue-type`：开单类型及获准迁移 |
-| `references/release-discipline.md` | 选修 `release`：Git 分支形态映射、完整候选与必要发布 |
-| `references/code-map.md` | 停用；仅用户明确试用 / 恢复时读 |
-| `references/adoption-model.md` | 采纳模型的历史解释，不增流程义务 |
-| `references/rationale.md` | 按需追溯规则依据；历史不是第二套运行正文 |
+| 只读检查 / 核既有结果 / 设计对照 | 核完直接交付结束，不写入或安装 |
+| 完善现稿，仅缺单个承重决定 | 发业务选项卡问该项，答后回写；选范围不授权写入 |
+| 明确小改或已有实施委托 | 一句说明改动面后执行验证；替换式变更走 [change-protocol](references/30-playbooks/change-protocol.md) |
+| 新需求不平凡、触不可逆或问超 3 次 | 按 [交互卡片契约](references/20-decisions.md#交互卡片契约) 发计划卡；确认不代实施委托 |
+
+执行前核写入对象（导出源只读），实际产出才报成功；已有委托直入交付段，不重开访谈。
+
+## 导航（一跳）
+
+读序：L0 → L1 → L2 必读；总纲与 L3 按需读；L4 缺落点或遇异常查。
+
+| 层 | 入口 | 职责 |
+|---|---|---|
+| 地图 | [README](references/README.md) | 文件地图与读序 |
+| L0 | [00-constitution](references/00-constitution.md) | 8 条铁律（最高优先） |
+| L1 | [10-stages](references/10-stages.md) | 4 段完成、术语与交付前置 |
+| L1 | [15-records](references/15-records.md) | 15 类记录、留痕、载体、关单、例外 |
+| L2 | [20-decisions](references/20-decisions.md) | D0–D7 硬闸、卡片契约、标签确认 |
+| 总纲 | [25-spec-governance](references/25-spec-governance.md) · [26-review-contract](references/26-review-contract.md) | 规格治理（底座/3组件/升格）与审核契约（Lane A/B） |
+| L3 | [new-spec](references/30-playbooks/new-spec.md) · [direct](references/30-playbooks/direct.md) · [issue](references/30-playbooks/issue.md) · [change-protocol](references/30-playbooks/change-protocol.md) · [release](references/30-playbooks/release.md) · [incident](references/30-playbooks/incident.md) · [labels](references/30-playbooks/labels.md) · [worktree](references/30-playbooks/worktree.md) · [adr](references/30-playbooks/adr.md) | 9 条走法（标「规范性」为唯一正文） |
+| L4 | [40-cases/INDEX](references/40-cases/INDEX.md) | 15 条案例（非授权） |
+| 接入 | [50-adapters/README](references/50-adapters/README.md) | 5 选修与只指向式接入 |
+
+## 异常协议与重读
+
+- 先查 L0–L2、总纲、L3/L4 与事实（`file:line`、diff、锁、证据）；可逆无决策用安全默认并报告；不可逆 / 无默认 / 多 owner / 承重缺口按 L0-7 停并给 2–3 选项与推荐。
+- 未答 / 取消见 [交互卡片契约](references/20-decisions.md#交互卡片契约)；失败 / 崩溃按 L0-4 停报。不可逆前重读 L0-1 与当次卡；压缩后重读铁律。改行为或现新失败模式才写案例；铁律只提议替换或合并（L0-8）。

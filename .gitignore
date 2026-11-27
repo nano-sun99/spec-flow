@@ -1,3 +1,6 @@
 .DS_Store
 *.bak
 .backup/
+.idea/
+__pycache__/
+*.pyc

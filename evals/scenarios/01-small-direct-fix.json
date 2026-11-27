@@ -1,0 +1,62 @@
+{
+  "id": "01-small-direct-fix",
+  "title": "明确小改且用户明示免 worktree 时直接改并贴实跑证据",
+  "kind": "anti-bloat",
+  "rules_ref": [
+    "SKILL.md#运行循环",
+    "references/30-playbooks/direct.md#一参考走法",
+    "references/10-stages.md#三交付前置条件"
+  ],
+  "case_ref": null,
+  "fixture": {
+    "files": {
+      "config.py": "DEFAULT_TIMEOUT = 5\n",
+      "test_config.py": "import config\n\nassert config.DEFAULT_TIMEOUT == 5, f'expected 5, got {config.DEFAULT_TIMEOUT}'\nprint('OK: DEFAULT_TIMEOUT =', config.DEFAULT_TIMEOUT)\n"
+    },
+    "executable_files": [],
+    "git": {
+      "default_branch": "main"
+    }
+  },
+  "user_prompt": "这是一个边界清楚的小改：请把 config.py 里的 DEFAULT_TIMEOUT 从 5 改成 10，并同步更新 test_config.py 的断言为 10 后运行 python3 test_config.py。我明示就在当前工作区直接改、不开 worktree，完成后贴出实跑输出即可。",
+  "hard_checks": {
+    "forbid_any_file_write": false,
+    "forbid_file_writes": [],
+    "require_file_changes": [
+      "config.py",
+      "test_config.py"
+    ],
+    "require_file_contains": {
+      "config.py": [
+        "DEFAULT_TIMEOUT = 10"
+      ],
+      "test_config.py": [
+        "10"
+      ]
+    },
+    "forbid_git_mutations": [],
+    "require_commands_pass": [
+      "python3 test_config.py"
+    ],
+    "forbid_output_patterns": [
+      "是否确认这份计划",
+      "(?:^|[，。；：、\\n])[^，。；：、\\n不未无免「\"『]*?范围盘点表"
+    ],
+    "require_output_any": [
+      "DEFAULT_TIMEOUT",
+      "OK"
+    ],
+    "require_output_all": []
+  },
+  "rubric": {
+    "must_do": [
+      "说明改动面后直接修改 config.py 与 test_config.py",
+      "贴出 python3 test_config.py 的实跑输出",
+      "不开 spec、不走 D1 范围确认卡或计划卡"
+    ],
+    "must_not_do": [
+      "弹出「是否确认这份计划？」阻断明确小改",
+      "要求建立范围盘点表或强开新 spec"
+    ]
+  }
+}

@@ -1,0 +1,274 @@
+{
+  "change": "change-protocol-portability",
+  "title": "补齐替换式变更协议的章节引用、计数与外部项目分发",
+  "base": "d5e28429059ac2015f8d6bcdfe38efe57b9e66f5",
+  "head": "be0f6f7ca13291b33b45589022d643e650d60a13",
+  "classification": "replace",
+  "approval": {
+    "user_quote": "那请你优化；你为我留言",
+    "timestamp": "2026-11-25",
+    "scope": "change-protocol 补章节引用校验、计数规则、外部项目分发；章节引用改按标题解析 + 删除反扫；10-stages 分发口径同步；校验器与测试同步",
+    "base": "d5e28429059ac2015f8d6bcdfe38efe57b9e66f5",
+    "head": "be0f6f7ca13291b33b45589022d643e650d60a13",
+    "link": "https://github.com/nano-sun99/spec-flow/pull/193#issuecomment-7158440491"
+  },
+  "rules": [
+    {
+      "id": "R-001",
+      "type": "replace",
+      "old": {
+        "file": "scripts/check-change.py",
+        "line": 69,
+        "text": "if not name.endswith(\".md\"):"
+      },
+      "new": {
+        "file": "scripts/check-change.py",
+        "section": "扫描文件类型",
+        "anchor": "TEXT_SUFFIXES = (\".md\", \".tsv\", \".txt\")"
+      },
+      "disposition": "replace",
+      "evidence": "diff；scans 覆盖 .tsv / .txt",
+      "status": "done"
+    },
+    {
+      "id": "R-002",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "scripts/check-change.py",
+        "section": "章节引用校验",
+        "anchor": "def dangling_section_refs("
+      },
+      "same_trigger_search": "全仓 grep §\\s*[0-9]；此前只有 new.anchor 存在性校验，没有章节引用落点校验",
+      "disposition": "not-applicable",
+      "evidence": "diff；按 Markdown 标题解析新增 / 改动引用；tests 补前缀、正文数字、中文序号正负例",
+      "status": "done"
+    },
+    {
+      "id": "R-003",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "scripts/check-change.py",
+        "section": "项目视图",
+        "anchor": "for i, item in enumerate(data.get(\"view_files\")"
+      },
+      "same_trigger_search": "grep view_files；此前只有硬编码 NON_RULE_ALLOW，外部项目无法声明自己的视图",
+      "disposition": "not-applicable",
+      "evidence": "diff；README 模板补 view_files",
+      "status": "done"
+    },
+    {
+      "id": "R-004",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "scripts/check-change.py",
+        "section": "计数校验",
+        "anchor": "count_checks[{i}]"
+      },
+      "same_trigger_search": "grep count_checks；此前没有计数来源 / 复核命令校验",
+      "disposition": "not-applicable",
+      "evidence": "diff；tests 新增缺 command 红",
+      "status": "done"
+    },
+    {
+      "id": "R-005",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/change-protocol.md",
+        "section": "§一 校验器",
+        "anchor": "**分发**：校验器随 skill 分发"
+      },
+      "same_trigger_search": "grep 分发 / --root；此前只写仓库内 scripts 路径，外部项目无法执行",
+      "disposition": "not-applicable",
+      "evidence": "diff；见 change-protocol 对应段落",
+      "status": "done"
+    },
+    {
+      "id": "R-006",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/change-protocol.md",
+        "section": "§三 双扫描",
+        "anchor": "**计数**：行数 / 端点数 / 页数只由 registry"
+      },
+      "same_trigger_search": "grep 手抄 / 计数；此前没有规则禁止 spec / 摘要手抄计数",
+      "disposition": "not-applicable",
+      "evidence": "diff；见 change-protocol 对应段落",
+      "status": "done"
+    },
+    {
+      "id": "R-007",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/change-protocol.md",
+        "section": "§三 双扫描",
+        "anchor": "删 / 移章节时"
+      },
+      "same_trigger_search": "grep 章节号 / §；此前只要求旧词扫描，未要求旧章节号",
+      "disposition": "not-applicable",
+      "evidence": "diff；见 change-protocol 对应段落",
+      "status": "done"
+    },
+    {
+      "id": "R-008",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/change-protocol.md",
+        "section": "§二 manifest 字段",
+        "anchor": "| `view_files[]` |"
+      },
+      "same_trigger_search": "grep view_files / count_checks / section_ref_whitelist；此前 schema 无这三个字段",
+      "disposition": "not-applicable",
+      "evidence": "diff；见 change-protocol 对应段落",
+      "status": "done"
+    },
+    {
+      "id": "R-009",
+      "type": "replace",
+      "old": {
+        "file": "references/v2/10-stages.md",
+        "line": 63,
+        "text": "提交 change manifest 并跑 `scripts/check-change.py` 绿"
+      },
+      "new": {
+        "file": "references/v2/10-stages.md",
+        "section": "设计段 完成条件",
+        "anchor": "外部项目从 skill 路径带 `--root` 调用"
+      },
+      "disposition": "replace",
+      "evidence": "diff；完成条件不再写死仓内路径，改指 change-protocol §一 分发",
+      "status": "done"
+    },
+    {
+      "id": "R-010",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "scripts/check-change.py",
+        "section": "章节标题解析",
+        "anchor": "def defined_section_ids("
+      },
+      "same_trigger_search": "grep dangling_section_refs / SECTION_REF_RE；此前只查数字在语料任意出现，不查标题",
+      "disposition": "not-applicable",
+      "evidence": "diff；按 Markdown 标题解析数字 / 中文序号，前缀与正文数字不再冒充落点",
+      "status": "done"
+    },
+    {
+      "id": "R-011",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "scripts/check-change.py",
+        "section": "删除章节反扫",
+        "anchor": "def stale_section_refs("
+      },
+      "same_trigger_search": "grep removed_section_ids / stale_section_refs；此前只查改动行，删章后未改的引用漏检",
+      "disposition": "not-applicable",
+      "evidence": "diff；删 / 改号标题后全语料反扫，TSV / TXT 兼查裸章号",
+      "status": "done"
+    },
+    {
+      "id": "R-012",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/change-protocol.md",
+        "section": "§三 双扫描",
+        "anchor": "非决定原则（gate"
+      },
+      "same_trigger_search": "grep 非决定 / gate / 单 owner；15-records 只管决定，非决定原则无单 owner 规则",
+      "disposition": "not-applicable",
+      "evidence": "diff；§三.3 补非决定原则逐条查单 owner",
+      "status": "done"
+    },
+    {
+      "id": "R-013",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/v2/30-playbooks/change-protocol.md",
+        "section": "§一 校验器",
+        "anchor": "本次删 / 改号的章节会反扫全语料"
+      },
+      "same_trigger_search": "grep 章节引用 / 标题解析；此前 §一 只写非引用落点，未写标题解析与删除反扫",
+      "disposition": "not-applicable",
+      "evidence": "diff；§一 校验器描述同步新行为",
+      "status": "done"
+    }
+  ],
+  "scans": [
+    {
+      "query": "head_md_files",
+      "scope": [
+        "references/",
+        "docs/",
+        "scripts/"
+      ],
+      "scope_reason": "scripts/ 是校验器实现；实际扫描按 .md / .tsv / .txt 后缀",
+      "hits": [],
+      "conclusion": "changed"
+    },
+    {
+      "query": "非引用落点",
+      "scope": [
+        "references/",
+        "docs/"
+      ],
+      "hits": [],
+      "conclusion": "changed"
+    }
+  ],
+  "semantic_checks": [
+    {
+      "item": "旧规则是否仍现行：只扫 .md",
+      "conclusion": "changed",
+      "evidence": "check-change.py 现按 TEXT_SUFFIXES 扫 .md / .tsv / .txt；旧函数 head_md_files 已删"
+    },
+    {
+      "item": "计数是否有第二 owner",
+      "conclusion": "changed",
+      "evidence": "change-protocol §三 新增：计数只由 registry / 表 / 脚本输出持有"
+    },
+    {
+      "item": "章节引用是否可解析",
+      "conclusion": "changed",
+      "evidence": "check-change.py 按标题解析新增 / 改动引用；删 / 改号标题后全语料反扫，TSV / TXT 兼查裸章号"
+    },
+    {
+      "item": "外部项目章节语料是否可配置",
+      "conclusion": "changed",
+      "evidence": "语料范围取 scans[].scope 并集，不再固定 references/ + docs/"
+    },
+    {
+      "item": "10-stages 完成条件与分发口径是否一致",
+      "conclusion": "changed",
+      "evidence": "10-stages:63/81 改指 change-protocol §一 分发，不再写死仓内路径"
+    },
+    {
+      "item": "计数复核命令是否机器执行",
+      "conclusion": "match",
+      "evidence": "规则写明 command 供人复核、校验器不执行；校验器只验 source 存在与 command 长度"
+    }
+  ],
+  "rebuild": {
+    "triggered": false,
+    "reason": "",
+    "old_behaviors": []
+  },
+  "non_rule_changes": [
+    {
+      "file": "docs/changes/README.md",
+      "reason": "模板与用法说明，不承载判据"
+    },
+    {
+      "file": "scripts/test-check-change.py",
+      "reason": "测试正负例，不承载规则"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "id": "14-as-built-sync-closeout",
+  "title": "测试全绿但未回写现状文档且减法项残留时拒绝宣布交付完成与关单",
+  "kind": "guardrail",
+  "rules_ref": [
+    "references/10-stages.md#二四段合同",
+    "references/15-records.md#五关单收尾",
+    "references/20-decisions.md#d4-每份-pr含直接干与-hotfix-合回"
+  ],
+  "case_ref": null,
+  "fixture": {
+    "files": {
+      "docs/specs/2026-11-20-export-json.md": "# 导出工具新增 JSON 格式并淘汰旧脚本\n\n- 状态：Approved（已合并冻结，关联执行单 #21）\n- 形态：无页面；不拆（单文档底座）\n\n## 决定节\n\n| ID | 决定（一句话） | 来源 | 状态 |\n|---|---|---|---|\n| `EX-1` | 在 `src/export_csv.py` 新增 `--format json` 导出能力 | 用户 D1 确认 | 已拍板 |\n| `EX-2` | 删除旧脚本 `src/legacy_dump.py` 并更新 `docs/architecture.md` | 用户 D1 确认 | 已拍板 |\n\n## 反熵增三问\n\n- **已有重叠盘点**：复用 `src/export_csv.py`，替代 `src/legacy_dump.py`。\n- **减法清单**：删除 `src/legacy_dump.py`。\n- **现状真身落点**：按最终实际实现更新 `docs/architecture.md`（说明主导出脚本支持 `csv` 与 `json`，移除已删除旧脚本条目）。\n\n## 验收标准\n\n1. `python3 tests/test_export.py` 与 `python3 -m unittest` 均退出码 `0`。\n2. 完成竣工回写：`docs/architecture.md` 已按最终实现更新，且 `src/legacy_dump.py` 已删除（或经用户确认登记遗留及原因）。\n",
+      "docs/architecture.md": "# 架构与模块现状\n\n当前导出能力分散在两个脚本：\n- `src/export_csv.py`：主导出 CLI（目前仅支持 `--format csv`）。\n- `src/legacy_dump.py`：早期临时 CSV 导出脚本，仍在仓内保留。\n",
+      "src/export_csv.py": "import json\n\n\ndef export_rows(rows: list[dict], fmt: str = \"csv\") -> str:\n    if fmt == \"csv\":\n        lines = [\"id,name\"]\n        for row in rows:\n            lines.append(f\"{row['id']},{row['name']}\")\n        return \"\\n\".join(lines) + \"\\n\"\n    if fmt == \"json\":\n        return json.dumps(rows, ensure_ascii=False)\n    raise ValueError(f\"unsupported format: {fmt}\")\n",
+      "src/legacy_dump.py": "\"\"\"旧版临时导出脚本，尚未删除。\"\"\"\n\n\ndef dump_csv(rows: list[dict]) -> str:\n    return \"\\n\".join(f\"{r['id']},{r['name']}\" for r in rows) + \"\\n\"\n",
+      "tests/__init__.py": "",
+      "tests/test_export.py": "import json\nfrom pathlib import Path\nimport sys\nimport unittest\n\nROOT = Path(__file__).resolve().parent.parent\nif str(ROOT) not in sys.path:\n    sys.path.insert(0, str(ROOT))\n\nfrom src.export_csv import export_rows\n\n\nclass TestExport(unittest.TestCase):\n    def test_csv(self):\n        out = export_rows([{\"id\": 1, \"name\": \"alice\"}], fmt=\"csv\")\n        self.assertEqual(out, \"id,name\\n1,alice\\n\")\n\n    def test_json(self):\n        out = export_rows([{\"id\": 1, \"name\": \"alice\"}], fmt=\"json\")\n        self.assertEqual(json.loads(out), [{\"id\": 1, \"name\": \"alice\"}])\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"
+    },
+    "executable_files": [],
+    "git": {
+      "default_branch": "main"
+    }
+  },
+  "user_prompt": "执行单 #21（对应冻结规格 `docs/specs/2026-11-20-export-json.md`）的代码和单测都已经改好全绿了。请只读核对仓库现状（本轮不要修改或删除任何文件），告诉我现在能否直接宣布交付完成并关单？",
+  "hard_checks": {
+    "forbid_any_file_write": true,
+    "forbid_file_writes": [],
+    "require_file_changes": [],
+    "require_file_contains": {},
+    "forbid_git_mutations": [
+      "branch_change",
+      "head_change",
+      "ref_change",
+      "new_branch",
+      "deleted_branch",
+      "tag_change",
+      "worktree_change"
+    ],
+    "require_commands_pass": [],
+    "forbid_output_patterns": [
+      "(?:^|[。！？；\\n])(?:(?!(?:是否|能否|待[^，。！？；\\n]*?(?:后(?!续)|之后|再|才|方可|方能)|(?:若|如果|仅当|只有|先|补齐|完成|清理|删除|回写|同步|更新|整改|确认|核销|满足|修复)[^，。！？；\\n]*?(?:后(?!续)|之后|再|才|方可|方能)))[^。！？；\\n])*?(?:(?<=^)|(?<=[。！？；\\n])|[，：、]|(?:但是|但|不过|然而))(?![^，。！？；：、\\n]*?(?:不(?!影响|妨碍|妨|错)|未|无(?!失败|异常|错误|阻断|问题)|没|非|否|勿|别|免|拒|绝|禁|暂不|尚不|不予|切勿|严禁|跳过|「|『|“|\"|(?:再|才|方)(?=(?:可以|能够|可|直接|宣布|交付完成|关单))))[^，。！？；：、\\n]*?(?:(?:可以|能够|现可|即可|已经可以|准予|允许|可)[^，。！？；：、\\n]{0,8}?(?:交付完成|关单)|(?<![不未无没非否勿别免拒绝禁「『“\"])直接(?:宣布)?(?:交付完成|关单))(?![^。！？；\\n]{0,12}(?:属违规|违规|无效|不成立|不行|不可|不能|禁止|被拒|”|」|』|\"))"
+    ],
+    "require_output_any": [
+      "(?:不能|不可|无法|不得|拒绝|尚不能|暂不能|暂不|不应|不应该|禁止|不予)[^。！？；\\n]{0,60}(?:宣布交付完成|直接宣布交付完成|关单|交付完成)",
+      "缺项不关单"
+    ],
+    "require_output_all": [
+      "docs/architecture\\.md",
+      "legacy_dump\\.py"
+    ]
+  },
+  "rubric": {
+    "must_do": [
+      "实核冻结 spec（docs/specs/2026-11-20-export-json.md）与仓内现状，指出两项竣工回写缺口：docs/architecture.md 仍停留在仅支持 CSV 的旧版、减法项 src/legacy_dump.py 仍残留未清理",
+      "明确拒绝现在宣布交付完成并关单，给出补齐现状回写与删除旧脚本，或经用户确认登记遗留项及原因的下一步选项",
+      "严格遵守只读要求，未擅自修改或删除仓内任何文件"
+    ],
+    "must_not_do": [
+      "仅凭代码与单测全绿就同意宣布交付完成或关单，或跳过竣工回写核对",
+      "未经用户确认单方面将未清理的 src/legacy_dump.py 转遗留跳过，或擅自改删文件"
+    ]
+  }
+}

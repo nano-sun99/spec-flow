@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
-# spec-flow 文档检查入口：SKILL.md 正文字数、警示符个数、references 路径是否存在、
-# references 内相对链接、职责 owner/交付契约、Git/发布章节、README 双语是否同步（节标记一一对应、
-# references 文件两份都点到）、采用契约两侧是否对应。
-# 同时核 frontmatter / 整份预算，禁止把规则搬进元信息绕正文预算（依据 R25）。
-# 仅核必要结构/信息存在，不把推荐指南的写法、顺序、列数或样例数量机械强制。
-# 每项一行结果，末行「绿 / 红」；退出码 0 = 绿，1 = 红。依据见 references/rationale.md R10、R17、R19、R25、R37。
+# spec-flow 文档检查入口（单轨现行体系）：
+# 1. SKILL.md frontmatter、字数/行数/警示符预算；
+# 2. 核心层（L0–L2、两份专项总纲）字数与行数预算，以及现行规则正文单行可见字数上限；
+# 3. 相对链接与精确 GitHub #锚点可达性（拒绝对路径、不二次清洗锚点）；禁止现行规则外链 docs/archive；
+# 4. 核心 owner 章节、5 个选修模块与全目录孤儿文件检查（含 40-cases/INDEX.md）；
+# 5. README.md / README.zh-CN.md 双语节标记（含重复拦截）与 references 提及同步。
+# 每项一行结果，末行「绿 / 红」；退出码 0 = 绿，1 = 红。
 
-BUDGET_CHARS=4700   # 本次交付正文预算；含换行、按字符计，原 5,000 上限不上调（依据 R25）
-MAX_ALERTS=3        # SKILL.md 正文 ⚠️ + ⛔ 个数上限
-FRONTMATTER_CHARS=500
-TOTAL_CHARS=5200
+set -euo pipefail
 
 CDPATH= cd -- "$(dirname -- "$0")/.." || { echo "[红] 进不了仓根目录"; echo "红"; exit 1; }
 
@@ -19,26 +17,81 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-PYTHONIOENCODING=utf-8 python3 - "$BUDGET_CHARS" "$MAX_ALERTS" "$FRONTMATTER_CHARS" "$TOTAL_CHARS" <<'PY'
+PYTHONIOENCODING=utf-8 python3 - <<'PY'
 import json, os, re, sys
+from urllib.parse import unquote
 
-budget, max_alerts, front_budget, total_budget = map(int, sys.argv[1:])
 red = False
 
-def report(ok, msg):
+def report(ok: bool, msg: str) -> None:
     global red
     red = red or not ok
     print(("[绿] " if ok else "[红] ") + msg)
 
+def unfenced(text: str) -> list[str]:
+    out, fence = [], None
+    for line in text.splitlines():
+        st = line.lstrip()
+        if fence:
+            if st.startswith(fence):
+                fence = None
+            continue
+        if st.startswith("```") or st.startswith("~~~"):
+            fence = st[:3]
+            out.append("")
+            continue
+        out.append(line)
+    return out
+
+def visible_len(line: str) -> int:
+    return len(re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", line))
+
+def github_slug(heading: str) -> str:
+    # 对齐 GitHub github-slugger：转小写、去内联代码/链接语法、去标点（保留字母/数字/汉字/空格/连字符）、
+    # 每个空格逐一替换为 '-'（不折叠连续空格，保持与 GitHub 渲染一致）。
+    s = heading.strip().lower()
+    s = re.sub(r"`([^`]*)`", r"\1", s)
+    s = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", s)
+    s = re.sub(r"[^\w\s\u4e00-\u9fff-]", "", s)
+    s = s.replace(" ", "-")
+    return s
+
+def heading_slugs(path: str) -> set[str]:
+    slugs: set[str] = set()
+    counts: dict[str, int] = {}
+    text = open(path, encoding="utf-8", newline="").read()
+    for line in unfenced(text):
+        m = re.match(r"^#{1,6}\s+(.+?)\s*$", line)
+        if not m:
+            continue
+        base = github_slug(m.group(1))
+        n = counts.get(base, 0)
+        counts[base] = n + 1
+        slugs.add(base if n == 0 else f"{base}-{n}")
+    return slugs
+
+def exists_exact(path: str) -> bool:
+    if not path or path.startswith("/"):
+        return False
+    norm = os.path.normpath(path)
+    if norm.startswith("/") or norm.startswith(".."):
+        return False
+    if norm == ".":
+        return False
+    cur = "."
+    for part in norm.split("/"):
+        if not os.path.isdir(cur) or part not in os.listdir(cur):
+            return False
+        cur = os.path.join(cur, part)
+    return os.path.exists(cur)
+
 try:
-    # newline="" 保留原换行符（CRLF 计 2 字，与 wc -m 同口径）
-    text = open("SKILL.md", encoding="utf-8", newline="").read()
-    lines = text.splitlines(keepends=True)
-    # frontmatter = 第一行 --- 到下一行 ---，中间只许 YAML 键行 / 缩进续行 / 空行；
-    # 碰到别的行还没见到结束行 = frontmatter 坏了（防止把正文里的水平线当结束行）
+    # ── 1. SKILL.md frontmatter 与预算 ───────────────────────────────────
+    skill_text = open("SKILL.md", encoding="utf-8", newline="").read()
+    lines = skill_text.splitlines(keepends=True)
     if not lines or lines[0].rstrip("\r\n") != "---":
         raise ValueError("SKILL.md 开头没有 frontmatter")
-    end, i = None, 0
+    end = None
     for i in range(1, len(lines)):
         s = lines[i].rstrip("\r\n")
         if s == "---":
@@ -47,150 +100,180 @@ try:
         if not (s.strip() == "" or re.match(r"[A-Za-z0-9_-]+\s*:", s) or s[:1] in " \t"):
             break
     if end is None:
-        raise ValueError(f"frontmatter 没有结束行 ---（第 {i + 1} 行不像 YAML）")
-    body = "".join(lines[end + 1:])
+        raise ValueError("SKILL.md frontmatter 缺少结束行 ---")
     front = "".join(lines[:end + 1])
-    report(len(front) <= front_budget, f"frontmatter 字符 {len(front):,} / 预算 {front_budget:,}")
-    report(len(text) <= total_budget, f"整份字符 {len(text):,} / 预算 {total_budget:,}")
-    # 本仓只用 name 与 JSON 引号单行 description；不引入 YAML 依赖，也不接受隐藏规则的扩展字段。
-    metadata = {}
+    body = "".join(lines[end + 1:])
+    meta = {}
     for line in lines[1:end]:
         m = re.fullmatch(r"(name|description): ([^\r\n]+)[\r\n]*", line)
-        if not m or m.group(1) in metadata:
-            raise ValueError("frontmatter 仅允许不重复的 name 和单行 description，禁止续行或其他字段")
-        metadata[m.group(1)] = m.group(2)
-    if metadata.get("name") != "spec-flow":
+        if not m or m.group(1) in meta:
+            raise ValueError("frontmatter 仅允许不重复的 name 与单行 description")
+        meta[m.group(1)] = m.group(2)
+    if meta.get("name") != "spec-flow":
         raise ValueError("frontmatter name 必须为 spec-flow")
-    try:
-        description = json.loads(metadata.get("description", ""))
-    except (ValueError, TypeError):
-        raise ValueError("frontmatter description 必须为双引号单行字符串")
-    if not isinstance(description, str) or not description.strip() or "\n" in description or "\r" in description:
-        raise ValueError("frontmatter description 必须为非空单行触发摘要")
-    report(True, "frontmatter 仅含 name 与单行 description；摘要是否藏规则仍须语义对照")
+    desc = json.loads(meta.get("description", ""))
+    if not isinstance(desc, str) or not desc.strip() or "\n" in desc or "\r" in desc:
+        raise ValueError("frontmatter description 必须为非空单行字符串")
 
-    n = len(body)
-    report(n <= budget, f"正文字数 {n:,} / 预算 {budget:,}" + ("" if n <= budget else
-           " —— 新增的案例 / 统计 / 来龙去脉进 references/rationale.md，规则旁只留一句理由；依据见 rationale R10"))
-
-    # 同规格测量口径：文首换行单列，其余分节加总必须等于正文。
-    headings = list(re.finditer(r"(?m)^#{1,2} .+$", body))
-    ledger = [("文首换行", len(body[:headings[0].start()]))] if headings else [("正文", len(body))]
-    for i, h in enumerate(headings):
-        stop = headings[i + 1].start() if i + 1 < len(headings) else len(body)
-        ledger.append((h.group().lstrip("# "), stop - h.start()))
-    report(sum(size for _, size in ledger) == n, "分节字符：" + "；".join(f"{name}={size}" for name, size in ledger))
-
+    report(len(front) <= 500, f"SKILL.md frontmatter {len(front)} / 500 字")
+    report(len(body) <= 2600 and len(lines) <= 60,
+           f"SKILL.md 正文 {len(body):,} / 2,600 字，{len(lines)} / 60 行")
     alerts = body.count("⚠") + body.count("⛔")
-    report(alerts <= max_alerts, f"正文警示符（⚠️ + ⛔）{alerts} / 上限 {max_alerts}")
+    report(alerts <= 3, f"SKILL.md 警示符 {alerts} / 3")
 
-    # 只认本仓相对路径：前面紧挨 / 或字母数字的（外仓 URL 等）不算；路径可含子目录、非 ASCII
-    refs = sorted(set(re.findall(r"(?<![/\w.-])references/[^\s`'\"()<>\[\]|，。；：、）」]+?\.md", text)))
+    # ── 2. 核心层预算、必读核 / 全仓现行规则硬上限与单行长度上限 ────────────
+    CORE_BUDGETS = {
+        "references/00-constitution.md": (62, 2800),
+        "references/10-stages.md": (95, 4200),
+        "references/15-records.md": (95, 3800),
+        "references/20-decisions.md": (85, 3400),
+        "references/25-spec-governance.md": (100, 4500),
+        "references/26-review-contract.md": (110, 4800),
+    }
+    ALWAYS_READ_MAX = 15500
+    TOTAL_RULE_MAX = 46000
+    budget_err = []
+    always_read_chars = len(body)
+    for path, (max_l, max_c) in CORE_BUDGETS.items():
+        if not exists_exact(path):
+            budget_err.append(f"缺失 {path}")
+            continue
+        t = open(path, encoding="utf-8", newline="").read()
+        lc, cc = len(t.splitlines()), len(t)
+        if path in ("references/00-constitution.md", "references/10-stages.md",
+                    "references/15-records.md", "references/20-decisions.md"):
+            always_read_chars += cc
+        if lc > max_l or cc > max_c:
+            budget_err.append(f"{path}({lc}/{max_l}行, {cc}/{max_c}字)")
+    report(not budget_err,
+           "核心层单文件预算全部达标"
+           if not budget_err else "核心层超预算：" + "；".join(budget_err))
+    report(always_read_chars <= ALWAYS_READ_MAX,
+           f"必读核字数（SKILL正文+L0-L2）{always_read_chars:,} / {ALWAYS_READ_MAX:,} 字")
 
-    def exists_exact(path):  # 逐级比对真实文件名，大小写不敏感的文件系统上也不放过写错大小写
-        cur = "."
-        for part in path.split("/"):
-            if not os.path.isdir(cur) or part not in os.listdir(cur):
-                return False
-            cur = os.path.join(cur, part)
-        return os.path.isfile(cur)
+    MAX_VISIBLE_LINE = 220
+    active_rule_files = ["SKILL.md"] + sorted(
+        os.path.join(dp, f)
+        for dp, _, fs in os.walk("references")
+        for f in fs
+        if f.endswith(".md") and not dp.startswith("references/40-cases")
+    )
+    total_rule_chars = sum(
+        len(open(path, encoding="utf-8", newline="").read())
+        for path in active_rule_files
+    )
+    report(total_rule_chars <= TOTAL_RULE_MAX,
+           f"全仓现行规则总字数 {total_rule_chars:,} / {TOTAL_RULE_MAX:,} 字（覆盖 {len(active_rule_files)} 份文件）")
+    long_lines = []
+    for path in active_rule_files:
+        raw_lines = open(path, encoding="utf-8", newline="").read().splitlines()
+        start_idx = 0
+        if path == "SKILL.md" and raw_lines and raw_lines[0].strip() == "---":
+            for j in range(1, len(raw_lines)):
+                if raw_lines[j].strip() == "---":
+                    start_idx = j + 1
+                    break
+        for i in range(start_idx, len(raw_lines)):
+            vlen = visible_len(raw_lines[i])
+            if vlen > MAX_VISIBLE_LINE:
+                long_lines.append(f"{path}:{i + 1}({vlen}字)")
+    report(not long_lines,
+           f"现行规则正文单行可见字数均 ≤ {MAX_VISIBLE_LINE}（覆盖 {len(active_rule_files)} 份文件）"
+           if not long_lines else "单行超长：" + "、".join(long_lines[:10]))
 
-    missing = [r for r in refs if not exists_exact(r)]
-    report(not missing, f"references 路径 {len(refs)} 个" +
-           ("，均存在" if not missing else "，不存在：" + "、".join(missing)))
+    # ── 3. 相对链接、精确 GitHub #锚点可达性与零归档外链 ─────────────────
+    extra_docs = [p for p in ("AGENTS.md", "docs/changes/README.md", "docs/archive/v1/README.md") if os.path.isfile(p)]
+    all_check_files = ["SKILL.md", "README.md", "README.zh-CN.md"] + extra_docs + sorted(
+        os.path.join(dp, f)
+        for dp, _, fs in os.walk("references")
+        for f in fs
+        if f.endswith(".md")
+    )
+    slug_cache: dict[str, set[str]] = {}
+    link_err, archive_err = [], []
+    for rel in all_check_files:
+        if not os.path.isfile(rel):
+            continue
+        text = "\n".join(unfenced(open(rel, encoding="utf-8", newline="").read()))
+        for m in re.finditer(r"\[[^\]]*\]\(([^)\s]+)\)", text):
+            raw = m.group(1)
+            if raw.startswith(("http://", "https://", "mailto:")):
+                continue
+            target_part, anchor = (raw.split("#", 1) + [""])[:2]
+            if target_part.startswith("/"):
+                link_err.append(f"{rel} → {raw}（禁止以 / 开头绝对路径）")
+                continue
+            if not target_part:
+                target_path = rel
+            else:
+                target_path = os.path.normpath(os.path.join(os.path.dirname(rel), target_part))
+            if not exists_exact(target_path):
+                link_err.append(f"{rel} → {raw}")
+                continue
+            if rel in active_rule_files and (target_path == "docs/archive" or target_path.startswith("docs/archive/")):
+                archive_err.append(f"{rel} → {target_path}")
+            if anchor and os.path.isfile(target_path) and target_path.endswith(".md"):
+                if target_path not in slug_cache:
+                    slug_cache[target_path] = heading_slugs(target_path)
+                decoded_anchor = unquote(anchor)
+                if decoded_anchor not in slug_cache[target_path]:
+                    link_err.append(f"{rel} → {raw}（锚点不存在）")
+    report(not link_err, f"全部相对链接与精确 #锚点可达（核查 {len(all_check_files)} 份文件）"
+           if not link_err else "断链 / 坏锚点：" + "、".join(link_err))
+    report(not archive_err, "现行规则无指向 docs/archive 的遗留依赖"
+           if not archive_err else "仍依赖归档文件：" + "、".join(archive_err))
 
-    # ── README 双语同步（依据 R17）────────────────────────────────────────
-    # 只守结构：两份 README 的节标记 <!-- s:xxx --> 必须一一对应、顺序一致，且每个标记紧贴着
-    # 一个 ## 标题（标记搬家 = 红）；references/ 下每个文件两份 README 都要点到、点到的路径要真存在。
-    # 同一节里改了一句只改一份，机器看不出来——那部分靠 AGENTS.md 第 5 条。
-    def sections(text):
-        """扫出 [(节标记, 紧随的标题, 标题行号)]；围栏代码块（``` 与 ~~~）里的行一律不算，
-        标记与标题之间只许有空行，标记后跟了别的东西 = 标记没贴着标题。"""
+    # ── 4. 核心 owner 章节、5 选修与全目录孤儿文件 ────────────────────────
+    owner_err = []
+    checks = {
+        "references/00-constitution.md": [f"## L0-{i} " for i in range(1, 9)],
+        "references/10-stages.md": ["### 澄清", "### 设计", "### 交付", "### 发布"],
+        "references/15-records.md": ["获批依据", "预期交付", "全部实际来源", "必要依赖", "就绪证据", "候选结果", "替换式变更载体处置表"],
+        "references/20-decisions.md": [f"## D{i} " for i in range(0, 8)] + ["## 交互卡片契约"],
+        "references/25-spec-governance.md": ["唯一权威顺序", "决定 owner 对账"],
+        "references/26-review-contract.md": ["文档检查", "Lane A", "Lane B"],
+        "references/50-adapters/README.md": ["`adr`", "`doc-lifecycle`", "`issue-status`", "`issue-type`", "`release`"],
+    }
+    for path, tokens in checks.items():
+        if not exists_exact(path):
+            owner_err.append(f"缺失核心文件 {path}")
+            continue
+        body_txt = open(path, encoding="utf-8", newline="").read()
+        for tok in tokens:
+            if tok not in body_txt:
+                owner_err.append(f"{path} 缺「{tok}」")
+    # 全目录孤儿检查（os.walk）：40-cases/ 须登记在 40-cases/INDEX.md；过渡页显式白名单；其余全部须由 SKILL.md 链接。
+    TRANSITION_STUBS = {"references/v2/SKILL.md"}
+    skill_links = set(re.findall(r"\]\((references/[^)#\s]+\.md)(?:#[^)\s]*)?\)", "\n".join(unfenced(skill_text))))
+    all_ref_mds = sorted(
+        os.path.join(dp, f)
+        for dp, _, fs in os.walk("references")
+        for f in fs
+        if f.endswith(".md")
+    )
+    case_mds = [p for p in all_ref_mds if p.startswith("references/40-cases/") and p != "references/40-cases/INDEX.md"]
+    nav_targets = [
+        p for p in all_ref_mds
+        if p not in TRANSITION_STUBS and not p.startswith("references/40-cases/")
+    ] + (["references/40-cases/INDEX.md"] if exists_exact("references/40-cases/INDEX.md") else [])
+    orphans = [p for p in nav_targets if p not in skill_links]
+    if orphans:
+        owner_err.append("SKILL.md 未链接：" + "、".join(orphans))
+    if not exists_exact("references/40-cases/INDEX.md"):
+        owner_err.append("缺失 references/40-cases/INDEX.md")
+    else:
+        idx_text = "\n".join(unfenced(open("references/40-cases/INDEX.md", encoding="utf-8", newline="").read()))
+        idx_links = set(re.findall(r"\]\(([^)#\s]+\.md)(?:#[^)\s]*)?\)", idx_text))
+        orphan_cases = [os.path.basename(p) for p in case_mds if os.path.basename(p) not in idx_links]
+        if orphan_cases:
+            owner_err.append("40-cases/INDEX.md 未登记：" + "、".join(orphan_cases))
+    report(not owner_err, f"核心 owner 章节、5 选修、{len(nav_targets)} 份导航与 {len(case_mds)} 份案例索引齐全"
+           if not owner_err else "结构缺失：" + "；".join(owner_err))
+
+    # ── 5. 双语 README 同步 ──────────────────────────────────────────────
+    def sections(text: str):
         out, fence, pending, pend_line = [], None, None, 0
         for i, line in enumerate(text.splitlines(), 1):
-            stripped = line.lstrip()
-            if fence:
-                if stripped.startswith(fence):
-                    fence = None
-                continue
-            if stripped.startswith("```") or stripped.startswith("~~~"):
-                fence = stripped[:3]        # 只用同种符号闭合，且认开头这三个字符
-                continue
-            m = re.fullmatch(r"<!--\s*s:([a-z0-9-]+)\s*-->", line.strip())
-            if m:
-                if pending is not None:     # 上一个标记还没配上标题就来了新标记 = 它没贴着标题
-                    out.append((pending, None, pend_line))
-                pending, pend_line = m.group(1), i
-                continue
-            if re.match(r"##\s+\S", line):
-                out.append((pending, line, i))
-                pending = None
-            elif stripped:                  # 非空、又不是标题 = 标记和标题之间夹了别的东西
-                if pending is not None:
-                    out.append((pending, None, pend_line))
-                    pending = None
-        if pending is not None:             # 标记挂在文件末尾，后面没有标题
-            out.append((pending, None, pend_line))
-        return out
-
-    def mentions(text, path):               # 路径被换行 / 空格拆开也算点到（免得误报红）
-        return path in text or re.sub(r"\s+", "", path) in re.sub(r"\s+", "", text)
-
-    readmes, secs = {}, {}
-    for name in ("README.md", "README.zh-CN.md"):
-        try:
-            content = open(name, encoding="utf-8", newline="").read()
-        except OSError:
-            report(False, f"{name} 读不到（双语 README 少一份）")
-            readmes[name] = None
-            continue
-        readmes[name] = content
-        secs[name] = sections(content)
-
-    if None not in readmes.values():
-        # 没配到标记的标题用占位符进序列（真值是不可哈希的 None，直接比会炸；缺标记由下面那项点名）
-        ma = [m or "（无标记）" for m, _, _ in secs["README.md"]]
-        mb = [m or "（无标记）" for m, _, _ in secs["README.zh-CN.md"]]
-        na = sum(1 for x in ma if x != "（无标记）")
-        nb = sum(1 for x in mb if x != "（无标记）")
-        only_a = [x for x in ma if x not in mb]
-        only_b = [x for x in mb if x not in ma]
-        diff = []
-        if only_a:
-            diff.append("仅 README.md 有：" + "、".join(only_a))
-        if only_b:
-            diff.append("仅 README.zh-CN.md 有：" + "、".join(only_b))
-        if not diff and ma != mb:
-            diff.append("顺序不一致")
-        report(not diff, f"双语节标记 {na} / {nb} 节" +
-               ("，一一对应" if not diff else "：" + "；".join(diff)))
-
-        loose = [f"{n}:{ln} 标记 s:{m} 没贴着 ## 标题" for n in secs for m, h, ln in secs[n] if m and not h]
-        loose += [f"{n}:{ln} 标题「{h.strip()}」没有节标记" for n in secs for m, h, ln in secs[n] if h and not m]
-        report(not loose, "每个节标记都贴着一个 ## 标题" if not loose else "；".join(loose))
-
-        try:
-            ref_files = sorted(f for f in os.listdir("references") if f.endswith(".md"))
-        except OSError:
-            ref_files = None
-        report(ref_files is not None, f"references 目录下 {len(ref_files)} 个 .md" if ref_files is not None
-               else "references 目录读不到——这项检查失效，不是绿")
-        if ref_files is not None:
-            unlisted = ["references/" + f for f in ref_files
-                        if not all(mentions(readmes[n], "references/" + f) for n in readmes)]
-            report(not unlisted, f"references 文件 {len(ref_files)} 个，两份 README 都点到" if not unlisted
-                   else "两份 README 没都点到：" + "、".join(unlisted))
-            bogus = sorted({p for n in readmes
-                            for p in re.findall(r"references/[^\s`'\"()<>\[\]|，。；：、）]+?\.md", readmes[n])
-                            if not exists_exact(p)})
-            report(not bogus, "README 里点到的 references 路径都存在" if not bogus
-                   else "README 里点到的路径不存在：" + "、".join(bogus))
-    # ── 采用契约（依据 R19）：SKILL.md 中央登记 ↔ apply-to-project.md §十 登记表，两侧必须一一对应 ──
-    # 只认登记区：SKILL.md 参考表里带「选修」的行 + apply-to-project.md §十 的 `#### ` 表；
-    # 围栏代码块里的示例（采用口径模板等）一律跳过，历史 spec 不在扫描范围内。
-    def unfenced(text):
-        out, fence = [], None
-        for line in text.splitlines():
             st = line.lstrip()
             if fence:
                 if st.startswith(fence):
@@ -198,242 +281,64 @@ try:
                 continue
             if st.startswith("```") or st.startswith("~~~"):
                 fence = st[:3]
-                # 保留区域断点，别把围栏两侧的说明、表行或字段重新拼接。
-                out.extend(("", "<!-- fenced block omitted -->", ""))
                 continue
-            out.append(line)
+            m = re.fullmatch(r"<!--\s*s:([a-z0-9-]+)\s*-->", line.strip())
+            if m:
+                if pending is not None:
+                    out.append((pending, None, pend_line))
+                pending, pend_line = m.group(1), i
+                continue
+            if re.match(r"##\s+\S", line):
+                out.append((pending, line, i))
+                pending = None
+            elif st:
+                if pending is not None:
+                    out.append((pending, None, pend_line))
+                    pending = None
+        if pending is not None:
+            out.append((pending, None, pend_line))
         return out
 
-    # ── R32 审核建议：references 内相对链接可达（围栏里的示例跳过）──
-    link_problems = []
-    for f in ref_files or []:
-        rel = "references/" + f
-        try:
-            text = "\n".join(unfenced(open(rel, encoding="utf-8", newline="").read()))
-        except OSError:
-            link_problems.append(rel + " 读不到")
-            continue
-        for m in re.finditer(r"\[[^\]]*\]\(([^)\s]+\.md(?:#[^)\s]*)?)\)", text):
-            target = m.group(1).split("#", 1)[0]
-            if target.startswith(("http://", "https://", "#")):
-                continue
-            if not os.path.exists(os.path.normpath(os.path.join("references", target))):
-                link_problems.append(f"{rel} → {target}")
-    report(not link_problems, "references 内相对链接都可达" if not link_problems
-           else "断链：" + "、".join(link_problems))
+    readmes = {n: open(n, encoding="utf-8", newline="").read() for n in ("README.md", "README.zh-CN.md")}
+    secs = {n: sections(t) for n, t in readmes.items()}
+    ma = [m or "（无标记）" for m, _, _ in secs["README.md"]]
+    mb = [m or "（无标记）" for m, _, _ in secs["README.zh-CN.md"]]
+    diff = []
+    for name, arr in (("README.md", ma), ("README.zh-CN.md", mb)):
+        dups = sorted({x for x in arr if x != "（无标记）" and arr.count(x) > 1})
+        if dups:
+            diff.append(f"{name} 节标记重复：" + "、".join(dups))
+    if [x for x in ma if x not in mb]:
+        diff.append("仅 README.md 有：" + "、".join(x for x in ma if x not in mb))
+    if [x for x in mb if x not in ma]:
+        diff.append("仅 README.zh-CN.md 有：" + "、".join(x for x in mb if x not in ma))
+    if not diff and ma != mb:
+        diff.append("顺序不一致")
+    report(not diff, f"双语 README 节标记 {len(ma)} / {len(mb)} 一一对应且无重复"
+           if not diff else "双语节标记不一致：" + "；".join(diff))
 
-    # ── R37 职责归位与必要交付信息：只核 owner/章节/字段存在，语义仍靠真实对照 ──
-    owners = {
-        "references/one-path.md": ("方案期", "实施期", "阶段事实与衔接", "定稿流程图"),
-        "references/gate-details.md": ("选项交互与权限", "方案与可实施判据", "实施授权与停止", "审核、修订与轮次", "文档检查", "独立合并与生产批准"),
-        "references/phase-handoff.md": ("交付信息与更新责任", "授权与接手留痕"),
-        "references/done-criteria.md": ("完成判据", "已批准例外"),
-    }
-    owner_bodies, owner_problems = {}, []
-    for path, required in owners.items():
-        try:
-            content = "\n".join(unfenced(open(path, encoding="utf-8", newline="").read()))
-        except OSError:
-            owner_problems.append(f"{path} 读不到")
-            continue
-        owner_bodies[path] = content
-        # 允许序号变化；不规定段落/表格的写作形状。
-        names = [re.sub(r"^[0-9一二三四五六七八九十百]+、\s*", "", m.group(1))
-                 for m in re.finditer(r"(?m)^ {0,3}##\s+(.+?)\s*$", content)]
-        for name in required:
-            if name not in names:
-                owner_problems.append(f"{path} 缺正文节：{name}")
-        if path != "references/one-path.md" and re.search(
-                r"(?m)^ {0,3}#{1,3}\s+(?:[0-9一二三四五六七八九十百]+、\s*)?(?:状态模型|状态转移|阶段事实与衔接)\s*$", content):
-            owner_problems.append(f"{path} 重新定义流程状态；正文应归 one-path.md")
-    report(not owner_problems, "职责 owner 章节与状态正文归位（语义须另核）" if not owner_problems
-           else "职责归位：" + "；".join(owner_problems))
+    loose = [f"{n}:{ln} 标记 s:{m} 未贴 ## 标题" for n in secs for m, h, ln in secs[n] if m and not h]
+    loose += [f"{n}:{ln} 标题「{h.strip()}」无标记" for n in secs for m, h, ln in secs[n] if h and not m]
+    report(not loose, "每个节标记均贴着 ## 标题" if not loose else "；".join(loose))
 
-    delivery = owner_bodies.get("references/phase-handoff.md", "")
-    delivery_groups = ("获批依据", "预期交付", "全部实际来源", "必要依赖", "就绪证据", "候选结果")
-    missing_delivery = [field for field in delivery_groups if field not in delivery]
-    report(not missing_delivery, "交付契约六类信息存在（不限定表格或逐文件清单）" if not missing_delivery
-           else "交付契约缺信息组：" + "、".join(missing_delivery))
+    top_refs = sorted(
+        [f"references/{f}" for f in os.listdir("references") if f.endswith(".md")]
+        + ["references/30-playbooks/", "references/40-cases/", "references/50-adapters/"]
+    )
+    unlisted = [p for p in top_refs if not all(p in readmes[n] for n in readmes)]
+    report(not unlisted, f"双语 README 均点到全部 {len(top_refs)} 项核心参考入口"
+           if not unlisted else "双语 README 漏列：" + "、".join(unlisted))
 
-    ROW_RE = re.compile(r"\|\s*`(references/[^`]+\.md)`\s*\|(.*)\|\s*$")
-    # 修饰词可写在行内（「采用走 `x`」），也可由行首的「选修 `x`」承载（R24 去重后的形态）；
-    # 两串都认，保证 rows_to_mod ↔ §十 登记表的映射不断。
-    MOD_RE = re.compile(r"采用走 `([a-z0-9-]+)`|选修 `([a-z0-9-]+)`")
-    NOADOPT = ("仅本次按需", "仅支持本次按需读取")   # 「不支持项目级采用」的两种合法措辞都认
-    FIELDS = {"修饰词", "语义变体", "项目入口", "项目资产", "执行时点", "验收方式", "幂等规则", "旧物处置"}
-    MEMO_FIELDS = [("默认",), ("本次按需读取",), ("项目级采用", "项目级持久采用"),
-                   ("项目入口",), ("项目资产",), ("执行时点",), ("验收",)]
-    problems, rows_to_mod, memo_rows, listed = [], {}, {}, set()
-    src = unfenced(body)
-    headers = [i for i, l in enumerate(src)
-               if re.fullmatch(r"\|\s*文件\s*\|\s*何时读\s*\|\s*", l)]
-    memo_intro, reference_rows = "", []
-    if len(headers) != 1:
-        problems.append(f"参考表表头必须恰有一份（文件 / 何时读），实际 {len(headers)} 份")
-    else:
-        hdr = headers[0]
-        hi = hdr
-        while hi + 1 < len(src) and src[hi + 1].lstrip().startswith("|"):
-            hi += 1
-        up = hdr
-        while up - 1 >= 0 and not src[up - 1].strip():
-            up -= 1
-        while up - 1 >= 0 and src[up - 1].strip():
-            up -= 1
-        memo_intro = "\n".join(src[up:hdr])
-        reference_rows = src[hdr + 1:hi + 1]
-    # 登记只取参考表本身；把选修行搬到其他表不能继续算作登记。
-    for line in reference_rows:
-        m = ROW_RE.match(line)
-        if not m:
-            continue
-        path, rest = m.group(1), m.group(2)
-        if path in listed:
-            problems.append(f"{path} 在参考表重复登记")
-        listed.add(path)
-        if "选修" not in rest:
-            continue
-        memo_rows[path] = rest
-        mod = MOD_RE.search(rest)
-        if mod:
-            name = mod.group(1) or mod.group(2)
-            if name in rows_to_mod:
-                problems.append(f"修饰词 `{name}` 被两行同时登记：{rows_to_mod[name]}、{path}")
-            rows_to_mod[name] = path
-        elif not any(k in rest for k in NOADOPT):
-            problems.append(f"{path}：既没有「采用走 `<modifier>`」／「选修 `<modifier>`」也没写「仅本次按需」")
+    bogus = sorted({
+        p for n in readmes
+        for p in re.findall(r"(?<![/\w.-])references/[^\s`'\"()<>\[\]|，。；：、）]+?\.md", "\n".join(unfenced(readmes[n])))
+        if not exists_exact(p)
+    })
+    report(not bogus, "README 内点到的 references 路径均存在"
+           if not bogus else "README 指向不存在路径：" + "、".join(bogus))
 
-    # 区域读取条件在 §十 登记解析后核对；即使选修行全部丢失，也不能跳过或引用未定义变量。
-
-    # 「未登记 = 未生效」：references/ 下每个 .md 都要在参考表里有行；带「采用口径」的必须是选修行
-    try:
-        ref_md = sorted(f for f in os.listdir("references") if f.endswith(".md"))
-    except OSError:
-        ref_md = []
-    memo_files = {}
-    for f in ref_md:
-        rel = "references/" + f
-        if rel not in listed:
-            problems.append(f"{rel} 不在 SKILL.md 参考表里（新增参考文件必须登记）")
-        try:
-            t = "\n".join(unfenced(open(rel, encoding="utf-8", newline="").read()))
-        except OSError:                     # 围栏里的「采用口径」模板不算（如 apply-to-project.md §十）
-            continue
-        if "## 采用口径" in t:
-            memo_files[rel] = t
-            if rel not in memo_rows:
-                problems.append(f"{rel} 有「采用口径」区块、参考表里却没有它的选修行")
-    for rel in sorted(memo_rows):
-        if rel not in memo_files and exists_exact(rel):
-            problems.append(f"{rel} 缺「采用口径」区块")
-
-    try:
-        ap_text = open("references/apply-to-project.md", encoding="utf-8", newline="").read()
-    except OSError:
-        ap_text = ""
-        problems.append("references/apply-to-project.md 读不到")
-    report("## 九之三、发布纪律" in ap_text, "apply-to-project.md 有发布纪律采纳节")
-    # ── Git 形态/完整候选/发布章节存在性（R33、R37）：正文留 release，apply 只放采用指针 ──
-    try:
-        rd_body = "\n".join(unfenced(open("references/release-discipline.md", encoding="utf-8", newline="").read()))
-        release_sections = ("Git 分支形态", "按任务形成完整候选", "发布记录", "状态与就绪门槛", "发布前对齐", "发布后回路")
-        # 允许 1-3 个前导空格、可选序号与可选括号后缀；只认名称本身，诱饵「## 附：发布记录」不算。
-        section_re = re.compile(r"^ {0,3}##\s+(?:[0-9一二三四五六七八九十百]+、\s*)?(.*?)\s*(?:（[^）]*）)?$")
-        headings = [m.group(1) for m in (section_re.match(line) for line in rd_body.splitlines()) if m]
-        missing_sections = [name for name in release_sections if name not in headings]
-        report(not missing_sections, "release-discipline.md 有 Git 形态、完整候选与发布闭环章节" if not missing_sections
-               else "release-discipline.md 缺章节：" + "、".join(missing_sections))
-    except OSError:
-        report(False, "references/release-discipline.md 读不到——发布闭环章节检查失效")
-    sec = ap_text[ap_text.index("## 十、采用契约"):] if "## 十、采用契约" in ap_text else ""
-    if not sec:
-        problems.append("apply-to-project.md 没有 §十 采用契约")
-    reg_mods, cur, in_table, table_done = {}, None, False, False
-    for line in unfenced(sec):
-        s = line.strip()
-        h = re.fullmatch(r"#### `([a-z0-9-]+)`", s)
-        if h:
-            cur = h.group(1)
-            if cur in reg_mods:
-                problems.append(f"§十 出现两张同名登记表：`{cur}`（只算后一张会漏检前一张）")
-            reg_mods[cur] = {}
-            in_table, table_done = False, False
-            continue
-        if re.match(r"#{1,3} \S", s):      # 更上层标题 = 离开登记区
-            cur, in_table, table_done = None, False, False
-            continue
-        if cur is None:
-            continue
-        if s.startswith("|"):
-            if table_done:                  # 表已结束又冒出来的表行 = 表外，不算字段
-                continue
-            cells = [c.strip() for c in s.strip("|").split("|")]
-            if len(cells) == 2 and cells[0] and not set(cells[0]) <= set("-: "):
-                if cells[0] in reg_mods[cur]:
-                    problems.append(f"修饰词 `{cur}` 登记表字段重复：{cells[0]}")
-                reg_mods[cur][cells[0]] = cells[1]
-            in_table = True
-            continue
-        if s == "":
-            continue
-        if in_table:
-            table_done = True
-        in_table = False
-    if memo_rows or reg_mods:
-        missing_defaults = [path for path, rest in memo_rows.items()
-                            if "默认关闭" not in memo_intro and "默认关闭" not in rest]
-        if missing_defaults:
-            problems.append("参考表区域缺「默认关闭」——选修须有共通或本行声明：" +
-                            "、".join(missing_defaults))
-        # 项目级选修须有共通或本行的已采用条件；其他行的按需标记不能代答。
-        missing_read_conditions = [path for path in rows_to_mod.values()
-                                   if "声明已采用" not in memo_intro
-                                   and "声明已采用" not in memo_rows[path]]
-        if missing_read_conditions:
-            problems.append("参考表区域缺读取条件——项目级选修须写项目规则声明已采用：" +
-                            "、".join(missing_read_conditions))
-        if not memo_rows:
-            problems.append("参考表区域没有任何选修行——选修行被删除或移出参考表")
-    for mod, got in sorted(reg_mods.items()):
-        miss = FIELDS - set(got)
-        if miss:
-            problems.append(f"修饰词 `{mod}` 登记表缺字段：{'、'.join(sorted(miss))}")
-        empty = sorted(f for f in FIELDS & set(got) if not got[f])
-        if empty:
-            problems.append(f"修饰词 `{mod}` 登记表字段为空：{'、'.join(empty)}")
-        if not miss and got.get("修饰词") != f"`{mod}`":
-            problems.append(f"修饰词 `{mod}` 的登记表里「修饰词」行写的是「{got.get('修饰词', '')}」——表体与标题对不上")
-    for mod in sorted(set(rows_to_mod) - set(reg_mods)):
-        problems.append(f"`{mod}` 在 SKILL.md 登记、§十 没有登记表")
-    for mod in sorted(set(reg_mods) - set(rows_to_mod)):
-        problems.append(f"`{mod}` 在 §十 有登记表、SKILL.md 没登记")
-    if not rows_to_mod and not reg_mods:
-        problems.append("参考表与 §十 一个选修备忘录 / 登记表都没有（契约被掏空？）")
-    for rel, t in sorted(memo_files.items()):
-        block = t[t.index("## 采用口径"):]
-        nxt = block.find("\n## ", 3)
-        if nxt != -1:
-            block = block[:nxt]
-        # 只认采用口径的字段行，别让别的字段内容里出现「默认」补掉缺失字段。
-        field_names = re.findall(r"(?m)^- ([^：:\r\n]+)[：:][ \t]*\S[^\r\n]*$", block)
-        miss = ["/".join(f) for f in MEMO_FIELDS if not any(k in field_names for k in f)]
-        duplicates = sorted({f for f in field_names if field_names.count(f) > 1})
-        if duplicates:
-            problems.append(f"{rel} 采用口径字段重复：{'、'.join(duplicates)}")
-        if miss:
-            problems.append(f"{rel} 采用口径缺：{'、'.join(miss)}")
-        rest = memo_rows.get(rel)
-        mod = MOD_RE.search(rest) if rest else None
-        name = (mod.group(1) or mod.group(2)) if mod else None
-        if name and f"`{name}`" not in block:
-            problems.append(f"{rel} 采用口径没写自己的修饰词 `{name}`——备忘录与登记对不上")
-    report(not problems, f"采用契约：{len(memo_rows)} 个选修备忘录 / {len(reg_mods)} 张登记表" +
-           ("，两侧一一对应、字段齐全" if not problems else "：" + "；".join(problems)))
-
-except (ValueError, OSError) as e:
-    report(False, f"文档格式或读取错误：{e}")
-except Exception as e:  # 未预期的运行故障仍算红，不冒充具体规则校验成功
-    report(False, f"检查跑崩了：{e!r}")
+except Exception as exc:
+    report(False, f"文档检查异常：{exc}")
 
 print("红" if red else "绿")
 sys.exit(1 if red else 0)

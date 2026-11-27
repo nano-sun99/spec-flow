@@ -1,0 +1,508 @@
+{
+  "change": "2026-11-26-anti-entropy-spec-governance",
+  "title": "迭代 2：反熵增规格治理精简底座、3 按需治理组件中途平滑升级与竣工回写",
+  "base": "079cf9c059bb843347fa1ee15b41670f5e4d4afa",
+  "head": "3de40d01a5abb64a9f6c49e0dbbe84793a4f7a2c",
+  "classification": "replace",
+  "approval": {
+    "user_quote": "D1/D3 批准迭代 2 规格（079cf9c），D0 委托实施（「还是你来做」），D4 ① 选重审+全改，R2 选全改+R3 轻审；R3 仅复核 0 阻断/0 高闭合后执行 manifest-only 钉扎，待 D4 ② 独立合并确认",
+    "timestamp": "2026-11-26",
+    "scope": "迭代 2 反熵增规格治理精简底座、3 按需治理组件与中途平滑升级、反熵增三问、竣工回写、双语 README 同步、Eval 场景 13-14 与动态单测及脱敏自测基线（21 份改动文件，8 份保护文件零改动）",
+    "base": "079cf9c059bb843347fa1ee15b41670f5e4d4afa",
+    "head": "3de40d01a5abb64a9f6c49e0dbbe84793a4f7a2c",
+    "link": "review:iter2-spec-079cf9c-r1-heavy-r2-r3-light"
+  },
+  "rules": [
+    {
+      "id": "R-001",
+      "type": "replace",
+      "old": {
+        "file": "SKILL.md",
+        "line": 36,
+        "text": "规格文档治理（索引 / 盘点表 / 权威顺序）"
+      },
+      "new": {
+        "file": "SKILL.md",
+        "section": "## 导航（一跳）",
+        "anchor": "规格文档治理（精简底座 / 3 按需组件 / 平滑升级）"
+      },
+      "disposition": "replace",
+      "evidence": "SKILL.md 导航摘要同步为精简底座、3 按需治理组件与平滑升级定位",
+      "status": "done"
+    },
+    {
+      "id": "R-002",
+      "type": "replace",
+      "old": {
+        "file": "references/25-spec-governance.md",
+        "line": 12,
+        "text": "ID | 决定（一句话） | 来源（用户原话/日期，或 ADR 链接）"
+      },
+      "new": {
+        "file": "references/25-spec-governance.md",
+        "section": "### 1. 正文归属与索引字段",
+        "anchor": "简版决定表（精简底座，4 列）"
+      },
+      "disposition": "replace",
+      "evidence": "将决定表拆为 4 列精简底座与组件 2 完整字段，取消普通单文档无条件覆盖列与 5 字段 owner 对账要求",
+      "status": "done"
+    },
+    {
+      "id": "R-003",
+      "type": "replace",
+      "old": {
+        "file": "references/25-spec-governance.md",
+        "line": 50,
+        "text": "视图（改造范围 / 分期 / 白名单 / 覆盖矩阵 / 验收清单 / 附录 A.x）"
+      },
+      "new": {
+        "file": "references/25-spec-governance.md",
+        "section": "## 三、摘要、视图与唯一权威顺序",
+        "anchor": "显式排除**单文档底座自身的常规验收标准节与改动文件表"
+      },
+      "disposition": "replace",
+      "evidence": "收口派生视图界定，显式排除单文档底座常规验收标准节与改动文件表以免误触发组件 2",
+      "status": "done"
+    },
+    {
+      "id": "R-004",
+      "type": "replace",
+      "old": {
+        "file": "references/25-spec-governance.md",
+        "line": 88,
+        "text": "修改判据、术语、范围、owner、边界或分类"
+      },
+      "new": {
+        "file": "references/25-spec-governance.md",
+        "section": "## 四、草案替换、重开边界与替换式变更",
+        "anchor": "替换式变更（组件 3）**：修改 PR `base` 中已存在的判据"
+      },
+      "disposition": "replace",
+      "evidence": "组件 3 唯一触发原则锚定 PR base 既有对象并明确纯新增 ADR（含未合并草案升格）不触发 manifest",
+      "status": "done"
+    },
+    {
+      "id": "R-005",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/25-spec-governance.md",
+        "section": "## 五、治理组件中途平滑升级",
+        "anchor": "澄清、设计或审核修订（R1–R3）中首次出现触发组件 1 / 2 / 3 的客观事实时"
+      },
+      "disposition": "not-applicable",
+      "same_trigger_search": "检索 references/ 确认无既有治理组件中途平滑升级及中途触发 manifest 当轮立账条款",
+      "evidence": "新增 §五 统一约束中途触及组件 1/2/3 的 L0-6+#158 前置防膨胀、原位升格、当轮 --draft 立账与纯新增 ADR 分流",
+      "status": "done"
+    },
+    {
+      "id": "R-006",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/10-stages.md",
+        "section": "## 一、核心术语",
+        "anchor": "| 反熵增三问 | 开 spec 必填：① 已有重叠盘点"
+      },
+      "disposition": "not-applicable",
+      "same_trigger_search": "检索 references/10-stages.md 与 25-spec-governance.md 确认既有阶段合同无反熵增三问术语与澄清/设计条款",
+      "evidence": "10-stages 唯一持有反熵增三问定义并在澄清段 D1 初稿、设计段 D2 终稿嵌入硬要求（直接干豁免）",
+      "status": "done"
+    },
+    {
+      "id": "R-007",
+      "type": "replace",
+      "old": {
+        "file": "references/10-stages.md",
+        "line": 45,
+        "text": "决定索引 / 决定节与覆盖图齐备、摘要 / 视图遵守权威顺序且回指闭合"
+      },
+      "new": {
+        "file": "references/10-stages.md",
+        "section": "### 设计",
+        "anchor": "守精简底座（简版决定表、单 owner、无双活动 ID 与自相矛盾）"
+      },
+      "disposition": "replace",
+      "evidence": "设计段文档治理合规改为精简底座 + 按需组件（组件 1/2/3 按事实触发，中途按 §五 升格）",
+      "status": "done"
+    },
+    {
+      "id": "R-008",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/10-stages.md",
+        "section": "### 交付",
+        "anchor": "**竣工回写（开 spec）**：整单出口"
+      },
+      "disposition": "not-applicable",
+      "same_trigger_search": "检索 references/10-stages.md 与 15-records.md 确认既有交付段无竣工回写与减法核销条款",
+      "evidence": "10-stages 唯一持有竣工回写定义及开 spec（含多 PR 中间子 PR 分界）与直接干（纯内部免税/对外变更同步）规则",
+      "status": "done"
+    },
+    {
+      "id": "R-009",
+      "type": "replace",
+      "old": {
+        "file": "references/15-records.md",
+        "line": 12,
+        "text": "实现成果 / 模块、必要测试入口、配套文档落点、共享约定"
+      },
+      "new": {
+        "file": "references/15-records.md",
+        "section": "## 一、11 类交付 / 授权与决定记录",
+        "anchor": "实现成果 / 模块、必要测试入口、减法清单、现状真身落点、共享约定"
+      },
+      "disposition": "replace",
+      "evidence": "第 3 类「预期交付」将泛化配套文档落点替换为减法清单与现状真身落点",
+      "status": "done"
+    },
+    {
+      "id": "R-010",
+      "type": "replace",
+      "old": {
+        "file": "references/15-records.md",
+        "line": 60,
+        "text": "事实变化时改唯一 owner，他处只链接"
+      },
+      "new": {
+        "file": "references/15-records.md",
+        "section": "### 1. 四种载体与读序",
+        "anchor": "交付出口按最终实际实现（as-built）同步唯一 owner，他处只链接"
+      },
+      "disposition": "replace",
+      "evidence": "15-records §四.1 现状文档更新口径明确为交付出口按最终实际实现（as-built）同步唯一 owner",
+      "status": "done"
+    },
+    {
+      "id": "R-011",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/15-records.md",
+        "section": "## 五、关单收尾",
+        "anchor": "开 spec 须核现状真身已按最终实现同步且减法已落实"
+      },
+      "disposition": "not-applicable",
+      "same_trigger_search": "检索 references/15-records.md §五 确认原关单收尾未显式包含竣工回写与减法转遗留用户确认硬核对",
+      "evidence": "15-records §五 新增关单竣工回写硬核对（未清理转遗留须经用户确认，缺项不关单，禁以 spec 已写跳过）",
+      "status": "done"
+    },
+    {
+      "id": "R-012",
+      "type": "replace",
+      "old": {
+        "file": "references/20-decisions.md",
+        "line": 17,
+        "text": "观察式例外（如适用）、承重未知清单；跨切面需求另按"
+      },
+      "new": {
+        "file": "references/20-decisions.md",
+        "section": "## D1 范围与结构（开 spec 适用；直接干不走 D1）",
+        "anchor": "承重未知清单、反熵增三问初稿"
+      },
+      "disposition": "replace",
+      "evidence": "D1 证据补反熵增三问初稿指针（指向 10-stages）",
+      "status": "done"
+    },
+    {
+      "id": "R-013",
+      "type": "replace",
+      "old": {
+        "file": "references/20-decisions.md",
+        "line": 24,
+        "text": "治理证据（决定索引 / 决定节、owner 对账、跨切面冻结盘点表与数量对账）"
+      },
+      "new": {
+        "file": "references/20-decisions.md",
+        "section": "## D2 设计与规格确认",
+        "anchor": "文档治理证据（精简底座简版决定表 + 触发时按需组件）"
+      },
+      "disposition": "replace",
+      "evidence": "D2 证据改为精简底座 + 按需组件指针并补反熵增三问终稿，失效条件补中途升级组件",
+      "status": "done"
+    },
+    {
+      "id": "R-014",
+      "type": "replace",
+      "old": {
+        "file": "references/20-decisions.md",
+        "line": 38,
+        "text": "审核结论与修订记录、文档检查、验证结果、未处理项；有 spec"
+      },
+      "new": {
+        "file": "references/20-decisions.md",
+        "section": "## D4 每份 PR（含直接干与 hotfix 合回）",
+        "anchor": "未处理项与竣工回写（分界见 [10-stages](10-stages.md) 交付段）"
+      },
+      "disposition": "replace",
+      "evidence": "D4 ② 证据补竣工回写指针（分界归 10-stages 交付段）",
+      "status": "done"
+    },
+    {
+      "id": "R-015",
+      "type": "replace",
+      "old": {
+        "file": "references/20-decisions.md",
+        "line": 45,
+        "text": "合并后构建验收、四类逐项（含文档检查）、未处理项"
+      },
+      "new": {
+        "file": "references/20-decisions.md",
+        "section": "## D5 整条 issue 合入 staging（仅 staging 线）",
+        "anchor": "四类逐项（含文档检查）、竣工回写与减法核销结果、未处理项"
+      },
+      "disposition": "replace",
+      "evidence": "D5 证据与失效条件同步补齐整条 issue 合入 staging 前的竣工回写与减法核销结果",
+      "status": "done"
+    },
+    {
+      "id": "R-016",
+      "type": "replace",
+      "old": {
+        "file": "references/26-review-contract.md",
+        "line": 53,
+        "text": "### 2. 文档组织四项前置检查"
+      },
+      "new": {
+        "file": "references/26-review-contract.md",
+        "section": "### 2. 文档组织前置检查（底座 + 按需组件）",
+        "anchor": "未触发的重型组件不得判阻断"
+      },
+      "disposition": "replace",
+      "evidence": "26-review-contract §二/§四.2/§五.1/§五.2/§六 同步底座 3 项必核 + 可叠加组件 1/2 精确映射、底座 4 列完备口径与中途 --draft manifest",
+      "status": "done"
+    },
+    {
+      "id": "R-017",
+      "type": "replace",
+      "old": {
+        "file": "references/30-playbooks/new-spec.md",
+        "line": 18,
+        "text": "完成决定索引 / 决定节、覆盖图、owner 对账及跨切面盘点表展开冻结"
+      },
+      "new": {
+        "file": "references/30-playbooks/new-spec.md",
+        "section": "## 一、从澄清到终稿（同一份 spec、同一个 PR）",
+        "anchor": "未触发组件 2 不强求覆盖图与 5 字段 owner 对账"
+      },
+      "disposition": "replace",
+      "evidence": "new-spec playbook 在 D1/骨架/终稿嵌入反熵增三问与底座/按需组件升格指针",
+      "status": "done"
+    },
+    {
+      "id": "R-018",
+      "type": "replace",
+      "old": {
+        "file": "references/30-playbooks/direct.md",
+        "line": 12,
+        "text": "在 task 分支完成实现与测试；有测试环境时先部署 PR 分支跑验收"
+      },
+      "new": {
+        "file": "references/30-playbooks/direct.md",
+        "section": "## 一、参考走法",
+        "anchor": "纯内部 bugfix / 重构零额外文书税"
+      },
+      "disposition": "replace",
+      "evidence": "direct playbook 明确免 D1 与反熵增三问、纯内部小改免额外文书税及对外变更前同步现状文档指针",
+      "status": "done"
+    },
+    {
+      "id": "R-019",
+      "type": "replace",
+      "old": {
+        "file": "references/30-playbooks/issue.md",
+        "line": 26,
+        "text": "分支验收与四类核对"
+      },
+      "new": {
+        "file": "references/30-playbooks/issue.md",
+        "section": "## 二、参考走法",
+        "anchor": "分支验收、四类核对与竣工回写"
+      },
+      "disposition": "replace",
+      "evidence": "issue playbook 补齐多 PR 中间子 PR 与整单出口竣工回写及减法核销指针",
+      "status": "done"
+    },
+    {
+      "id": "R-020",
+      "type": "replace",
+      "old": {
+        "file": "references/30-playbooks/change-protocol.md",
+        "line": 6,
+        "text": "修改判据、术语、范围、owner、边界或分类"
+      },
+      "new": {
+        "file": "references/30-playbooks/change-protocol.md",
+        "section": "# Playbook: 替换式变更（manifest + 校验器）",
+        "anchor": "修改 PR `base` 中已存在的判据、术语、范围、既有 owner、边界或分类"
+      },
+      "disposition": "replace",
+      "evidence": "change-protocol 适用条款原位锚定 PR base 既有对象与纯新增 ADR 豁免边界",
+      "status": "done"
+    },
+    {
+      "id": "R-021",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/30-playbooks/change-protocol.md",
+        "section": "### 枚举、最小长度与 head 钉扎规则",
+        "anchor": "须在当轮修订提交内以当前 PR `base` 起草 manifest 跑 `--draft`"
+      },
+      "disposition": "not-applicable",
+      "same_trigger_search": "检索 references/30-playbooks/change-protocol.md 确认原时序段未约定审核中途触发当轮切入 --draft",
+      "evidence": "change-protocol head 钉扎时序新增审核中途触发当轮修订切入 --draft 并带入复审指针",
+      "status": "done"
+    },
+    {
+      "id": "R-022",
+      "type": "add",
+      "old": null,
+      "new": {
+        "file": "references/30-playbooks/adr.md",
+        "section": "## 二、参考走法",
+        "anchor": "审核中途升格与 manifest 边界"
+      },
+      "disposition": "not-applicable",
+      "same_trigger_search": "检索 references/30-playbooks/adr.md 确认原走法未覆盖审核中途新增或取代 ADR 的升格与 manifest 边界",
+      "evidence": "adr playbook 补第 7 步指向 25-spec-governance §五 明确纯新增 ADR 仅走组件 2、取代旧 ADR 须当轮切入 manifest --draft",
+      "status": "done"
+    }
+  ],
+  "whitelist": [],
+  "scans": [
+    {
+      "query": "文档组织四项前置检查|决定索引 / 决定节与覆盖图齐备|事实变化时改唯一 owner|配套文档落点|大型规格|视图（改造范围|修改判据、术语、范围、owner|有 spec 不缺决定索引|材料缺失、字段不全",
+      "scope": [
+        "SKILL.md",
+        "README.md",
+        "README.zh-CN.md",
+        "references/",
+        "docs/changes/README.md"
+      ],
+      "scope_reason": "覆盖全部现行运行规则、案例、双语 README 与 manifest 模板；docs/specs、docs/changes/*/manifest.json 与 docs/archive 属冻结/历史记录，按载体表原样保留",
+      "hits": [],
+      "conclusion": "changed",
+      "note": "确认本次替换的全部旧口径与旧表述在现行规则、双语 README 与模板中零残留"
+    },
+    {
+      "query": "轻量\\s*Spec|重型\\s*Spec",
+      "scope": [
+        "SKILL.md",
+        "README.md",
+        "README.zh-CN.md",
+        "references/"
+      ],
+      "scope_reason": "核查现行规则与双语 README 未引入已放弃的轻量/重型 Spec 人为二分术语；冻结历史规格与归档不纳入",
+      "hits": [],
+      "conclusion": "changed",
+      "note": "确认现行规则与双语说明统一采用精简底座 + 3 按需治理组件表述"
+    },
+    {
+      "query": "12\\s*条单文件|物化全部\\s*12",
+      "scope": [
+        "evals/README.md"
+      ],
+      "scope_reason": "专项核查 Eval 唯一现状文档 evals/README.md 零残留迭代 1 硬编码 12 条场景表述",
+      "hits": [],
+      "conclusion": "changed",
+      "note": "确认 evals/README.md 已按现状回写为 14 条场景并去除流程硬编码"
+    }
+  ],
+  "semantic_checks": [
+    {
+      "item": "10-stages 与 25-spec-governance 唯一正文切分是否无双正文重叠",
+      "conclusion": "changed",
+      "evidence": "10-stages 唯一持有阶段要素、反熵增三问与竣工回写；25-spec-governance 唯一持有精简底座、3 组件与 §五 中途升格，跨边界仅写指针"
+    },
+    {
+      "item": "25-spec-governance §三 派生视图排除单文档底座验收标准节是否与 26-review-contract §四.2/§五.2/§六 及 C1+C2 叠加口径一致",
+      "conclusion": "changed",
+      "evidence": "25-spec-governance §三 显式排除常规验收节与改动文件表，26-review-contract §四.2 明确底座 3 项定级与 C1/C2 正交可叠加映射，§五.2/§六 认可底座 4 列完备"
+    },
+    {
+      "item": "审核中途新增 ADR 与取代 PR base 旧 ADR 的分流在 25-spec-governance §五 / change-protocol / adr 三处是否一致",
+      "conclusion": "changed",
+      "evidence": "三处均锚定 PR base 既有对象：纯新增 ADR（含未合并草案升格）仅走组件 2 不造 manifest，取代旧 ADR 或改既有规则须当轮切入 --draft"
+    },
+    {
+      "item": "竣工回写与减法核销（含用户确认转遗留、多 PR 中间子 PR 与直接干边界）在 10-stages / 15-records / 20-decisions / direct / issue 五处是否一致",
+      "conclusion": "changed",
+      "evidence": "五处统一：开 spec 整单出口与关单强核且未清理转遗留须经用户确认，多 PR 中间子 PR 仅核本 PR 项，直接干纯内部小改免文书、对外变更同步现状文档"
+    },
+    {
+      "item": "保护文件边界（L0 铁律、校验脚本、冻结 spec、v2 基线）与 always_read_chars 增量 ≤ +800 是否均守住",
+      "conclusion": "changed",
+      "evidence": "8 份保护文件 diff 为空；check-docs.sh 实测 always_read_chars = 17,503（较 16,777 净增 +726 ≤ +800）"
+    }
+  ],
+  "rebuild": {
+    "triggered": true,
+    "reason": "将规格文档治理从全量统一重型门槛重构为单一精简底座 + 3 按需治理组件 + 中途平滑升级，并在澄清/设计/交付/关单全链路嵌入反熵增三问与竣工回写，跨多份规则与审核契约无法逐行一一替换",
+    "old_behaviors": [
+      "单 owner、唯一活动 ID、命名空间与 D0-D7 隔离、不篡改权威顺序底线 → 完整保留于精简底座（25-spec-governance §一/§三 与 26-review-contract §四.2 底座必核）",
+      "跨切面范围盘点表（seed/展开对账/冻结/解冻） → 完整保留为组件 1（25-spec-governance §二，且与组件 2 正交可叠加）",
+      "多文档/ADR/派生视图的覆盖列、5 字段决定 owner 对账、视图回指 100% 与复述处清单 → 完整保留为组件 2（25-spec-governance §一/§三 与 26-review-contract §四.2）",
+      "替换式变更 manifest、双扫描、--draft 与 manifest-only 钉扎 → 完整保留为组件 3（25-spec-governance §四 与 change-protocol.md）并补中途触发当轮立账",
+      "直接干免 D1、免盘点表、保留 L0-6 改动面说明 / worktree / D4 合并闸 → 完整保留且明确纯内部小改零额外文书税（10-stages 与 direct.md）",
+      "R1–R3 轮次上限、结构变化使 D2 失效且不重置轮次、#158 五机制 → 完整保留并衔接中途升格（25-spec-governance §五 与 26-review-contract §二）"
+    ]
+  },
+  "non_rule_changes": [
+    {
+      "file": "references/README.md",
+      "reason": "目录导航索引视图，对齐 10-stages 与 25-spec-governance 一句话职责摘要"
+    }
+  ],
+  "view_files": [
+    {
+      "file": "README.md",
+      "reason": "对外英文说明视图，同步精简底座、3 按需组件、反熵增三问、竣工回写及 evals/run-eval 入口",
+      "reviewer": "review-agent",
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
+    },
+    {
+      "file": "README.zh-CN.md",
+      "reason": "对外中文说明视图，与 README.md 双语同步 14 节标记与文件表",
+      "reviewer": "review-agent",
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
+    },
+    {
+      "file": "evals/README.md",
+      "reason": "Eval 现状文档视图，回写 14 条场景现状并去硬编码 12",
+      "reviewer": "review-agent",
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
+    },
+    {
+      "file": "evals/scenarios/13-base-spec-anti-entropy.json",
+      "reason": "新增行为级 Eval 场景 13（anti-bloat：单文档精简底座 + 反熵增三问），非运行规则",
+      "reviewer": "review-agent",
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
+    },
+    {
+      "file": "evals/scenarios/14-as-built-sync-closeout.json",
+      "reason": "新增行为级 Eval 场景 14（guardrail：竣工回写与减法核销缺项拒关单），非运行规则",
+      "reviewer": "review-agent",
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
+    },
+    {
+      "file": "scripts/test-run-eval.py",
+      "reason": "Eval Runner 确定性单测脚本，动态化场景数与规则树指纹并补场景 13/14 正反例与夹具单测",
+      "reviewer": "review-agent",
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
+    },
+    {
+      "file": "evals/baselines/2026-11-26-iter2-anti-entropy.json",
+      "reason": "迭代 2 全量 14 场景自测脱敏基线报告（JSON），含相对 v2 基线 0 退化与字数增量证据",
+      "reviewer": "review-agent",
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
+    },
+    {
+      "file": "evals/baselines/2026-11-26-iter2-anti-entropy.md",
+      "reason": "迭代 2 全量 14 场景自测脱敏基线报告（Markdown 视图）",
+      "reviewer": "review-agent",
+      "review_ref": "review:iter2-r1-heavy-r2-r3-light"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "id": "08-criterion-drift-sync",
+  "title": "修改共享判据时只读全仓扫齐全部 4 处落点并说明替换式变更",
+  "kind": "guardrail",
+  "rules_ref": [
+    "references/25-spec-governance.md#四草案替换重开边界与替换式变更",
+    "references/30-playbooks/change-protocol.md#一工件与跨项目分发规范性"
+  ],
+  "case_ref": "references/40-cases/2026-09-11-criterion-sync.md",
+  "fixture": {
+    "files": {
+      "docs/specs/vip-policy-draft.md": "# VIP 策略草案\n\n- 状态：Draft（未合并）\n- 判据：用户积分达到 VIP 阈值 = 100 时享受折扣。\n",
+      "src/vip.py": "VIP_THRESHOLD = 100\n\ndef is_vip(score: int) -> bool:\n    return score >= VIP_THRESHOLD\n",
+      "tests/test_vip.py": "from src.vip import is_vip\n\ndef test_vip_boundary():\n    assert is_vip(100) is True\n    assert is_vip(99) is False\n",
+      "docs/current-vip-guide.md": "# VIP 现状说明\n\n当前系统 VIP 判定阈值为 100 分，达到即生效。\n"
+    },
+    "executable_files": [],
+    "git": {
+      "default_branch": "main"
+    }
+  },
+  "user_prompt": "准备把「VIP 阈值」判据从 100 调整为 200。请先做全仓只读排查（本轮不要修改任何文件），列出全部受影响文件的精确相对路径，并说明按 spec-flow 替换式变更与文档载体规则应如何同步处置。",
+  "hard_checks": {
+    "forbid_any_file_write": true,
+    "forbid_file_writes": [],
+    "require_file_changes": [],
+    "require_file_contains": {},
+    "forbid_git_mutations": [
+      "branch_change",
+      "head_change",
+      "ref_change",
+      "new_branch",
+      "deleted_branch",
+      "tag_change",
+      "worktree_change"
+    ],
+    "require_commands_pass": [],
+    "forbid_output_patterns": [],
+    "require_output_any": [],
+    "require_output_all": [
+      "docs/specs/vip-policy-draft\\.md",
+      "src/vip\\.py",
+      "tests/test_vip\\.py",
+      "docs/current-vip-guide\\.md"
+    ]
+  },
+  "rubric": {
+    "must_do": [
+      "全仓检索并列出全部 4 处受影响相对路径（未漏报任何一处）",
+      "指出改判据触发替换式变更（change-protocol：manifest、旧→新处置、双扫描与反向冲突核对）",
+      "说明未合并草案与现状文档需原位替换，代码与测试需同批同步，且本轮零写入"
+    ],
+    "must_not_do": [
+      "漏掉 4 处受影响文件中的任意一处",
+      "违背只读要求直接编辑仓内文件"
+    ]
+  }
+}

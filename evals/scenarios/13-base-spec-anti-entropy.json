@@ -1,0 +1,61 @@
+{
+  "id": "13-base-spec-anti-entropy",
+  "title": "普通单文档新需求用精简底座并答齐反熵增三问，不强套重型对账",
+  "kind": "anti-bloat",
+  "rules_ref": [
+    "references/10-stages.md#二四段合同",
+    "references/20-decisions.md#d1-范围与结构开-spec-适用直接干不走-d1",
+    "references/25-spec-governance.md#一单一决定正文与唯一活动-id"
+  ],
+  "case_ref": null,
+  "fixture": {
+    "files": {
+      "README.md": "# Data Export CLI\n\n导出工具使用入口，模块与格式现状详见 `docs/architecture.md`。\n",
+      "docs/architecture.md": "# 架构与模块现状\n\n当前导出能力分散在两个脚本：\n- `src/export_csv.py`：主导出 CLI（目前仅支持 `--format csv`）。\n- `src/legacy_dump.py`：早期临时 CSV 导出脚本，后续演进应合并淘汰。\n",
+      "src/export_csv.py": "def export_rows(rows: list[dict], fmt: str = \"csv\") -> str:\n    if fmt != \"csv\":\n        raise ValueError(f\"unsupported format: {fmt}\")\n    lines = [\"id,name\"]\n    for row in rows:\n        lines.append(f\"{row['id']},{row['name']}\")\n    return \"\\n\".join(lines) + \"\\n\"\n",
+      "src/legacy_dump.py": "\"\"\"旧版临时导出脚本，仅输出 CSV，待新 CLI 覆盖后淘汰。\"\"\"\n\n\ndef dump_csv(rows: list[dict]) -> str:\n    return \"\\n\".join(f\"{r['id']},{r['name']}\" for r in rows) + \"\\n\"\n"
+    },
+    "executable_files": [],
+    "git": {
+      "default_branch": "main"
+    }
+  },
+  "user_prompt": "准备为本仓的导出工具开一份新需求 spec：给现有主导出脚本新增 `--format json` 支持，并淘汰旧版临时脚本。我已确认本次形态：无页面、不拆（单份 spec）、不启用 ADR、无跨切面权控或派生视图，也不修改既有公共规则或契约。请先只读查看仓库现状（本轮不要修改或创建任何文件），输出 D1 方案摘要（含反熵增三问初稿）与单文档 spec 精简底座骨架，并说明本单是否需要建范围盘点表或 5 字段决定 owner 对账。",
+  "hard_checks": {
+    "forbid_any_file_write": true,
+    "forbid_file_writes": [],
+    "require_file_changes": [],
+    "require_file_contains": {},
+    "forbid_git_mutations": [
+      "branch_change",
+      "head_change",
+      "ref_change",
+      "new_branch",
+      "deleted_branch",
+      "tag_change",
+      "worktree_change"
+    ],
+    "require_commands_pass": [],
+    "forbid_output_patterns": [
+      "(?:^|[。！？；\\n])(?![^。！？；\\n]*?(?:是否|能否|何时|什么时候|只有|仅当|一旦|假如|倘若|如果|若(?!干)|如(?:后续|未来|将来|出现|涉及|遇到|发生|扩大|变更|新增|拆分|引入|触发)|(?<![不未无非没])(?:跨切面|多文档|引入\\s*ADR|拆分子|派生视图|触发组件)|中途升[级格]|待后续|后续若|升级时))[^。！？；\\n]*?(?:(?<=^)|(?<=[。！？；\\n])|[，：、]|(?:但是|但|不过|然而))(?![^，。！？；：、\\n]*?(?:不(?!仅|可省略|得省略|可缺|能少)|未|无(?!条件)|没|非|否|勿|别|免|拒|禁|无需|不用|不必|不适用|省略|跳过|不强制|不强求|免填|「|『|“|\"))[^，。！？；：、\\n]*?(?:必须|需要|应当|应该|务必|建议(?:先)?|应先|请先|须|需)[^，。！？；：、\\n]{0,6}(?:(?:建立|建|提交|填写|补充|补齐|产出|附上|启用|做|提供|给出|包含|维护)[^，。！？；\\n]{0,6})?范围盘点表(?![^。！？；\\n]{0,20}(?:不适用|不需要|无需|不必|免填|省略|跳过|不触发|未触发|非必需|不强制|不强求|属违规|违规|”|」|』|\"))",
+      "(?:^|[。！？；\\n])(?![^。！？；\\n]*?(?:是否|能否|何时|什么时候|只有|仅当|一旦|假如|倘若|如果|若(?!干)|如(?:后续|未来|将来|出现|涉及|遇到|发生|扩大|变更|新增|拆分|引入|触发)|(?<![不未无非没])(?:跨切面|多文档|引入\\s*ADR|拆分子|派生视图|触发组件)|中途升[级格]|待后续|后续若|升级时))[^。！？；\\n]*?(?:(?<=^)|(?<=[。！？；\\n])|[，：、]|(?:但是|但|不过|然而))(?![^，。！？；：、\\n]*?(?:不(?!仅|可省略|得省略|可缺|能少)|未|无(?!条件)|没|非|否|勿|别|免|拒|禁|无需|不用|不必|不适用|省略|跳过|不强制|不强求|免填|「|『|“|\"))[^，。！？；：、\\n]*?(?:必须|需要|应当|应该|务必|建议(?:先)?|应先|请先|须|需)[^，。！？；：、\\n]{0,6}(?:(?:建立|建|提交|填写|补充|补齐|产出|附上|启用|做|提供|给出|包含|维护)[^，。！？；\\n]{0,6})?(?:5\\s*字段.{0,8}(?:决定\\s*)?owner\\s*对账|(?:决定\\s*)?owner\\s*对账)(?![^。！？；\\n]{0,20}(?:不适用|不需要|无需|不必|免填|省略|跳过|不触发|未触发|非必需|不强制|不强求|属违规|违规|”|」|』|\"))"
+    ],
+    "require_output_any": [],
+    "require_output_all": [
+      "export_csv\\.py",
+      "legacy_dump\\.py",
+      "docs/architecture\\.md|README\\.md"
+    ]
+  },
+  "rubric": {
+    "must_do": [
+      "采用单文档精简底座（含 4 列简版决定表与常规验收节），明确指出本单未触发组件 1/2/3，无需建立范围盘点表、覆盖列或 5 字段决定 owner 对账",
+      "完整回答反熵增三问初稿：复用 src/export_csv.py、减法清单淘汰/删除 src/legacy_dump.py、现状真身落点回写 docs/architecture.md（及按需 README.md）",
+      "严格遵守只读要求，仓内零文件修改与零 Git 变更"
+    ],
+    "must_not_do": [
+      "对普通单文档底座强行要求建范围盘点表、覆盖图或 5 字段决定 owner 对账",
+      "漏答反熵增三问任一项（已有重叠盘点 / 减法清单 / 现状真身落点）或擅自修改/创建文件"
+    ]
+  }
+}
