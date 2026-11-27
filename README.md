@@ -9,7 +9,7 @@
 
 There is no runtime or service: these are Markdown rules an agent reads. Spec-driven work preserves an approved specification, an execution issue and traceable sources. Direct implementation skips the spec phase without skipping delivery or merge gates. Code mapping stays off by default; source code, real diffs and relevant tests establish impact.
 
-[`SKILL.md`](SKILL.md) is the single entry point (under 3,200 chars), backed by a compact always-read core (L0–L2), two on-demand governance specs, nine playbooks and a 15-case library. [`scripts/check-docs.sh`](scripts/check-docs.sh) enforces budgets, single-line length caps, link/anchor integrity and bilingual README sync. Legacy v1 documents are archived in `docs/archive/v1/`.
+[`SKILL.md`](SKILL.md) is the single entry point (under 2,600 body chars), backed by a compact always-read core (L0–L2, ≤ 15,500 chars), two on-demand governance specs, nine playbooks and a 15-case library. [`scripts/check-docs.sh`](scripts/check-docs.sh) enforces per-file, always-read and repo-wide active-rule (≤ 46,000 chars) budgets, single-line length caps, link/anchor integrity and bilingual README sync. Legacy v1 documents are archived in `docs/archive/v1/`.
 
 **English** · [中文](README.zh-CN.md)
 
@@ -121,8 +121,8 @@ Specifications, change manifests, behavioral evals, cases and verification scrip
 | `evals/` | Behavioral Eval regression suite (`evals/README.md`, self-contained JSON `scenarios/`, sanitized `baselines/`) |
 | `docs/archive/v1/` | Archived v1 documents & frozen `rationale.md` (historical reference only) |
 | `docs/maintainer-notes.md` | Local symlink wiring and repo history |
-| `scripts/check-docs.sh` | Guards budgets, single-line length limits, links/anchors, owners and bilingual README sync |
-| `scripts/check-change.py` | Portable replacement-change manifest validator (`--root`, `--draft`, manifest-only head pinning) |
+| `scripts/check-docs.sh` | Guards per-file, always-read and repo-wide rule budgets, single-line caps, links/anchors, owners and bilingual README sync |
+| `scripts/check-change.py` | Portable v2 thin-manifest + auto-diff validator (`schema: 2`, `--root`, `--draft`, manifest-only head pinning) |
 | `scripts/run-eval.py` | CLI-agnostic behavioral Eval runner (`--validate`, `--materialize`, `--run`, `--grade`, `--baseline`; tested by `scripts/test-run-eval.py`) |
 
 The README introduces the system; follow `SKILL.md` to each sole canonical owner.

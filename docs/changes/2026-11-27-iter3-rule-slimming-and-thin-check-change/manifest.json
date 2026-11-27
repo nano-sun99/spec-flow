@@ -1,0 +1,108 @@
+{
+  "schema": 2,
+  "change": "2026-11-27-iter3-rule-slimming-and-thin-check-change",
+  "title": "迭代 3：全仓规则字数硬闸、17 份现行规则激进瘦身与 check-change.py v2 薄声明重构",
+  "base": "19ff1ac7dde9f42cbab743cdee9040223ea562aa",
+  "head": "HEAD",
+  "classification": "replace",
+  "rules": [
+    {
+      "id": "R-001",
+      "type": "replace",
+      "files": [
+        "SKILL.md",
+        "references/10-stages.md",
+        "references/15-records.md",
+        "references/20-decisions.md"
+      ],
+      "summary": "必读核（SKILL + L1/L2）去重瘦身至 <= 15,500 字，保全部 Eval 锚点、D0-D7 硬闸、15 类记录与竣工回写语义",
+      "disposition": "replace",
+      "status": "done"
+    },
+    {
+      "id": "R-002",
+      "type": "replace",
+      "files": [
+        "references/25-spec-governance.md",
+        "references/26-review-contract.md"
+      ],
+      "summary": "专项总纲（规格治理与审核契约）消除 §六模板与正文重复及冗长表述，保底座 + 3 组件、#158 五机制与 R1-R3 语义",
+      "disposition": "replace",
+      "status": "done"
+    },
+    {
+      "id": "R-003",
+      "type": "replace",
+      "files": [
+        "references/30-playbooks/change-protocol.md",
+        "scripts/check-change.py",
+        "docs/changes/README.md"
+      ],
+      "summary": "替换式变更协议与校验器纯 v2 重构（schema: 2 薄声明 + 自动扫 diff，取消旧逐行转录与 view_files[] 手工台账，旧 v1 标历史快照）",
+      "disposition": "replace",
+      "status": "done"
+    },
+    {
+      "id": "R-004",
+      "type": "replace",
+      "files": [
+        "references/30-playbooks/adr.md",
+        "references/30-playbooks/direct.md",
+        "references/30-playbooks/incident.md",
+        "references/30-playbooks/issue.md",
+        "references/30-playbooks/labels.md",
+        "references/30-playbooks/new-spec.md",
+        "references/30-playbooks/release.md",
+        "references/30-playbooks/worktree.md",
+        "references/50-adapters/README.md"
+      ],
+      "summary": "其余 8 条 Playbook 与 50-adapters 全面压缩去重（5 选修短入口合 1 统一模板），全仓现行规则压至 <= 46,000 字",
+      "disposition": "replace",
+      "status": "done"
+    }
+  ],
+  "scans": [
+    {
+      "query": "old\\.line|same_trigger_search|NON_RULE_ALLOW|non_rule_changes|count_checks|view_files\\[\\]",
+      "allow": [
+        {
+          "file": "references/30-playbooks/change-protocol.md",
+          "match": "免手写 `view_files[]`",
+          "reason": "明确告知免手写旧版 view_files[] 字段",
+          "reviewer": "review-agent",
+          "review_ref": "review:iter3-draft"
+        }
+      ]
+    },
+    {
+      "query": "3,200 字|3,200 chars"
+    }
+  ],
+  "semantic_checks": [
+    {
+      "item": "SKILL.md、L1/L2、25-spec-governance 与 26-review-contract 瘦身后与 L0 铁律无冲突",
+      "conclusion": "changed",
+      "evidence": "L0 零改动，全部硬闸触发/默认/失效条件、D0 8 字段、#158 五机制与 R1-R3 上限原意完整保留"
+    },
+    {
+      "item": "25-spec-governance、26-review-contract 与 change-protocol 的 v2 manifest 触发、摘要计数与钉扎口径一致",
+      "conclusion": "changed",
+      "evidence": "check-change.py 输出含 rules/whitelist/scans/unresolved，manifest-only 尾钉扎与 --draft 规则三处一致"
+    },
+    {
+      "item": "check-docs.sh 必读核与全仓总字数上限与 run-eval.py 计量口径及双语 README 一致",
+      "conclusion": "changed",
+      "evidence": "两处均用 SKILL 去 frontmatter 正文 + L0-L2 及 active_rule_files 字符和，README.md / README.zh-CN.md 同步更新"
+    }
+  ],
+  "rebuild": {
+    "triggered": true,
+    "reason": "scripts/check-change.py 与 change-protocol.md 由 v1 逐行转录模型纯重构为 v2 薄声明 + 自动扫 diff 模型",
+    "old_behaviors": [
+      "CLI 参数（--manifest/--base/--head/--root/--draft/--from-disk）与退出码保持不变",
+      "正式模式提交树一致性、不可变十六进制 SHA、严格后代校验与 manifest-only 尾部钉扎保留并升级为 --no-renames",
+      "活跃残留正则复扫（升级为 span 包含 + 唯一覆盖 + 严格 count）与章节断链/删改章节反扫保留并新增已删/改名路径反扫",
+      "反向冲突语义核对（semantic_checks[]）与重建对账（rebuild）保留"
+    ]
+  }
+}
