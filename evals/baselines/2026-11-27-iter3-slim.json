@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-27T08:27:33.384436+00:00",
-  "execution_env": "自测基线（Antigravity 14 路隔离 eval-subject-iter3 子 agent，同模型家族，非独立第三方审核；R1 修订后全量 14 路对照 iter2 基线；经用户批准 SL-4 例外微调 07-review-scope-creep.json 禁用正则豁免原输入复述假阳性，其余 13 条场景与评分脚本零改动）",
+  "generated_at": "2026-11-27T08:53:26.362234+00:00",
+  "execution_env": "自测基线（Antigravity 14 路隔离 eval-subject-iter3 子 agent，同模型家族，非独立第三方审核；R1 修订后全量 14 路对照 iter2 基线；经用户批准 SL-4 例外与 R3 收紧重画微调 07-review-scope-creep.json 禁用正则豁免原输入复述假阳性并闭合 R3-H1/M1，其余 13 条场景与评分脚本零改动）",
   "mode": "batch",
   "fingerprint": {
-    "spec_flow_rev": "75a86aaa6bc74d262cc4fa4406a57b5d04b1ed8d",
+    "spec_flow_rev": "6b38bcbadeec00d6ef255411c26386736f049b29",
     "rule_tree_sha256": "930ba2cfd7f22bfcd7b7e29dfd9a41d973a7e2d1112dc966c25ed6393d545e2e",
     "always_read_chars": 14640,
     "total_rule_chars": 43621,
