@@ -82,7 +82,7 @@ Git 持有认领锁（`issue/<N>` worktree）；原 issue 交接区记录当前�
 ## 装
 
 ```bash
-git clone --branch rebuild/v2 https://github.com/nano-sun99/spec-flow.git ~/.claude/skills/spec-flow
+git clone https://github.com/nano-sun99/spec-flow.git ~/.claude/skills/spec-flow
 ```
 
 也可 clone 到工作目录再软链进客户端技能目录。`spec-flow` 用客户端自带选项卡或文字选项自主完成需求澄清，不依赖任何外部澄清技能。项目接入见 [`references/50-adapters/README.md`](references/50-adapters/README.md)。

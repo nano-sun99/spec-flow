@@ -82,7 +82,7 @@ Git holds the claim lock (`issue/<N>` worktree); the issue handoff holds current
 ## Install
 
 ```bash
-git clone --branch rebuild/v2 https://github.com/nano-sun99/spec-flow.git ~/.claude/skills/spec-flow
+git clone https://github.com/nano-sun99/spec-flow.git ~/.claude/skills/spec-flow
 ```
 
 Or clone into a workspace directory and symlink it into your client's skill path. `spec-flow` handles clarification natively using your client's choice tool or text options — no external clarification skills required. For project adoption, see [`references/50-adapters/README.md`](references/50-adapters/README.md).
